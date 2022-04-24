@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 17:50:01 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 18:02:57 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,33 +19,6 @@ Parser::Parser(std::string filename): _lexer(filename) {
 }
 
 Parser::~Parser(void) {
-}
-
-/*
-** =============================== Structures =============================== **
-*/
-
-void	Parser::Location::print() const {
-	std::cout << "Location path: " << location_path << std::endl;
-	std::cout << "root: " << root << std::endl;
-}
-
-void	Parser::Server::print() const {
-	std::cout << "Server: ";
-	for (size_t i = 0; i < server_names.size(); i++)
-		std::cout << server_names[i] << " ";
-	std::cout << std::endl;
-	std::cout << "Listening port: " << listen << std::endl;
-	for (size_t i = 0; i < locations.size(); i++)
-		locations[i].print();
-}
-
-void	Parser::Config::print() const {
-	std::cout << "> CONFIG:" << std::endl;
-	for (size_t i = 0; i < servers.size(); ++i) {
-		servers[i].print();
-		std::cout << "-------" << std::endl;
-	}
 }
 
 /*
@@ -76,7 +49,7 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 void	Parser::_parse_server_block() {
 	_eat(Token::type_word, "server");
 	_eat(Token::type_special_char, "{");
-	Server	server;
+	Config::Server	server;
 	while (!_current_token().expect(Token::type_special_char, "}")) {
 		if (_current_token().expect(Token::type_eof))
 			throw std::runtime_error("Parsing error: missing `}' in server block");
@@ -97,6 +70,6 @@ void	Parser::_parse_server_block() {
 	_eat(Token::type_special_char, "}");
 }
 
-Parser::Config const	&Parser::get_config() const {
+Config const	&Parser::get_config() const {
 	return (_config);
 }

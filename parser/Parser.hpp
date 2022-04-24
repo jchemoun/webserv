@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 17:38:17 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 18:01:00 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,31 +14,15 @@
 # define PARSER_HPP
 
 # include "Lexer.hpp"
+# include "Config.hpp"
 # include <string>
 
-// # include "Server.hpp"
 
 class Parser {
 public:
 	// CANONICAL FORM
 	Parser(std::string filename);
 	virtual ~Parser(void);
-
-	struct Location {
-		void print() const;
-		std::string	location_path;
-		std::string	root;
-	};
-	struct	Server {
-		void print() const;
-		std::vector<std::string>	server_names;
-		int	listen;
-		std::vector<Location>	locations;
-	};
-	struct Config {
-		void print() const;
-		std::vector<Server>	servers;
-	};
 
 	Config const &get_config() const;
 
