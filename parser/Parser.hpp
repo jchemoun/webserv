@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 18:01:00 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 18:40:10 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,8 @@ private:
 
 	// Parsing functions
 	void	_parse_server_block();
+	void	_parse_server_name(Config::Server &server);
+	void	_parse_listen(Config::Server &server);
 
 	Lexer	_lexer;
 	Config	_config;
