@@ -9,8 +9,8 @@ CXXFLAGS += -g
 
 #  ================================ Sources =================================  #
 
-HEADERS = token.hpp lexer.hpp Parser.hpp Config.hpp
-SRC = token.cpp lexer.cpp Parser.cpp Config.cpp
+HEADERS = Token.hpp Lexer.hpp Parser.hpp Config.hpp
+SRC = Token.cpp Lexer.cpp Parser.cpp Config.cpp
 
 #  ================================= Rules ==================================  #
 
