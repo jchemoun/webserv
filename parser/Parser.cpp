@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 18:40:10 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 19:41:57 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,14 @@
 #include <iostream>
 #include <map>
 
+void	Parser::_init_parsers() {
+	_server_parsers["listen"] = &Parser::_parse_listen;
+	_server_parsers["server_name"] = &Parser::_parse_server_name;
+}
+
 Parser::Parser(std::string filename): _lexer(filename) {
+	_init_parsers();
+
 	while (_lexer.peek().get_type() != Token::type_eof)
 		_parse_server_block();
 }
@@ -35,7 +42,6 @@ Token const	&Parser::_current_token() const {
 }
 
 void	Parser::_eat(Token::token_type type) {
-	// use expect
 	if (!_current_token().expect(type))
 		throw std::runtime_error("Parsing error");
 	_lexer.next();
@@ -55,19 +61,11 @@ void	Parser::_parse_server_block() {
 	_eat(Token::type_word, "server");
 	_eat(Token::type_special_char, "{");
 	Config::Server	server;
-	// const std::map<const char *, void (Parser::*)(Config::Server &)> server_parsers;
 
 	while (!_current_token().expect(Token::type_special_char, "}")) {
 		if (_current_token().expect(Token::type_eof))
 			throw std::runtime_error("Parsing error: missing `}' in server block");
-		// if (!_current_token().expect(Token::type_word))
-		// 	throw std::runtime_error("Parsing error in server block");
-		if (_current_token().expect(Token::type_word, "server_name")) {
-			_parse_server_name(server);
-		}
-		if (_current_token().expect(Token::type_word, "listen")) {
-			_parse_listen(server);
-		}
+		(this->*_get_server_parser())(server);
 	}
 	_config.servers.push_back(server);
 	_eat(Token::type_special_char, "}");
@@ -85,4 +83,22 @@ void	Parser::_parse_listen(Config::Server &server) {
 	server.listen = std::stoi(_current_token().get_value());
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
+}
+
+/*
+** =============================== Get parser =============================== **
+*/
+
+Parser::server_parser	Parser::_get_server_parser() const {
+	if (!_current_token().expect(Token::type_word))
+		throw std::runtime_error("Parsing error in server block");
+
+	std::string const &name(_current_token().get_value());
+
+	try {
+		return (_server_parsers.at(name));
+	}
+	catch (std::out_of_range const &err) {
+		throw std::runtime_error(std::string("Parsing error: Unknown server instruction: ") + name);
+	}
 }

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 18:40:10 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 19:40:32 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include "Lexer.hpp"
 # include "Config.hpp"
 # include <string>
+# include <map>
 
 
 class Parser {
@@ -36,14 +37,20 @@ private:
 	Token const &_current_token() const;
 	void	_eat(Token::token_type type);
 	void	_eat(Token::token_type type, Token::token_value value);
+	void	_init_parsers();
 
 	// Parsing functions
 	void	_parse_server_block();
 	void	_parse_server_name(Config::Server &server);
 	void	_parse_listen(Config::Server &server);
 
+	// Get parsing function
+	typedef void (Parser::*server_parser)(Config::Server &);
+	server_parser	_get_server_parser() const;
+
 	Lexer	_lexer;
 	Config	_config;
+	std::map<std::string, server_parser> _server_parsers;
 };
 
 #endif
