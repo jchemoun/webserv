@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 15:57:40 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 19:23:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 16:11:37 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ public:
 
 	enum Types {
 		type_word,
-		type_special_char
+		type_special_char,
+		type_eof
 	};
 
 	// CANONICAL FORM

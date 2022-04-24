@@ -6,14 +6,15 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 20:29:16 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 16:06:52 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 
-Parser::Parser(void) {
+Parser::Parser(std::string filename): _lexer(filename) {
 }
 
 Parser::~Parser(void) {
 }
+

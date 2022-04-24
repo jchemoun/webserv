@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Lexer.cpp                                          :+:      :+:    :+:   */
+/*   lexer.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 20:30:48 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 16:11:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ void	Lexer::_tokenize_file() {
 	while (std::getline(_stream, _line)) {
 		_tokenize_line();
 	}
+	_vect.push_back(Token(Token::type_eof, ""));
 }
 
 void	Lexer::_tokenize_line() {
