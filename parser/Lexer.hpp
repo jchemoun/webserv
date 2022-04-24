@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 17:53:06 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 19:31:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/22 20:30:03 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ public:
 	virtual ~Lexer(void);
 
 	void	print() const;
+	size_t	size() const;
+	Token const	&next();
+	Token const	&peek() const;
 
 private:
 	// CANONICAL FORM
@@ -39,6 +42,8 @@ private:
 	void	_tokenize_special_char();
 	void	_tokenize_word();
 
+	static const char *_special_chars;
+
 	static bool _is_skipped_char(char c);
 	static bool	_is_special_char(char c);
 	static bool _is_comment_char(char c);
@@ -49,8 +54,7 @@ private:
 	size_t				_pos;
 	std::vector<Token>	_vect;
 	std::ifstream		_stream;
-
-	static const char *_special_chars;
+	size_t				_token_pos;
 };
 
 #endif

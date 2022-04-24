@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 19:32:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/22 20:30:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 #include <stdexcept>
 #include <iostream>
 
-Lexer::Lexer(std::string filename): _line(), _pos(0), _vect(), _stream() {
+Lexer::Lexer(std::string filename):
+	_line(), _pos(0), _vect(), _stream(), _token_pos(0) {
 	_open(filename);
 	_tokenize_file();
 }
@@ -73,7 +74,7 @@ void	Lexer::print() const{
 		std::cout << _vect.at(i).get_value() << std::endl;
 }
 
-const char *Lexer::_special_chars = ";{}";
+const char *Lexer::_special_chars = ";{}#";
 
 bool	Lexer::_is_special_char(char c) {
 	return (std::strchr(_special_chars, c));
@@ -89,4 +90,16 @@ bool	Lexer::_is_comment_char(char c) {
 
 void	Lexer::_skip_comment() {
 	_pos = _line.size();
+}
+
+size_t	Lexer::size() const {
+	return (_vect.size());
+}
+
+Token const	&Lexer::next() {
+	return (_vect.at(_token_pos++));
+}
+
+Token const	&Lexer::peek() const {
+	return (_vect.at(_token_pos));
 }

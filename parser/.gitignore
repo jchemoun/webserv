@@ -1,6 +1,7 @@
 *.dSYM
 compile_commands.json
 parser
+.cache
 
 # Prerequisites
 *.d
