@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 16:05:35 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 17:52:28 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 18:12:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,11 @@
 
 int	main() {
 
-	std::cout << "===== LEXER =====" << std::endl;
+	std::cout << "===== LEXER =====" << std::endl << std::endl;
 	Lexer	lexer("basic_server.conf");
 	lexer.print();
 
-	std::cout << "===== PARSER =====" << std::endl;
+	std::cout << "===== PARSER =====" << std::endl << std::endl;
 	try {
 		Parser	parser("basic_server.conf");
 		parser.get_config().print();
