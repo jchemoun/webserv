@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 15:57:40 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 16:11:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 17:15:59 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,8 @@ public:
 
 	token_type const &get_type() const;
 	token_value const &get_value() const;
+	bool	expect(token_type type) const;
+	bool	expect(token_type type, token_value value) const;
 
 private:
 	token_type	_type;

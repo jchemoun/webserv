@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 16:11:46 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 19:16:07 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/24 17:16:15 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,4 +38,12 @@ Token::token_type const	&Token::get_type() const {
 
 Token::token_value const &Token::get_value() const {
 	return (_value);
+}
+
+bool	Token::expect(token_type type) const {
+	return (type == _type);
+}
+
+bool	Token::expect(token_type type, token_value value) const {
+	return (type == _type && value == _value);
 }
