@@ -5,7 +5,7 @@ NAME = parser
 CXX = c++
 CXXFLAGS = -Wall -Werror -Wextra -std=c++98
 CXXFLAGS += -g
-# CXXFLAGS += -fsanitize=address
+CXXFLAGS += -fsanitize=address
 
 #  ================================ Sources =================================  #
 

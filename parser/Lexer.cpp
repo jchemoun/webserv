@@ -1,18 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   lexer.cpp                                          :+:      :+:    :+:   */
+/*   Lexer.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 16:28:46 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 09:35:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Lexer.hpp"
 #include <stdexcept>
 #include <iostream>
+#include <cstring>
 
 Lexer::Lexer(std::string filename):
 	_line(), _pos(0), _vect(), _stream(), _token_pos(0) {
@@ -25,7 +26,7 @@ Lexer::~Lexer(void) {
 }
 
 void	Lexer::_open(std::string &filename) {
-	_stream.open(filename); // Calls setstate(failbit) on failure.
+	_stream.open(filename.c_str()); // Calls setstate(failbit) on failure.
 	if (!_stream)
 		throw std::runtime_error("Fails to open file.");
 }

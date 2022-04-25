@@ -6,13 +6,14 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 19:41:57 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 09:39:33 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <iostream>
 #include <map>
+#include <cstdlib> // std::atoi
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
@@ -80,7 +81,7 @@ void	Parser::_parse_server_name(Config::Server &server) {
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw std::runtime_error("Parsing error (listen)");
-	server.listen = std::stoi(_current_token().get_value());
+	server.listen = std::atoi(_current_token().get_value().c_str());
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
