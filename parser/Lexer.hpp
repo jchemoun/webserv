@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 17:53:06 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:33:18 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:53:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,11 @@ private:
 
 	void	_skip_comment();
 
-	std::string			_line;
-	size_t				_pos;
+	std::string			_line;      // currently processed line
+	size_t				_pos;       // position in the current line
 	std::vector<Token>	_vect;
 	std::ifstream		_istream;
-	size_t				_token_pos;
+	size_t				_token_pos; // used to iterate tokens once lexer is constructed
 };
 
 #endif

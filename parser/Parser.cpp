@@ -89,6 +89,14 @@ void	Parser::_parse_listen(Config::Server &server) {
 	_eat(Token::type_special_char, ";");
 }
 
+void	Parser::_parse_index(Config::Server &server) {
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("index: missing value");
+	while (_lexer.next().expect(Token::type_word))
+		server.index.push_back(_current_token().get_value());
+	_eat(Token::type_special_char, ";");
+}
+
 /*
 ** =============================== Get parser =============================== **
 */
@@ -120,11 +128,3 @@ Parser::ParsingError::ParsingError(const ParsingError &err)
 	}
 
 Parser::ParsingError::~ParsingError() throw() { }
-
-void	Parser::_parse_index(Config::Server &server) {
-	if (!_lexer.peek_next().expect(Token::type_word))
-		throw ParsingError("index: missing value");
-	while (_lexer.next().expect(Token::type_word))
-		server.index.push_back(_current_token().get_value());
-	_eat(Token::type_special_char, ";");
-}
