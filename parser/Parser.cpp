@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 17:23:08 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 18:02:52 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,9 +148,9 @@ void	Parser::_parse_location(Config::Server &server) {
 }
 
 /*
-** Syntax:	root path;
-** Default:	root html;
-** Context:	(http,) server, location, if in location
+**  Syntax:	root path;
+** ⨯ Default:	root html;
+**  Context:	(http,) server, location, if in location
 */
 template <class Context>
 void	Parser::_parse_root(Context &context) {
