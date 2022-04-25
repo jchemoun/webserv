@@ -6,21 +6,30 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 17:25:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 18:37:23 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 #include <iostream>
 
-static void print_vector(const std::vector<std::string> v) {
+static void print_vector(const std::vector<std::string> &v) {
 	for (size_t i = 0; i < v.size(); i++) std::cout << v[i] << " ";
 	std::cout << std::endl;
+}
+
+static void print_map(const std::map<int, std::string> &m, std::string indent = "") {
+	std::map<int, std::string>::const_iterator	it = m.begin();
+	while (it != m.end()) {
+		std::cout << indent << "Error page " << (*it).first << ": " << (*it).second << std::endl;
+		++it;
+	}
 }
 
 void	Config::Location::print() const {
 	std::cout << "\e[34mLocation: " << location_path << std::endl;
 	std::cout << "    Root: " << root << std::endl;
+	print_map(error_pages, "    ");
 	std::cout << "\e[0m";
 }
 
@@ -31,6 +40,7 @@ void	Config::Server::print() const {
 		locations[i].print();
 	std::cout << "Indexes: "; print_vector(index);
 	std::cout << "Root: " << root << std::endl;
+	print_map(error_pages);
 }
 
 void	Config::print() const {

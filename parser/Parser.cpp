@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:02:52 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 18:36:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,10 @@ void	Parser::_init_parsers() {
 	_server_parsers["index"] = &Parser::_parse_index;
 	_server_parsers["location"] = &Parser::_parse_location;
 	_server_parsers["root"] = &Parser::_parse_root;
+	_server_parsers["error_page"] = &Parser::_parse_error_page;
+
 	_location_parsers["root"] = &Parser::_parse_root;
+	_location_parsers["error_page"] = &Parser::_parse_error_page;
 }
 
 Parser::Parser(std::string filename): _lexer(filename) {
@@ -158,6 +161,29 @@ void	Parser::_parse_root(Context &context) {
 	if (_current_token().get_type() != Token::type_word)
 		throw ParsingError("root: missing path");
 	context.root = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+**  Syntax:	error_page code ... (⨯ [=[response]]) uri;
+**  Default:	—
+**  Context:	(http,) server, location, if in location
+*/
+template <class Context>
+void	Parser::_parse_error_page(Context &config) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("error_page: missing code");
+	if (_lexer.peek_next().get_type() != Token::type_word)
+		throw ParsingError("error_page: missing uri");
+	std::vector<int>	codes;
+	while (_lexer.peek_next().get_type() == Token::type_word) {
+		codes.push_back(std::atoi(_current_token().get_value().c_str()));
+		_lexer.next();
+	}
+	for (size_t i = 0; i < codes.size(); i++)
+		config.error_pages[codes.at(i)] = _current_token().get_value();
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
