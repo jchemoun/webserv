@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 17:53:06 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:20:46 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:33:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ private:
 	std::string			_line;
 	size_t				_pos;
 	std::vector<Token>	_vect;
-	std::ifstream		_stream;
+	std::ifstream		_istream;
 	size_t				_token_pos;
 };
 

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:21:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:33:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,57 @@
 #include <iostream>
 #include <cstring>
 
+/*
+** ======================== Constructor / Destructor ======================== **
+*/
+
 Lexer::Lexer(std::string filename):
-	_line(), _pos(0), _vect(), _stream(), _token_pos(0) {
+	_line(), _pos(0), _vect(), _istream(), _token_pos(0) {
 	_open(filename);
 	_tokenize_file();
 }
 
 Lexer::~Lexer(void) {
-	_stream.close();
+	_istream.close();
 }
 
+/*
+** ============================= Public methods ============================= **
+*/
+
+void	Lexer::print() const{
+	for (size_t i = 0; i < _vect.size(); i++)
+		std::cout << _vect.at(i).get_value() << std::endl;
+}
+
+size_t	Lexer::size() const {
+	return (_vect.size());
+}
+
+Token const	&Lexer::next() {
+	return (_vect.at(++_token_pos));
+}
+
+Token const	&Lexer::peek() const {
+	return (_vect.at(_token_pos));
+}
+
+Token const	&Lexer::peek_next() const {
+	return (_vect.at(_token_pos + 1));
+}
+
+/*
+** ============================ Private methods ============================= **
+*/
+
 void	Lexer::_open(std::string &filename) {
-	_stream.open(filename.c_str()); // Calls setstate(failbit) on failure.
-	if (!_stream)
+	_istream.open(filename.c_str()); // Calls setstate(failbit) on failure.
+	if (!_istream)
 		throw std::runtime_error("Fails to open file.");
 }
 
 void	Lexer::_tokenize_file() {
-	while (std::getline(_stream, _line)) {
+	while (std::getline(_istream, _line)) {
 		_tokenize_line();
 	}
 	_vect.push_back(Token(Token::type_eof, ""));
@@ -71,11 +104,6 @@ void	Lexer::_tokenize_word() {
 	_vect.push_back(Token(Token::type_word, _line.substr(start, _pos - start)));
 }
 
-void	Lexer::print() const{
-	for (size_t i = 0; i < _vect.size(); i++)
-		std::cout << _vect.at(i).get_value() << std::endl;
-}
-
 const char *Lexer::_special_chars = ";{}#";
 
 bool	Lexer::_is_special_char(char c) {
@@ -92,20 +120,4 @@ bool	Lexer::_is_comment_char(char c) {
 
 void	Lexer::_skip_comment() {
 	_pos = _line.size();
-}
-
-size_t	Lexer::size() const {
-	return (_vect.size());
-}
-
-Token const	&Lexer::next() {
-	return (_vect.at(++_token_pos));
-}
-
-Token const	&Lexer::peek() const {
-	return (_vect.at(_token_pos));
-}
-
-Token const	&Lexer::peek_next() const {
-	return (_vect.at(_token_pos + 1));
 }
