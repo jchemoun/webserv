@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:36:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 18:52:40 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ void	Parser::_init_parsers() {
 	_server_parsers["error_page"] = &Parser::_parse_error_page;
 
 	_location_parsers["root"] = &Parser::_parse_root;
+	_location_parsers["index"] = &Parser::_parse_index;
 	_location_parsers["error_page"] = &Parser::_parse_error_page;
 }
 
@@ -118,7 +119,8 @@ void	Parser::_parse_listen(Config::Server &server) {
 ** ⨯ Default:	index index.html;
 **  Context:	(http, -> no need) server, location
 */
-void	Parser::_parse_index(Config::Server &server) {
+template <class Context>
+void	Parser::_parse_index(Context &server) {
 	if (!_lexer.peek_next().expect(Token::type_word))
 		throw ParsingError("index: missing value");
 	while (_lexer.next().expect(Token::type_word))

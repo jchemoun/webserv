@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:37:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 18:54:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ static void print_map(const std::map<int, std::string> &m, std::string indent = 
 
 void	Config::Location::print() const {
 	std::cout << "\e[34mLocation: " << location_path << std::endl;
+	std::cout << "    Indexes: "; print_vector(index);
 	std::cout << "    Root: " << root << std::endl;
 	print_map(error_pages, "    ");
 	std::cout << "\e[0m";
