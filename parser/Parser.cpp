@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:27:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 15:21:04 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ Parser::Parser(std::string filename): _lexer(filename) {
 	_init_parsers();
 
 	while (_lexer.peek().get_type() != Token::type_eof)
-		_parse_server_block();
+		_parse_server();
 }
 
 Parser::~Parser(void) {
@@ -59,7 +59,12 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 ** =========================== Parsing functions ============================ **
 */
 
-void	Parser::_parse_server_block() {
+/*
+**  Syntax:	server { ... }
+**  Default:	—
+**  Context:	http
+*/
+void	Parser::_parse_server() {
 	_eat(Token::type_word, "server");
 	_eat(Token::type_special_char, "{");
 	Config::Server	server;
@@ -67,12 +72,17 @@ void	Parser::_parse_server_block() {
 	while (!_current_token().expect(Token::type_special_char, "}")) {
 		if (_current_token().expect(Token::type_eof))
 			throw ParsingError("server: missing `}'");
-		(this->*_get_server_parser())(server);
+		(this->*_get_directive_parser())(server);
 	}
 	_config.servers.push_back(server);
 	_eat(Token::type_special_char, "}");
 }
 
+/*
+**  Syntax:	server_name name ...;
+**  Default:	server_name "";
+**  Context:	server
+*/
 void	Parser::_parse_server_name(Config::Server &server) {
 	if (!_lexer.peek_next().expect(Token::type_word))
 		throw ParsingError("server_name: missing value");
@@ -81,6 +91,14 @@ void	Parser::_parse_server_name(Config::Server &server) {
 	_eat(Token::type_special_char, ";");
 }
 
+/*
+** Syntax:
+** ⨯ listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+**  listen port ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+** ⨯ listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+** ⨯ Default:	listen *:80 | *:8000;
+**  Context:	server
+*/
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
@@ -89,6 +107,11 @@ void	Parser::_parse_listen(Config::Server &server) {
 	_eat(Token::type_special_char, ";");
 }
 
+/*
+**  Syntax:	index file ...;
+** ⨯ Default:	index index.html;
+**  Context:	(http, -> no need) server, location
+*/
 void	Parser::_parse_index(Config::Server &server) {
 	if (!_lexer.peek_next().expect(Token::type_word))
 		throw ParsingError("index: missing value");
@@ -101,17 +124,17 @@ void	Parser::_parse_index(Config::Server &server) {
 ** =============================== Get parser =============================== **
 */
 
-Parser::server_parser	Parser::_get_server_parser() const {
+Parser::server_parser	Parser::_get_directive_parser() const {
 	if (!_current_token().expect(Token::type_word))
 		throw std::runtime_error("Parsing error in server block");
 
-	std::string const &name(_current_token().get_value());
+	std::string const &directive(_current_token().get_value());
 
 	try {
-		return (_server_parsers.at(name));
+		return (_server_parsers.at(directive));
 	}
 	catch (std::out_of_range const &err) {
-		throw ParsingError(std::string("server: Unknown instruction: `") + name + "'");
+		throw ParsingError(std::string("server: Unknown directive: `") + directive + "'");
 	}
 }
 
