@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/22 14:24:04 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/25 13:09:03 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <sys/types.h>
 # include <netinet/in.h>
 # include <sys/epoll.h>
+# include <errno.h>
 
 # include <unistd.h>
 # include <cstdlib>

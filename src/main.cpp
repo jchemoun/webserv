@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:24 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/22 12:56:47 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/25 13:05:32 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,5 +66,7 @@ int main(void)
 	//struct in_addr host;
 	//(void)host;
 	close(server_fd);
+	Webserv wb;
+	wb.run();
 	return (0);
 }

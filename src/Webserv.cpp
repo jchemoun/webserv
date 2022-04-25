@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/22 14:35:47 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/25 13:11:35 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,11 @@ void	Webserv::run()
 		return ;
 	while (1) //change to var to stop ?
 	{
+		errno = 0;
 		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT);
-		//if (error on epoll) //use errno ?
-		for (size_t i = 0; i < nfds; i++)
+		if (errno == EINVAL || errno == EFAULT || errno == EBADFD)
+			std::cerr << "epoll error " << strerror(errno) << '\n'; //use errno ?
+		for (int i = 0; i < nfds; i++)
 		{
 			//if else if bloc
 			/*	if (error) 
@@ -79,7 +81,7 @@ bool	Webserv::serv_init()
 			return (false);
 		serv.push_back(tmp);
 	}
-	
+	return (true);
 }
 
 int		Webserv::socket_init(Config conf)
