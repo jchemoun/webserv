@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 16:04:32 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 17:23:08 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ void	Parser::_init_parsers() {
 	_server_parsers["server_name"] = &Parser::_parse_server_name;
 	_server_parsers["index"] = &Parser::_parse_index;
 	_server_parsers["location"] = &Parser::_parse_location;
+	_server_parsers["root"] = &Parser::_parse_root;
+	_location_parsers["root"] = &Parser::_parse_root;
 }
 
 Parser::Parser(std::string filename): _lexer(filename) {
@@ -73,7 +75,7 @@ void	Parser::_parse_server() {
 	while (!_current_token().expect(Token::type_special_char, "}")) {
 		if (_current_token().expect(Token::type_eof))
 			throw ParsingError("server: missing `}'");
-		(this->*_get_directive_parser())(server);
+		(this->*_get_directive_parser(_server_parsers))(server);
 	}
 	_config.servers.push_back(server);
 	_eat(Token::type_special_char, "}");
@@ -126,7 +128,7 @@ void	Parser::_parse_index(Config::Server &server) {
 **  location [ = | ~ | ~* | ^~ ] uri { ... }  -> we will do only standard prefix location
 ** ⨯ location @name { ... }
 **  Default:	—
-**  Context:	server, location
+**  Context:	server(, location)
 */
 void	Parser::_parse_location(Config::Server &server) {
 	_lexer.next();
@@ -136,23 +138,43 @@ void	Parser::_parse_location(Config::Server &server) {
 	location.location_path = _current_token().get_value();
 	_lexer.next();
 	_eat(Token::type_special_char, "{");
-
+	while (!_current_token().expect(Token::type_special_char, "}")) {
+		if (_current_token().expect(Token::type_eof))
+			throw ParsingError("server: missing `}'");
+		(this->*_get_directive_parser(_location_parsers))(location);
+	}
 	_eat(Token::type_special_char, "}");
 	server.locations.push_back(location);
+}
+
+/*
+** Syntax:	root path;
+** Default:	root html;
+** Context:	(http,) server, location, if in location
+*/
+template <class Context>
+void	Parser::_parse_root(Context &context) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("root: missing path");
+	context.root = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
 }
 
 /*
 ** =============================== Get parser =============================== **
 */
 
-Parser::server_parser	Parser::_get_directive_parser() const {
+template <class parser_type>
+parser_type	Parser::_get_directive_parser(std::map<std::string, parser_type> &parsers) const {
 	if (!_current_token().expect(Token::type_word))
 		throw std::runtime_error("Parsing error in server block");
 
 	std::string const &directive(_current_token().get_value());
 
 	try {
-		return (_server_parsers.at(directive));
+		return (parsers.at(directive));
 	}
 	catch (std::out_of_range const &err) {
 		throw ParsingError(std::string("server: Unknown directive: `") + directive + "'");

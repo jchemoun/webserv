@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 16:13:24 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 17:25:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,9 @@ static void print_vector(const std::vector<std::string> v) {
 }
 
 void	Config::Location::print() const {
-	std::cout << "Location: " << location_path << std::endl;
-	std::cout << "\tRoot: " << root << std::endl;
+	std::cout << "\e[34mLocation: " << location_path << std::endl;
+	std::cout << "    Root: " << root << std::endl;
+	std::cout << "\e[0m";
 }
 
 void	Config::Server::print() const {
@@ -29,6 +30,7 @@ void	Config::Server::print() const {
 	for (size_t i = 0; i < locations.size(); i++)
 		locations[i].print();
 	std::cout << "Indexes: "; print_vector(index);
+	std::cout << "Root: " << root << std::endl;
 }
 
 void	Config::print() const {

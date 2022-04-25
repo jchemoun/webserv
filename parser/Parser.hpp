@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 16:17:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 17:24:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,20 @@ private:
 	void	_parse_listen(Config::Server &server);      // http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
 	void	_parse_index(Config::Server &server);       // http://nginx.org/en/docs/http/ngx_http_index_module.html#index
 	void	_parse_location(Config::Server &server);    // http://nginx.org/en/docs/http/ngx_http_core_module.html#location
+	template <class Context>
+	void	_parse_root(Context &server);
 
 	// Get parsing function
-	typedef void (Parser::*server_parser)(Config::Server &);
-	server_parser	_get_directive_parser() const;
+	template <class parser_type>
+	parser_type	_get_directive_parser(std::map<std::string, parser_type> &parsers) const;
 
 	Lexer	_lexer;
 	Config	_config;
-	std::map<std::string, server_parser> _server_parsers;
+
+	typedef void (Parser::*server_parser)(Config::Server &);
+	std::map<std::string, server_parser>	_server_parsers;
+	typedef void (Parser::*location_parser)(Config::Location &);
+	std::map<std::string, location_parser>	_location_parsers;
 };
 
 #endif
