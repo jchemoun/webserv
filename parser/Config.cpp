@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:16:55 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 16:13:24 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,12 @@ static void print_vector(const std::vector<std::string> v) {
 }
 
 void	Config::Location::print() const {
-	std::cout << "Location path: " << location_path << std::endl;
-	std::cout << "Root: " << root << std::endl;
+	std::cout << "Location: " << location_path << std::endl;
+	std::cout << "\tRoot: " << root << std::endl;
 }
 
 void	Config::Server::print() const {
 	std::cout << "Server names: "; print_vector(server_names);
-	// for (size_t i = 0; i < server_names.size(); i++)
-	// 	std::cout << server_names[i] << " ";
-	// std::cout << std::endl;
 	std::cout << "Listening port: " << listen << std::endl;
 	for (size_t i = 0; i < locations.size(); i++)
 		locations[i].print();
@@ -42,4 +39,3 @@ void	Config::print() const {
 		std::cout << "-------" << std::endl;
 	}
 }
-

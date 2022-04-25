@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 15:21:04 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 16:04:32 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@ void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
 	_server_parsers["server_name"] = &Parser::_parse_server_name;
 	_server_parsers["index"] = &Parser::_parse_index;
+	_server_parsers["location"] = &Parser::_parse_location;
 }
 
 Parser::Parser(std::string filename): _lexer(filename) {
@@ -118,6 +119,26 @@ void	Parser::_parse_index(Config::Server &server) {
 	while (_lexer.next().expect(Token::type_word))
 		server.index.push_back(_current_token().get_value());
 	_eat(Token::type_special_char, ";");
+}
+
+/*
+** Syntax:
+**  location [ = | ~ | ~* | ^~ ] uri { ... }  -> we will do only standard prefix location
+** ⨯ location @name { ... }
+**  Default:	—
+**  Context:	server, location
+*/
+void	Parser::_parse_location(Config::Server &server) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("location: missing path");
+	Config::Location	location;
+	location.location_path = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, "{");
+
+	_eat(Token::type_special_char, "}");
+	server.locations.push_back(location);
 }
 
 /*

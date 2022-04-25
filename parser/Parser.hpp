@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 15:22:00 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 16:17:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ private:
 	Parser(void);
 	Parser(Parser const &copy);
 	Parser	&operator=(Parser const &copy);
-	
+
 	// Parsing utils
 	Token const &_current_token() const;
 	void	_eat(Token::token_type type);
@@ -53,7 +53,7 @@ private:
 	void	_parse_server_name(Config::Server &server); // http://nginx.org/en/docs/http/ngx_http_core_module.html#server_name
 	void	_parse_listen(Config::Server &server);      // http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
 	void	_parse_index(Config::Server &server);       // http://nginx.org/en/docs/http/ngx_http_index_module.html#index
-	// void	_parse_location(Config::Server &server);
+	void	_parse_location(Config::Server &server);    // http://nginx.org/en/docs/http/ngx_http_core_module.html#location
 
 	// Get parsing function
 	typedef void (Parser::*server_parser)(Config::Server &);
