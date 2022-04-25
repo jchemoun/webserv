@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 17:53:06 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/22 20:30:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:20:46 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ public:
 	size_t	size() const;
 	Token const	&next();
 	Token const	&peek() const;
+	Token const	&peek_next() const;
 
 private:
 	// CANONICAL FORM

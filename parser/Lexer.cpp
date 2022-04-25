@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 09:35:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:21:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,4 +104,8 @@ Token const	&Lexer::next() {
 
 Token const	&Lexer::peek() const {
 	return (_vect.at(_token_pos));
+}
+
+Token const	&Lexer::peek_next() const {
+	return (_vect.at(_token_pos + 1));
 }

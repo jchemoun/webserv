@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 13:37:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:27:34 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
 	_server_parsers["server_name"] = &Parser::_parse_server_name;
+	_server_parsers["index"] = &Parser::_parse_index;
 }
 
 Parser::Parser(std::string filename): _lexer(filename) {
@@ -73,6 +74,8 @@ void	Parser::_parse_server_block() {
 }
 
 void	Parser::_parse_server_name(Config::Server &server) {
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("server_name: missing value");
 	while (_lexer.next().expect(Token::type_word))
 		server.server_names.push_back(_current_token().get_value());
 	_eat(Token::type_special_char, ";");
@@ -100,7 +103,7 @@ Parser::server_parser	Parser::_get_server_parser() const {
 		return (_server_parsers.at(name));
 	}
 	catch (std::out_of_range const &err) {
-		throw ParsingError(std::string("Unknown server instruction: `") + name + "'");
+		throw ParsingError(std::string("server: Unknown instruction: `") + name + "'");
 	}
 }
 
@@ -117,3 +120,11 @@ Parser::ParsingError::ParsingError(const ParsingError &err)
 	}
 
 Parser::ParsingError::~ParsingError() throw() { }
+
+void	Parser::_parse_index(Config::Server &server) {
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("index: missing value");
+	while (_lexer.next().expect(Token::type_word))
+		server.index.push_back(_current_token().get_value());
+	_eat(Token::type_special_char, ";");
+}

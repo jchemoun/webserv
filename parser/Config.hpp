@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 18:00:46 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 14:07:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,9 @@ struct Config {
 	struct	Server {
 		void print() const;
 		std::vector<std::string>	server_names;
-		int	listen;
-		std::vector<Location>	locations;
+		int							listen;
+		std::vector<Location>		locations;
+		std::vector<std::string>	index;
 	};
 	void print() const;
 	std::vector<Server>	servers;
