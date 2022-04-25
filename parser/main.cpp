@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 16:05:35 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 18:12:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 13:29:15 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ int	main() {
 	catch (std::runtime_error const &err) {
 		std::cerr << err.what() << std::endl;
 	}
+	// catch (Parser::ParsingError const &err) {
+	// 	std::cerr << err.what() << std::endl;
+	// }
 
 	return (0);
 }

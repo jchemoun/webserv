@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 09:39:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 13:37:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,13 @@ Token const	&Parser::_current_token() const {
 
 void	Parser::_eat(Token::token_type type) {
 	if (!_current_token().expect(type))
-		throw std::runtime_error("Parsing error");
+		throw ParsingError(std::string("Near token `") + _current_token().get_value() + "'");
 	_lexer.next();
 }
 
 void	Parser::_eat(Token::token_type type, Token::token_value value) {
 	if (!_current_token().expect(type, value))
-		throw std::runtime_error("Parsing error");
+		throw ParsingError(std::string("Near token `") + _current_token().get_value() + "'");
 	_lexer.next();
 }
 
@@ -65,7 +65,7 @@ void	Parser::_parse_server_block() {
 
 	while (!_current_token().expect(Token::type_special_char, "}")) {
 		if (_current_token().expect(Token::type_eof))
-			throw std::runtime_error("Parsing error: missing `}' in server block");
+			throw ParsingError("server: missing `}'");
 		(this->*_get_server_parser())(server);
 	}
 	_config.servers.push_back(server);
@@ -80,7 +80,7 @@ void	Parser::_parse_server_name(Config::Server &server) {
 
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
-		throw std::runtime_error("Parsing error (listen)");
+		throw ParsingError("listen: missing argument");
 	server.listen = std::atoi(_current_token().get_value().c_str());
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
@@ -100,6 +100,20 @@ Parser::server_parser	Parser::_get_server_parser() const {
 		return (_server_parsers.at(name));
 	}
 	catch (std::out_of_range const &err) {
-		throw std::runtime_error(std::string("Parsing error: Unknown server instruction: ") + name);
+		throw ParsingError(std::string("Unknown server instruction: `") + name + "'");
 	}
 }
+
+/*
+** ============================== ParsingError ============================== **
+*/
+
+Parser::ParsingError::ParsingError(std::string reason)
+	: std::runtime_error(std::string("\e[31;1m💀 Parsing error: \e[22m") + reason + "\e[0m") {
+	}
+
+Parser::ParsingError::ParsingError(const ParsingError &err)
+	: std::runtime_error(err) {
+	}
+
+Parser::ParsingError::~ParsingError() throw() { }

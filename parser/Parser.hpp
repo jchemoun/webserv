@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 19:40:32 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/25 13:37:28 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,15 @@ public:
 	virtual ~Parser(void);
 
 	Config const &get_config() const;
+
+	class	ParsingError: public std::runtime_error {
+	public:
+		ParsingError(std::string reason = "");
+		ParsingError(const ParsingError &);
+		virtual ~ParsingError() throw();
+	private:
+		ParsingError	&operator=(ParsingError const &copy);
+	};
 
 private:
 	// CANONICAL FORM
