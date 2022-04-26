@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:33:18 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/26 17:01:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,14 +94,22 @@ void	Lexer::_tokenize_special_char() {
 }
 
 void	Lexer::_tokenize_word() {
-	size_t	start = _pos;
-	char	c;
+	size_t		start = _pos;
+	char		c;
+	std::string	strtoken;
 	while ((c = _line[_pos])) {
 		if (_is_skipped_char(c) || _is_special_char(c))
 			break;
+		if (c =='\\') {
+			if (_line[_pos + 1] == ' ' || _line[_pos + 1] == '\\') {
+				strtoken += _line.substr(start, _pos - start) + _line[_pos + 1];
+				start = ++_pos + 1;
+			}
+		}
 		++_pos;
 	}
-	_vect.push_back(Token(Token::type_word, _line.substr(start, _pos - start)));
+	strtoken += _line.substr(start, _pos - start);
+	_vect.push_back(Token(Token::type_word, strtoken));
 }
 
 const char *Lexer::_special_chars = ";{}#";
