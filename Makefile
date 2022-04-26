@@ -52,8 +52,12 @@ endif
 
 SRC_NAME			=	main.cpp			\
 						Webserv.cpp			\
+						Config.cpp			\
+						Client.cpp			\
 
 INCLUDE_NAME		=	Webserv.hpp			\
+						Config.hpp			\
+						Client.hpp			\
 
 # Path
 SRC_PATH			=	./src/

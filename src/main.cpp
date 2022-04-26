@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:24 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/25 13:05:32 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/26 13:18:16 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int main(void)
 {
-	int					server_fd;
+	/*int					server_fd;
 	int					new_socket;
 	struct sockaddr_in	address;
 	struct sockaddr_in	address_client;
@@ -65,7 +65,7 @@ int main(void)
 	std::cout << ntohs(address.sin_addr.s_addr) << std::endl;
 	//struct in_addr host;
 	//(void)host;
-	close(server_fd);
+	close(server_fd);*/
 	Webserv wb;
 	wb.run();
 	return (0);
