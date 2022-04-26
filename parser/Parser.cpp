@@ -6,14 +6,14 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:52:40 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/26 18:14:24 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <iostream>
 #include <map>
-#include <cstdlib> // std::atoi
+// #include <cstdlib> // std::atoi
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
@@ -109,7 +109,8 @@ void	Parser::_parse_server_name(Config::Server &server) {
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
-	server.listen = std::atoi(_current_token().get_value().c_str());
+	try { server.listen = stoi(_current_token().get_value().c_str(), 0); }
+	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
@@ -181,7 +182,8 @@ void	Parser::_parse_error_page(Context &config) {
 		throw ParsingError("error_page: missing uri");
 	std::vector<int>	codes;
 	while (_lexer.peek_next().get_type() == Token::type_word) {
-		codes.push_back(std::atoi(_current_token().get_value().c_str()));
+		try { codes.push_back(stoi(_current_token().get_value().c_str(), 0, 527)); }
+		catch (std::exception &e) { throw ParsingError(std::string("error_page: code: ") + e.what());}
 		_lexer.next();
 	}
 	for (size_t i = 0; i < codes.size(); i++)
@@ -222,3 +224,32 @@ Parser::ParsingError::ParsingError(const ParsingError &err)
 	}
 
 Parser::ParsingError::~ParsingError() throw() { }
+
+/*
+** ============================== Static utils ============================== **
+*/
+
+int	Parser::stoi(std::string const &s, int min, int max) {
+	long	n = 0;
+	size_t	i = 0;
+	char	sign = 1;
+
+	if (s[0] == '+') ++i; else if (s[0] == '-') { sign = -1; ++i; }
+
+	if (!s[i]) throw std::runtime_error("missing value");
+
+	while (s[i] >= '0' && s[i] <= '9') {
+		n *= 10;
+		n += s[i] - '0';
+		if (sign * n < min || sign *n > max) {
+			if (sign * n < 0 && min == 0)
+				throw std::runtime_error(std::string("should not be negative: ") + s);
+			else
+				throw std::runtime_error(std::string("out of range: ") + s);
+		}
+		++i;
+	}
+	if (s[i])
+		throw std::runtime_error(std::string("not an integer: ") + s);
+	return (sign * n);
+}

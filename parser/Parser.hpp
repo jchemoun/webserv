@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:52:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/26 18:23:50 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,10 @@ private:
 	std::map<std::string, server_parser>	_server_parsers;
 	typedef void (Parser::*location_parser)(Config::Location &);
 	std::map<std::string, location_parser>	_location_parsers;
+
+	// Static Utils
+	static int	stoi(std::string const &s,
+			int min = std::numeric_limits<int>::min(), int max = std::numeric_limits<int>::max());
 };
 
 #endif

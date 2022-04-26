@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 15:57:40 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/24 17:15:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/26 17:06:03 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,8 @@ public:
 	Token	&operator=(Token const &copy);
 	virtual ~Token(void);
 
-	token_type const &get_type() const;
-	token_value const &get_value() const;
+	token_type const	&get_type() const;
+	token_value const	&get_value() const;
 	bool	expect(token_type type) const;
 	bool	expect(token_type type, token_value value) const;
 
