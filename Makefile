@@ -1,17 +1,17 @@
-SHELL				=	/bin/zsh
+SHELL              = /bin/zsh
 # Executable name
-NAME1				=	webserv
+NAME1              = webserv
 # Compilation mode
-WALL				=   yes
-WEXTRA              =   yes
-WERROR              =   yes
-FSANITIZE           =   yes
-DEBUG               =   yes
-WSH                 =		yes
-O2                  =   no
-PTHREAD							=		no
-CC                  :=  c++ -std=c++98
-GEN                 :=  "Generation in mode"
+WALL               = yes
+WEXTRA             = yes
+WERROR             = yes
+FSANITIZE          = yes
+DEBUG              = yes
+WSH                = yes
+O2                 = no
+PTHREAD            = no
+CC                 :=  c++ -std=c++98
+GEN                :=  "Generation in mode"
 ifeq ($(WALL), yes)
    CC              :=  $(CC) -Wall
    GEN             :=  $(GEN) all
@@ -50,23 +50,23 @@ endif
 
 # Name
 
-SRC_NAME			=	main.cpp			\
-						Webserv.cpp			\
-						Config.cpp			\
-						Client.cpp			\
+SRC_NAME     =  main.cpp \
+								Webserv.cpp \
+								Config.cpp \
+								Client.cpp \
 
-INCLUDE_NAME		=	Webserv.hpp			\
-						Config.hpp			\
-						Client.hpp			\
+INCLUDE_NAME =  Webserv.hpp \
+								Config.hpp \
+								Client.hpp \
 
 # Path
-SRC_PATH			=	./src/
-OBJ_PATH			=	./obj/
-INCLUDE_PATH	=	./include/
+SRC_PATH      =  ./src/
+OBJ_PATH      =  ./obj/
+INCLUDE_PATH  =  ./include/
 # Name + Path
-SRC					=	$(addprefix $(SRC_PATH),		$(SRC_NAME))
-OBJ					=	$(patsubst  $(SRC_PATH)%.cpp,		$(OBJ_PATH)%.o, $(SRC))
-INCLUDE			=	$(addprefix $(INCLUDE_PATH),	$(INCLUDE_NAME))
+SRC          =  $(addprefix $(SRC_PATH),    $(SRC_NAME))
+OBJ          =  $(patsubst  $(SRC_PATH)%.cpp,    $(OBJ_PATH)%.o, $(SRC))
+INCLUDE      =  $(addprefix $(INCLUDE_PATH),  $(INCLUDE_NAME))
 
 # Text format
 _DEF                =   $'\033[0m
