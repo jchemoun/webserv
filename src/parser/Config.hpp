@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/28 15:33:21 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/28 17:36:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,11 @@ struct Config {
 	};
 
 	struct	Server {
+		Server();
 		std::vector<std::string>	server_names;
-		in_port_t					listen;
-		in_addr_t					address;
+		in_port_t					listen_port;
+		in_addr_t					listen_address;
+		std::string					listen_string_address; // for printing and debuging
 		std::vector<Location>		locations;
 		std::vector<std::string>	index;
 		std::string					root;

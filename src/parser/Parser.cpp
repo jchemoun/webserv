@@ -6,13 +6,14 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/28 15:33:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/28 18:02:16 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <iostream>
 #include <map>
+#include <cstring>
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
@@ -97,21 +98,57 @@ void	Parser::_parse_server_name(Config::Server &server) {
 	_eat(Token::type_special_char, ";");
 }
 
+
+static bool is_a_number(const char *s) {
+	size_t	i = 0;
+	while (s[i]) {
+		if (s[i] < '0' || s[i] > '9')
+			return (false);
+		++i;
+	}
+	return (true);
+}
 /*
 ** Syntax:
-** ⨯ listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+**  listen address[:port] ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 **  listen port ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 ** ⨯ listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-** ⨯ Default:	listen *:80 | *:8000;
+**  Default:	listen *:80 | *:8000;
 **  Context:	server
 */
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
-	try { server.listen = stoi(_current_token().get_value().c_str(), 0, std::numeric_limits<in_port_t>::max()); }
+	const char *arg = _current_token().get_value().c_str();
+	if (!is_a_number(arg))
+		arg = _parse_address(server, arg);
+	try {
+		if (*arg)
+			server.listen_port = stoi(arg, 0, std::numeric_limits<in_port_t>::max());
+	}
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
+}
+
+const char	*Parser::_parse_address(Config::Server &server, const char *s) {
+	std::string	&addr_part(server.listen_string_address);
+	addr_part = s;
+	addr_part = addr_part.substr(0, addr_part.find(':'));
+	if (s[0] == '*')
+		server.listen_address = htonl(INADDR_ANY);
+	else if (!std::strchr(s, '.'))
+		throw ParsingError("listen: address hostname not handled: ipv4 only");
+	else {
+		if ( (server.listen_address = inet_addr(addr_part.c_str())) == std::numeric_limits<in_addr_t>::max())
+			throw ParsingError("listen: address: bad format");
+		server.listen_address = htonl(server.listen_address);
+	}
+	while (*s && *s != ':')
+		++s;
+	if (*s == ':')
+		++s;
+	return (s);
 }
 
 /*
@@ -154,7 +191,7 @@ void	Parser::_parse_location(Config::Server &server) {
 
 /*
 **  Syntax:	root path;
-** ⨯ Default:	root html;
+**  Default:	root html;
 **  Context:	(http,) server, location, if in location
 */
 template <class Context>
