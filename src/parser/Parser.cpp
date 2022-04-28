@@ -6,14 +6,13 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/26 18:14:24 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/28 15:33:59 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <iostream>
 #include <map>
-// #include <cstdlib> // std::atoi
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
@@ -109,7 +108,7 @@ void	Parser::_parse_server_name(Config::Server &server) {
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
-	try { server.listen = stoi(_current_token().get_value().c_str(), 0, std::numeric_limits<uint16_t>::max()); }
+	try { server.listen = stoi(_current_token().get_value().c_str(), 0, std::numeric_limits<in_port_t>::max()); }
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");

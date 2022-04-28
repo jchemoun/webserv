@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:52:51 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/28 15:33:21 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # include <vector>
 # include <string>
 # include <map>
+# include <arpa/inet.h>  // in_addr_t
 
 struct Config {
 
@@ -28,7 +29,8 @@ struct Config {
 
 	struct	Server {
 		std::vector<std::string>	server_names;
-		int							listen;
+		in_port_t					listen;
+		in_addr_t					address;
 		std::vector<Location>		locations;
 		std::vector<std::string>	index;
 		std::string					root;
