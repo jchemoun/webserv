@@ -109,7 +109,7 @@ void	Parser::_parse_server_name(Config::Server &server) {
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
-	try { server.listen = stoi(_current_token().get_value().c_str(), 0); }
+	try { server.listen = stoi(_current_token().get_value().c_str(), 0, std::numeric_limits<uint16_t>::max()); }
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
