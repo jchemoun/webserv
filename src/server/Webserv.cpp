@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/26 13:24:50 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/28 14:25:18 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ bool	Webserv::handle_recv(int client_fd)
 	char	buffer[BUFFER_SIZE] = {0};
 	ssize_t	len;
 
-	len = recv(client_fd, buffer, BUFFER_SIZE, 0);
+	len = recv(client_fd, buffer, BUFFER_SIZE, 0); // maybe while read || up buffer_size
 	if (len == -1)
 	{
 		std::cerr << "error recv\n";
@@ -105,12 +105,12 @@ bool	Webserv::handle_recv(int client_fd)
 	}
 	else
 	{
-		//parse request && identify what client want
+		//parse request && identify what client wants
 		std::cout << len << buffer << '\n';
 		
 		//if response needed set client to epollout
 	}
-	//std::cout << "inrecv\n";
+	std::cout << "inrecv\n";
 	
 	return (true);
 }
@@ -123,7 +123,7 @@ bool	Webserv::handle_send()
 
 bool	Webserv::epoll_init()
 {
-	if ((epfd = epoll_create(serv.size() + 1)) < 0)
+	if ((epfd = epoll_create(serv.size() + 1)) < 0) // to fix max fd can be more probably not
 	{
 		std::cerr << "epoll create error\n";
 		return (false);
