@@ -3,3 +3,5 @@ webserv
 *.o
 .vscode
 compile_commands.json
+.cache
+*.dSYM
