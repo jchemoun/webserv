@@ -1,6 +1,9 @@
+NAME              = webserv
+
+#  ========================== Compilation Options ===========================  #
+
 SHELL              = /bin/zsh
-# Executable name
-NAME1              = webserv
+
 # Compilation mode
 WALL               = yes
 WEXTRA             = yes
@@ -48,25 +51,27 @@ ifeq ($(GEN), "Generation in mode")
    GEN             :=  $(GEN) no flags
 endif
 
-# Name
+#  ====================== Sources / Includes / Objects ======================  #
 
-SRC_NAME     =  main.cpp \
-								Webserv.cpp \
-								Config.cpp \
-								Client.cpp \
-
-INCLUDE_NAME =  Webserv.hpp \
-								Config.hpp \
-								Client.hpp \
+# Source Names
+SRC_NAME = main.cpp \
+					 $(addprefix server/, Webserv.cpp Config.cpp Client.cpp) \
+					 $(addprefix parser/, Config.cpp Lexer.cpp Parser.cpp Token.cpp) \
 
 # Path
 SRC_PATH      =  ./src/
 OBJ_PATH      =  ./obj/
-INCLUDE_PATH  =  ./include/
+
 # Name + Path
 SRC          =  $(addprefix $(SRC_PATH),    $(SRC_NAME))
 OBJ          =  $(patsubst  $(SRC_PATH)%.cpp,    $(OBJ_PATH)%.o, $(SRC))
-INCLUDE      =  $(addprefix $(INCLUDE_PATH),  $(INCLUDE_NAME))
+
+# Includes
+INCLUDE_FLAGS = -Iinclude -Isrc/server -Isrc/parser
+# NOTE: include files for compilation dependancy checks only
+INCLUDE_FILES = $(shell find -name "*.hpp")
+
+#  =============================== Formatting ===============================  #
 
 # Text format
 _DEF                =   $'\033[0m
@@ -94,30 +99,32 @@ _IPURPLE            =   $'\033[45m
 _ICYAN              =   $'\033[46m
 _IGREY              =   $'\033[47m
 
-.PHONY: all clean fclean re
+#  ================================= Rules ==================================  #
 
-all: $(NAME1)
+all: $(NAME)
 
-$(NAME1): $(OBJ) $(INCLUDE)
-	@echo "\n$(NAME1) : $(GEN)"
+$(NAME): $(OBJ)
+	@echo "\n$(NAME) : $(GEN)"
 	@echo "\n$(_WHITE)====================================================$(_END)"
-	@echo "$(_YELLOW)      COMPILING $(NAME1)$(_END)"
+	@echo "$(_YELLOW)      COMPILING $(NAME)$(_END)"
 	@echo "$(_WHITE)====================================================$(_END)"
-	@$(CC) -o $(NAME1) -I $(INCLUDE_PATH) $(OBJ)
+	@$(CC) -o $(NAME) $(INCLUDE_FLAGS) $(OBJ)
 	@echo "\n$(_WHITE)$(_BOLD)$@\t$(_END)$(_GREEN)[OK]\n$(_END)"
 
-$(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE)
-	@mkdir -p $(OBJ_PATH)
-	@$(CC) -I $(INCLUDE_PATH) -c $< -o $@
+$(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE_FILES)
+	@mkdir -p $(shell dirname $@)
+	@$(CC) $(INCLUDE_FLAGS) -c $< -o $@
 	@echo "$(_END)$(_GREEN)[OK]\t$(_UNDER)$(_YELLOW)\t"	\
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
 clean:
-	@rm -rf $(OBJ_PATH) $(OBJ_LIB_PATH)
-	@echo "$(_YELLOW)Remove :\t$(_RED)" $(OBJ_PATH) \\n \\t\\t $(OBJ_LIB_PATH)"$(_END)"
+	@rm -rf $(OBJ_PATH)
+	@echo "$(_YELLOW)Remove :\t$(_RED)" $(OBJ_PATH) \\n "$(_END)"
 
 fclean: clean
-	@rm -f $(NAME1)
-	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME1) \\n\\t\\t
+	@rm -f $(NAME)
+	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
 
 re: fclean all
+
+.PHONY: all clean fclean re

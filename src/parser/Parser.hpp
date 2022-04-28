@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/26 18:23:50 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/28 10:46:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include "Config.hpp"
 # include <string>
 # include <map>
+# include <limits>
 
 
 class Parser {
