@@ -101,7 +101,7 @@ all: $(NAME1)
 $(NAME1): $(OBJ) $(INCLUDE)
 	@echo "\n$(NAME1) : $(GEN)"
 	@echo "\n$(_WHITE)====================================================$(_END)"
-	@echo "$(_YELLOW)      COMPILING $(NAME1)$(_END)"
+	@echo "$(_YELLOW)      LINKING $(NAME1)$(_END)"
 	@echo "$(_WHITE)====================================================$(_END)"
 	@$(CC) -o $(NAME1) -I $(INCLUDE_PATH) $(OBJ)
 	@echo "\n$(_WHITE)$(_BOLD)$@\t$(_END)$(_GREEN)[OK]\n$(_END)"
