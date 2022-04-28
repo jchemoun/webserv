@@ -2,3 +2,4 @@ webserv
 .bash_history
 *.o
 .vscode
+compile_commands.json
