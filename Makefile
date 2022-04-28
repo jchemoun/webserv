@@ -7,9 +7,9 @@ WEXTRA              =   yes
 WERROR              =   yes
 FSANITIZE           =   yes
 DEBUG               =   yes
-WSH                 =	yes
+WSH                 =		yes
 O2                  =   no
-PTHREAD				=	no
+PTHREAD							=		no
 CC                  :=  c++ -std=c++98
 GEN                 :=  "Generation in mode"
 ifeq ($(WALL), yes)
@@ -62,11 +62,11 @@ INCLUDE_NAME		=	Webserv.hpp			\
 # Path
 SRC_PATH			=	./src/
 OBJ_PATH			=	./obj/
-INCLUDE_PATH		=	./include/
+INCLUDE_PATH	=	./include/
 # Name + Path
 SRC					=	$(addprefix $(SRC_PATH),		$(SRC_NAME))
-OBJ					=	$(patsubst  $(SRC_PATH)%.c,		$(OBJ_PATH)%.o, $(SRC))
-INCLUDE				=	$(addprefix $(INCLUDE_PATH),	$(INCLUDE_NAME))
+OBJ					=	$(patsubst  $(SRC_PATH)%.cpp,		$(OBJ_PATH)%.o, $(SRC))
+INCLUDE			=	$(addprefix $(INCLUDE_PATH),	$(INCLUDE_NAME))
 
 # Text format
 _DEF                =   $'\033[0m
@@ -106,7 +106,7 @@ $(NAME1): $(OBJ) $(INCLUDE)
 	@$(CC) -o $(NAME1) -I $(INCLUDE_PATH) $(OBJ)
 	@echo "\n$(_WHITE)$(_BOLD)$@\t$(_END)$(_GREEN)[OK]\n$(_END)"
 
-$(OBJ_PATH)%.o: $(SRC_PATH)%.c $(INCLUDE)
+$(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE)
 	@mkdir -p $(OBJ_PATH)
 	@$(CC) -I $(INCLUDE_PATH) -c $< -o $@
 	@echo "$(_END)$(_GREEN)[OK]\t$(_UNDER)$(_YELLOW)\t"	\
