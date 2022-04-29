@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/29 09:10:01 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/29 09:13:44 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,9 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 */
 
 /*
-**  Syntax:	server { ... }
-**  Default:	—
-**  Context:	http
+** ✓ Syntax:	server { ... }
+** ✓ Default:	—
+** ✓ Context:	http
 */
 void	Parser::_parse_server() {
 	_eat(Token::type_word, "server");
@@ -86,9 +86,9 @@ void	Parser::_parse_server() {
 }
 
 /*
-**  Syntax:	server_name name ...;
-**  Default:	server_name "";
-**  Context:	server
+** ✓ Syntax:	server_name name ...;
+** ✓ Default:	server_name "";
+** ✓ Context:	server
 */
 void	Parser::_parse_server_name(Config::Server &server) {
 	if (!_lexer.peek_next().expect(Token::type_word))
@@ -100,11 +100,11 @@ void	Parser::_parse_server_name(Config::Server &server) {
 
 /*
 ** Syntax:
-**  listen address[:port] ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-**  listen port ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+** ✓ listen address[:port] ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+** ✓ listen port ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 ** ⨯ listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-**  Default:	listen *:80 | *:8000;
-**  Context:	server
+** ✓ Default:	listen *:80 | *:8000;
+** ✓ Context:	server
 */
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
@@ -142,9 +142,9 @@ const char	*Parser::_parse_address(Config::Server &server, const char *s) {
 }
 
 /*
-**  Syntax:	index file ...;
+** ✓ Syntax:	index file ...;
 ** ⨯ Default:	index index.html;
-**  Context:	(http, -> no need) server, location
+** ✓ Context:	(http, -> no need) server, location
 */
 template <class Context>
 void	Parser::_parse_index(Context &server) {
@@ -157,10 +157,10 @@ void	Parser::_parse_index(Context &server) {
 
 /*
 ** Syntax:
-**  location [ = | ~ | ~* | ^~ ] uri { ... }  -> we will do only standard prefix location
+** ✓ location [ = | ~ | ~* | ^~ ] uri { ... }  -> we will do only standard prefix location
 ** ⨯ location @name { ... }
-**  Default:	—
-**  Context:	server(, location)
+** ✓ Default:	—
+** ✓ Context:	server(, location)
 */
 void	Parser::_parse_location(Config::Server &server) {
 	_lexer.next();
@@ -180,9 +180,9 @@ void	Parser::_parse_location(Config::Server &server) {
 }
 
 /*
-**  Syntax:	root path;
-**  Default:	root html;
-**  Context:	(http,) server, location, if in location
+** ✓ Syntax:	root path;
+** ✓ Default:	root html;
+** ✓ Context:	(http,) server, location, if in location
 */
 template <class Context>
 void	Parser::_parse_root(Context &context) {
@@ -195,9 +195,9 @@ void	Parser::_parse_root(Context &context) {
 }
 
 /*
-**  Syntax:	error_page code ... (⨯ [=[response]]) uri;
-**  Default:	—
-**  Context:	(http,) server, location, if in location
+** ✓ Syntax:	error_page code ... (⨯ [=[response]]) uri;
+** ✓ Default:	—
+** ✓ Context:	(http,) server, location, if in location
 */
 template <class Context>
 void	Parser::_parse_error_page(Context &config) {
