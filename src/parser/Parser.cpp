@@ -6,14 +6,14 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/26 18:14:24 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/29 09:13:44 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Parser.hpp"
 #include <iostream>
 #include <map>
-// #include <cstdlib> // std::atoi
+#include <cstring>
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
@@ -67,9 +67,9 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 */
 
 /*
-**  Syntax:	server { ... }
-**  Default:	—
-**  Context:	http
+** ✓ Syntax:	server { ... }
+** ✓ Default:	—
+** ✓ Context:	http
 */
 void	Parser::_parse_server() {
 	_eat(Token::type_word, "server");
@@ -86,9 +86,9 @@ void	Parser::_parse_server() {
 }
 
 /*
-**  Syntax:	server_name name ...;
-**  Default:	server_name "";
-**  Context:	server
+** ✓ Syntax:	server_name name ...;
+** ✓ Default:	server_name "";
+** ✓ Context:	server
 */
 void	Parser::_parse_server_name(Config::Server &server) {
 	if (!_lexer.peek_next().expect(Token::type_word))
@@ -100,25 +100,51 @@ void	Parser::_parse_server_name(Config::Server &server) {
 
 /*
 ** Syntax:
-** ⨯ listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-**  listen port ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+** ✓ listen address[:port] ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+** ✓ listen port ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 ** ⨯ listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-** ⨯ Default:	listen *:80 | *:8000;
-**  Context:	server
+** ✓ Default:	listen *:80 | *:8000;
+** ✓ Context:	server
 */
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
-	try { server.listen = stoi(_current_token().get_value().c_str(), 0, std::numeric_limits<uint16_t>::max()); }
+	const char *arg = _current_token().get_value().c_str();
+	if (!_is_a_number(arg))
+		arg = _parse_address(server, arg);
+	try {
+		if (*arg)
+			server.listen_port = _stoi(arg, 0, std::numeric_limits<in_port_t>::max());
+	}
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
 
+const char	*Parser::_parse_address(Config::Server &server, const char *s) {
+	std::string	&addr_part(server.listen_string_address);
+	addr_part = s;
+	addr_part = addr_part.substr(0, addr_part.find(':'));
+	if (s[0] == '*')
+		server.listen_address = htonl(INADDR_ANY);
+	else if (!std::strchr(s, '.'))
+		throw ParsingError("listen: address hostname not handled: ipv4 only");
+	else {
+		if ( (server.listen_address = inet_addr(addr_part.c_str())) == std::numeric_limits<in_addr_t>::max())
+			throw ParsingError("listen: address: bad format");
+		server.listen_address = htonl(server.listen_address);
+	}
+	while (*s && *s != ':')
+		++s;
+	if (*s == ':')
+		++s;
+	return (s);
+}
+
 /*
-**  Syntax:	index file ...;
+** ✓ Syntax:	index file ...;
 ** ⨯ Default:	index index.html;
-**  Context:	(http, -> no need) server, location
+** ✓ Context:	(http, -> no need) server, location
 */
 template <class Context>
 void	Parser::_parse_index(Context &server) {
@@ -131,10 +157,10 @@ void	Parser::_parse_index(Context &server) {
 
 /*
 ** Syntax:
-**  location [ = | ~ | ~* | ^~ ] uri { ... }  -> we will do only standard prefix location
+** ✓ location [ = | ~ | ~* | ^~ ] uri { ... }  -> we will do only standard prefix location
 ** ⨯ location @name { ... }
-**  Default:	—
-**  Context:	server(, location)
+** ✓ Default:	—
+** ✓ Context:	server(, location)
 */
 void	Parser::_parse_location(Config::Server &server) {
 	_lexer.next();
@@ -154,9 +180,9 @@ void	Parser::_parse_location(Config::Server &server) {
 }
 
 /*
-**  Syntax:	root path;
-** ⨯ Default:	root html;
-**  Context:	(http,) server, location, if in location
+** ✓ Syntax:	root path;
+** ✓ Default:	root html;
+** ✓ Context:	(http,) server, location, if in location
 */
 template <class Context>
 void	Parser::_parse_root(Context &context) {
@@ -169,9 +195,9 @@ void	Parser::_parse_root(Context &context) {
 }
 
 /*
-**  Syntax:	error_page code ... (⨯ [=[response]]) uri;
-**  Default:	—
-**  Context:	(http,) server, location, if in location
+** ✓ Syntax:	error_page code ... (⨯ [=[response]]) uri;
+** ✓ Default:	—
+** ✓ Context:	(http,) server, location, if in location
 */
 template <class Context>
 void	Parser::_parse_error_page(Context &config) {
@@ -182,7 +208,7 @@ void	Parser::_parse_error_page(Context &config) {
 		throw ParsingError("error_page: missing uri");
 	std::vector<int>	codes;
 	while (_lexer.peek_next().get_type() == Token::type_word) {
-		try { codes.push_back(stoi(_current_token().get_value().c_str(), 0, 527)); }
+		try { codes.push_back(_stoi(_current_token().get_value().c_str(), 0, 527)); }
 		catch (std::exception &e) { throw ParsingError(std::string("error_page: code: ") + e.what());}
 		_lexer.next();
 	}
@@ -229,7 +255,7 @@ Parser::ParsingError::~ParsingError() throw() { }
 ** ============================== Static utils ============================== **
 */
 
-int	Parser::stoi(std::string const &s, int min, int max) {
+int	Parser::_stoi(std::string const &s, int min, int max) {
 	long	n = 0;
 	size_t	i = 0;
 	char	sign = 1;
@@ -252,4 +278,14 @@ int	Parser::stoi(std::string const &s, int min, int max) {
 	if (s[i])
 		throw std::runtime_error(std::string("not an integer: ") + s);
 	return (sign * n);
+}
+
+bool Parser::_is_a_number(const char *s) {
+	size_t	i = 0;
+	while (s[i]) {
+		if (s[i] < '0' || s[i] > '9')
+			return (false);
+		++i;
+	}
+	return (true);
 }

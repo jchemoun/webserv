@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/28 10:46:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/29 09:09:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,16 +50,17 @@ private:
 	void	_init_parsers();
 
 	// Parsing functions
-	void	_parse_server();                            // http://nginx.org/en/docs/http/ngx_http_core_module.html#server
-	void	_parse_server_name(Config::Server &server); // http://nginx.org/en/docs/http/ngx_http_core_module.html#server_name
-	void	_parse_listen(Config::Server &server);      // http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
+	void	_parse_server();                                             // http://nginx.org/en/docs/http/ngx_http_core_module.html#server
+	void	_parse_server_name(Config::Server &server);                  // http://nginx.org/en/docs/http/ngx_http_core_module.html#server_name
+	void	_parse_listen(Config::Server &server);                       // http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
+	const char	*_parse_address(Config::Server &server, const char *s);  // part of _parse_listen
 	template <class Context>
-	void	_parse_index(Context &context);             // http://nginx.org/en/docs/http/ngx_http_index_module.html#index
-	void	_parse_location(Config::Server &server);    // http://nginx.org/en/docs/http/ngx_http_core_module.html#location
+	void	_parse_index(Context &context);                              // http://nginx.org/en/docs/http/ngx_http_index_module.html#index
+	void	_parse_location(Config::Server &server);                     // http://nginx.org/en/docs/http/ngx_http_core_module.html#location
 	template <class Context>
-	void	_parse_root(Context &context);              // http://nginx.org/en/docs/http/ngx_http_core_module.html#root
+	void	_parse_root(Context &context);                               // http://nginx.org/en/docs/http/ngx_http_core_module.html#root
 	template <class Context>
-	void	_parse_error_page(Context &context);        // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
+	void	_parse_error_page(Context &context);                         // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
 
 	// Get parsing function
 	template <class parser_type>
@@ -74,8 +75,9 @@ private:
 	std::map<std::string, location_parser>	_location_parsers;
 
 	// Static Utils
-	static int	stoi(std::string const &s,
+	static int	_stoi(std::string const &s,
 			int min = std::numeric_limits<int>::min(), int max = std::numeric_limits<int>::max());
+	static bool _is_a_number(const char *s);
 };
 
 #endif

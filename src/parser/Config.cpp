@@ -6,12 +6,13 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 18:54:02 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/28 17:45:23 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 #include <iostream>
+#include <arpa/inet.h> // INADDR_ANY
 
 static void print_vector(const std::vector<std::string> &v) {
 	for (size_t i = 0; i < v.size(); i++) std::cout << v[i] << " ";
@@ -36,7 +37,8 @@ void	Config::Location::print() const {
 
 void	Config::Server::print() const {
 	std::cout << "Server names: "; print_vector(server_names);
-	std::cout << "Listening port: " << listen << std::endl;
+	std::cout << "Listening port: " << listen_port << std::endl;
+	std::cout << "Listening address: " << listen_string_address << std::endl;
 	for (size_t i = 0; i < locations.size(); i++)
 		locations[i].print();
 	std::cout << "Indexes: "; print_vector(index);
@@ -51,4 +53,12 @@ void	Config::print() const {
 		servers[i].print();
 		std::cout << "-------" << std::endl;
 	}
+}
+
+Config::Server::Server():
+	listen_port(8000),
+	listen_address(htonl(INADDR_ANY)),
+	listen_string_address("*"),
+	root("html")
+{
 }
