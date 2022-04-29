@@ -69,7 +69,7 @@ OBJ          =  $(patsubst  $(SRC_PATH)%.cpp,    $(OBJ_PATH)%.o, $(SRC))
 # Includes
 INCLUDE_FLAGS = -Iinclude -Isrc/server -Isrc/parser
 # NOTE: include files for compilation dependancy checks only
-INCLUDE_FILES = $(shell find -name "*.hpp")
+INCLUDE_FILES = $(shell find . -name "*.hpp")
 
 #  =============================== Formatting ===============================  #
 
@@ -126,5 +126,48 @@ fclean: clean
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
 
 re: fclean all
+
+#  ================================= Tests ==================================  #
+
+build_image:
+	docker build -t webserv docker
+
+DOCKER_RUN = docker run --rm -v $$(pwd):/root/webserv webserv
+DOCKER_RUN_INTERACTIVE = docker run --rm -it -p 8080:80 -p 4242:4242 -v $$(pwd):/root/webserv webserv
+
+run_image:
+	 $(DOCKER_RUN_INTERACTIVE)
+
+compile:
+	$(DOCKER_RUN) make
+
+nginx:
+	$(DOCKER_RUN_INTERACTIVE) nginx
+
+test_all:
+	mkdir -p failed_tests
+	for file in conf/*.conf; do \
+		$(DOCKER_RUN) test nginx $$file:r:t; \
+		$(DOCKER_RUN) test webserv $$file:r:t; \
+		diff="$$(diff --color=always failed_tests/nginx_test failed_tests/webserv_test)"; \
+		if [ $$? -eq 0 ]; then \
+		printf "\e[34m✓ $$file.conf tests passed\e[0m\n"; \
+		rm failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr; \
+		else \
+		printf "💥 \e[1;38;5;202m$$file.conf tests failed\e[0m\n"; \
+		printf "%s\n" "$$diff"; \
+		exit 1; \
+		fi; \
+		done
+	rm -r failed_tests
+
+test_one:
+	mkdir -p failed_tests
+		$(DOCKER_RUN) test nginx $(CONF); \
+		$(DOCKER_RUN) test webserv $(CONF); \
+		diff --color=always failed_tests/nginx_test failed_tests/webserv_test;
+		if [ $$? -eq 0 ]; then \
+		rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr; \
+		fi
 
 .PHONY: all clean fclean re

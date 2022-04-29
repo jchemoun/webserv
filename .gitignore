@@ -5,3 +5,4 @@ webserv
 compile_commands.json
 .cache
 *.dSYM
+failed_tests

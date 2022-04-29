@@ -8,7 +8,7 @@ To add a feature:
 1. create a branch `gcb my_new_feature`
 2. push the changes on the remote `gp -u origin my_new_feature`
 3. when everything is fine and ready, create a merge request and assign partner as a reviewer
-4. your partner will review and hopefull merge your PR shortly !
+4. your partner will review and hopefully merge your PR shortly !
 
 ## Compile and run
 
