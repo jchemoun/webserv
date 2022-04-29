@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/28 18:02:16 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/29 09:10:01 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,16 +98,6 @@ void	Parser::_parse_server_name(Config::Server &server) {
 	_eat(Token::type_special_char, ";");
 }
 
-
-static bool is_a_number(const char *s) {
-	size_t	i = 0;
-	while (s[i]) {
-		if (s[i] < '0' || s[i] > '9')
-			return (false);
-		++i;
-	}
-	return (true);
-}
 /*
 ** Syntax:
 **  listen address[:port] ⨯ [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
@@ -120,11 +110,11 @@ void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
 	const char *arg = _current_token().get_value().c_str();
-	if (!is_a_number(arg))
+	if (!_is_a_number(arg))
 		arg = _parse_address(server, arg);
 	try {
 		if (*arg)
-			server.listen_port = stoi(arg, 0, std::numeric_limits<in_port_t>::max());
+			server.listen_port = _stoi(arg, 0, std::numeric_limits<in_port_t>::max());
 	}
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
@@ -218,7 +208,7 @@ void	Parser::_parse_error_page(Context &config) {
 		throw ParsingError("error_page: missing uri");
 	std::vector<int>	codes;
 	while (_lexer.peek_next().get_type() == Token::type_word) {
-		try { codes.push_back(stoi(_current_token().get_value().c_str(), 0, 527)); }
+		try { codes.push_back(_stoi(_current_token().get_value().c_str(), 0, 527)); }
 		catch (std::exception &e) { throw ParsingError(std::string("error_page: code: ") + e.what());}
 		_lexer.next();
 	}
@@ -265,7 +255,7 @@ Parser::ParsingError::~ParsingError() throw() { }
 ** ============================== Static utils ============================== **
 */
 
-int	Parser::stoi(std::string const &s, int min, int max) {
+int	Parser::_stoi(std::string const &s, int min, int max) {
 	long	n = 0;
 	size_t	i = 0;
 	char	sign = 1;
@@ -288,4 +278,14 @@ int	Parser::stoi(std::string const &s, int min, int max) {
 	if (s[i])
 		throw std::runtime_error(std::string("not an integer: ") + s);
 	return (sign * n);
+}
+
+bool Parser::_is_a_number(const char *s) {
+	size_t	i = 0;
+	while (s[i]) {
+		if (s[i] < '0' || s[i] > '9')
+			return (false);
+		++i;
+	}
+	return (true);
 }

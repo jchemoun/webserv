@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/28 17:50:40 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/04/29 09:09:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,8 +75,9 @@ private:
 	std::map<std::string, location_parser>	_location_parsers;
 
 	// Static Utils
-	static int	stoi(std::string const &s,
+	static int	_stoi(std::string const &s,
 			int min = std::numeric_limits<int>::min(), int max = std::numeric_limits<int>::max());
+	static bool _is_a_number(const char *s);
 };
 
 #endif
