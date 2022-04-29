@@ -1,35 +1,35 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
+/*   Request.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/29 13:58:06 by jchemoun         ###   ########.fr       */
+/*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
+/*   Updated: 2022/04/29 13:59:27 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CLIENT_HPP
-# define CLIENT_HPP
+#ifndef REQUEST_HPP
+# define REQUEST_HPP
 
-# include "Request.hpp"
+# include <string>
+# include <sys/types.h>
+# include <iostream>
 
-/*
-get time for session if bonus
-data in client ?
-class is useless for now
-*/
-
-class Client
+class Request
 {
 private:
-
+	std::string	unparsed_request;
+	std::string	method;
+	std::string	location;
 public:
-	Request	request;
-	Client(/* args */);
+	Request(/* args */);
 
-	~Client();
+	bool	parse_request();
+	void	append_unparsed_request(char *buffer, ssize_t len);
+
+	~Request();
 };
 
 #endif

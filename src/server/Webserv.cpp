@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/28 14:25:18 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/29 14:21:57 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,9 +106,13 @@ bool	Webserv::handle_recv(int client_fd)
 	else
 	{
 		//parse request && identify what client wants
-		std::cout << len << buffer << '\n';
-		
+		//std::cout << len << '\n' << buffer << '\n';
+		clients[client_fd].request.append_unparsed_request(buffer, len);
+		clients[client_fd].request.parse_request();
 		//if response needed set client to epollout
+		event.data.fd = client_fd;
+		event.events = EPOLLOUT;
+		epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event);
 	}
 	std::cout << "inrecv\n";
 	
@@ -117,9 +121,9 @@ bool	Webserv::handle_recv(int client_fd)
 
 bool	Webserv::handle_send()
 {
+	std::cout << "insend\n";
 	return (true);
 }
-
 
 bool	Webserv::epoll_init()
 {
