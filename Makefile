@@ -145,7 +145,7 @@ cc:
 	$(DOCKER_RUN) compiledb
 
 nginx:
-	$(DOCKER_RUN_INTERACTIVE) nginx
+	$(DOCKER_RUN_INTERACTIVE) nginx $(CONF)
 
 test:
 	@if [ -z "$(CONF)" ]; then \

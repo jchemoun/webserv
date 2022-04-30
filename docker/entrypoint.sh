@@ -2,17 +2,23 @@
 
 # ================================== Usage =================================== #
 
-if tty &>/dev/null; then
-printf "\n\e[34mHello, first you need to make sure that you mounted your sources in docker:\n\
-     \e[33m\$\e[32m docker\e[0m run -it -p 8080:80 \e[32m-v \$(pwd):${MOUNTING_POINT}\e[0m webserv\n\n" >&2
+# printf "\n\e[34mHello, first you need to make sure that you mounted your sources in docker:\n\
+#      \e[33m\$\e[32m docker\e[0m run -it -p 8080:80 \e[32m-v \$(pwd):${MOUNTING_POINT}\e[0m webserv\n\n" >&2
 
-printf "\e[34mTo run nginx with a specific config file, do:\n\
+nginx_conf_usage() {
+if tty &>/dev/null; then
+printf "\n\e[34mTo run nginx with a specific config file, do:\n\
      \e[33m\$\e[32m sudo cp\e[0m -R html www /usr/share/nginx/\n\
      \e[33m\$\e[32m sudo cp\e[0m conf/my_confile.conf /etc/nginx/sites-enabled/\n\
-     \e[33m\$\e[32m sudo nginx\e[0m\n\n" >&2
-printf "\e[34mYou can then signal to nginx with:\n\
+     \e[33m\$\e[32m sudo nginx -s reload\e[0m\n\n" >&2
+fi
+}
+nginx_signal_usage() {
+if tty &>/dev/null; then
+  printf "\n\e[34mYou can always signal to nginx (if running) with:\n\
      \e[33m\$\e[32m sudo nginx\e[0m -s <reload|quit>\n\n" >&2
 fi
+}
 
 # ============================== Util functions ============================== #
 
@@ -56,12 +62,17 @@ elif [ "$1" = "webserv" ] && [ $# -eq 2]; then
   ./webserv $2
 
 elif [ "$1" = "nginx" ]; then
+  echo
   sudo rm /etc/nginx/sites-enabled/default
   sudo cp -R html www /usr/share/nginx/ # nginx's prefix is /usr/share/nginx and the default root within it is html
   if [ -n "$2" ]; then
-    sudo cp conf/$2.conf /etc/nginx/sites-enabled/
+    sudo cp conf/$2.conf /etc/nginx/sites-enabled/ && printf "\e[32mconf/$2.conf if loaded.\e[0m\n" || printf "\e[31mCould not load conf/$2.conf.\e[0m\n"
+  else
+    printf "\e[33mNginx has no configuration yet loaded.\e[0m\n"
+    nginx_conf_usage
   fi
-  sudo nginx
+  echo "Launching nginx..." && sudo nginx && printf "\e[32mnginx is running!\e[0m\n"
+  nginx_signal_usage
   exec /usr/bin/env zsh
 
 elif [ "$1" = "test" ] && [ "$2" = "nginx" ] && [ $# -eq 3 ]; then

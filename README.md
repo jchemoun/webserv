@@ -27,15 +27,17 @@ This repo ships a `Dockerfile` to provide a build, run and testing environnement
 make build_image
 ```
 
-#### Run the image
+#### Available commands
 
-| Command (host side) | Effect                                                       |
-|---------------------|--------------------------------------------------------------|
-| `make compile`      | run the docker image, compile webserv in the container, quit |
-| `make cc`           | like above but also generate `compile_commands.json`         |
-| `make run_image`    | run interactively the image,
+| Command (host side)          | Effect                                                                        |
+|------------------------------|-------------------------------------------------------------------------------|
+| `make compile`               | run the docker image, compile webserv in the container, quit                  |
+| `make cc`                    | like above but also generate `compile_commands.json`                          |
+| `make run_image`             | run interactively the image (does not compile)                                |
+| `make nginx CONF=<confname>` | load `conf/confname.conf` in nginx enabled sites, and run nginx (interactive) |
 
-⚠️ **Beware**: The commands above mount your current working directory on `root/webserv` in **read-write** mode. So be careful.
+
+⚠️ **Beware**: The commands above mount your current working directory on `/home/dev/webserv` in **read-write** mode. So be careful.
 
 ### Run tests
 
@@ -44,7 +46,7 @@ make build_image
 | `make test CONF=<confname>` | load `conf/confname.conf` in nginx/webserv, run `conf/confname.sh`, compare the output |
 | `make test`                 | run tests for all configuration files, unless an error occurs                          |
 
-⚠️ **Beware**: The commands above mount your current working directory on `root/webserv` in **read-write** mode. So be careful.
+⚠️ **Beware**: The commands above mount your current working directory on `/home/dev/webserv` in **read-write** mode. So be careful.
 
 ## Resources
 
