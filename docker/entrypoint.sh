@@ -4,14 +4,14 @@
 
 if tty &>/dev/null; then
 printf "\n\e[34mHello, first you need to make sure that you mounted your sources in docker:\n\
-     \e[33m\$\e[32m docker\e[0m run -it -p 8080:80 \e[32m-v \$(pwd):/root/webserv\e[0m webserv\n\n" >&2
+     \e[33m\$\e[32m docker\e[0m run -it -p 8080:80 \e[32m-v \$(pwd):${MOUNTING_POINT}\e[0m webserv\n\n" >&2
 
 printf "\e[34mTo run nginx with a specific config file, do:\n\
-     \e[33m\$\e[32m cp\e[0m -R html www /usr/share/nginx/\n\
-     \e[33m\$\e[32m cp\e[0m conf/my_confile.conf /etc/nginx/sites-enabled/\n\
-     \e[33m\$\e[32m nginx\e[0m\n\n" >&2
+     \e[33m\$\e[32m sudo cp\e[0m -R html www /usr/share/nginx/\n\
+     \e[33m\$\e[32m sudo cp\e[0m conf/my_confile.conf /etc/nginx/sites-enabled/\n\
+     \e[33m\$\e[32m sudo nginx\e[0m\n\n" >&2
 printf "\e[34mYou can then signal to nginx with:\n\
-     \e[33m\$\e[32m nginx\e[0m -s <reload|quit>\n\n" >&2
+     \e[33m\$\e[32m sudo nginx\e[0m -s <reload|quit>\n\n" >&2
 fi
 
 # ============================== Util functions ============================== #

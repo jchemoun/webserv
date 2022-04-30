@@ -15,12 +15,14 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 USER dev
 
 # Webserv location
-RUN mkdir -p /home/dev/webserv
-WORKDIR /home/dev/webserv
-COPY zshrc /home/dev/.zshrc
+ENV HOME=/home/dev
+ENV MOUNTING_POINT=${HOME}/webserv
+RUN mkdir -p ${MOUNTING_POINT}
+WORKDIR ${MOUNTING_POINT}
+COPY zshrc ${HOME}/.zshrc
 
 ENV DOCKER=true
-COPY entrypoint.sh /home/dev
+COPY entrypoint.sh ${HOME}
 ENTRYPOINT ["/home/dev/entrypoint.sh"]
 # CMD ["trivial_server"]
 
