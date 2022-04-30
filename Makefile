@@ -141,6 +141,9 @@ run_image:
 compile:
 	$(DOCKER_RUN) make
 
+run:
+	$(DOCKER_RUN_INTERACTIVE) webserv $(CONF)
+
 cc:
 	$(DOCKER_RUN) compiledb
 

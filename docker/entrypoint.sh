@@ -57,9 +57,14 @@ elif [ "$1" = "make" ]; then
 elif [ "$1" = "compiledb" ]; then
   exec compiledb make
 
-elif [ "$1" = "webserv" ] && [ $# -eq 2]; then
+elif [ "$1" = "webserv" ] ; then
+  if [ -z "$2" ]; then
+    printf "\e[33mWarning: you did not provide any configuration file.\e[0m\n"
+  fi
   make
+  printf "\e[32mLaunching ./webserv $2\e[0m\n"
   ./webserv $2
+  exec /usr/bin/env zsh
 
 elif [ "$1" = "nginx" ]; then
   echo

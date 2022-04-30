@@ -27,14 +27,15 @@ This repo ships a `Dockerfile` to provide a build, run and testing environnement
 make build_image
 ```
 
-#### Available commands
+#### Compile, run webserv or nginx in a container
 
 | Command (host side)          | Effect                                                                        |
 |------------------------------|-------------------------------------------------------------------------------|
 | `make compile`               | run the docker image, compile webserv in the container, quit                  |
 | `make cc`                    | like above but also generate `compile_commands.json`                          |
-| `make run_image`             | run interactively the image (does not compile)                                |
+| `make run CONF=<confname>`   | compile and run `./webserv conf/confname.conf` (interactive)                  |
 | `make nginx CONF=<confname>` | load `conf/confname.conf` in nginx enabled sites, and run nginx (interactive) |
+| `make run_image`             | run interactively the image (does not compile or run anything)                |
 
 
 ⚠️ **Beware**: The commands above mount your current working directory on `/home/dev/webserv` in **read-write** mode. So be careful.
