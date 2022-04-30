@@ -25,19 +25,19 @@ wait_server_up() {
 run_on_nginx() {
   out="failed_tests/nginx_test"; mkdir -p failed_tests; rm -f $out ${out}_stderr
   if [ ! -f conf/$1.conf ]; then printf "\e[1;31mconf/$1.conf file not found\e[0m\n"; exit 1; fi
-  cp conf/$1.conf /etc/nginx/sites-enabled/
-  nginx; wait_server_up
+  sudo cp conf/$1.conf /etc/nginx/sites-enabled/
+  sudo nginx; wait_server_up
   bash conf/$1.sh > $out 2> ${out}_stderr
-  nginx -s quit
+  sudo nginx -s quit
 }
 run_on_webserv() {
   out="failed_tests/webserv_test"; mkdir -p failed_tests; rm -f $out ${out}_stderr
   if [ ! -f conf/$1.conf ]; then printf "\e[1;31mconf/$1.conf file not found\e[0m\n"; exit 1; fi
-  cp conf/$1.conf /etc/nginx/sites-enabled/
-  nginx; wait_server_up
+  sudo cp conf/$1.conf /etc/nginx/sites-enabled/
+  sudo nginx; wait_server_up
   bash conf/$1.sh > $out 2> ${out}_stderr
   echo "⚠️  webserv not implemented yet!" >> $out
-  nginx -s quit
+  sudo nginx -s quit
 }
 
 # ================================== Rules =================================== #
@@ -56,23 +56,23 @@ elif [ "$1" = "webserv" ] && [ $# -eq 2]; then
   ./webserv $2
 
 elif [ "$1" = "nginx" ]; then
-  rm /etc/nginx/sites-enabled/default
-  cp -R html www /usr/share/nginx/ # nginx's prefix is /usr/share/nginx and the default root within it is html
+  sudo rm /etc/nginx/sites-enabled/default
+  sudo cp -R html www /usr/share/nginx/ # nginx's prefix is /usr/share/nginx and the default root within it is html
   if [ -n "$2" ]; then
-    cp conf/$2.conf /etc/nginx/sites-enabled/
+    sudo cp conf/$2.conf /etc/nginx/sites-enabled/
   fi
-  nginx
+  sudo nginx
   exec /usr/bin/env zsh
 
 elif [ "$1" = "test" ] && [ "$2" = "nginx" ] && [ $# -eq 3 ]; then
-  rm /etc/nginx/sites-enabled/default
-  cp -R html www /usr/share/nginx/
+  sudo rm /etc/nginx/sites-enabled/default
+  sudo cp -R html www /usr/share/nginx/
   run_on_nginx $3
 
 elif [ "$1" = "test" ] && [ "$2" = "webserv" ] && [ $# -eq 3 ]; then
   make --silent
-  rm /etc/nginx/sites-enabled/default # remove when webserv ok
-  cp -R html www /usr/share/nginx/    # idem
+  sudo rm /etc/nginx/sites-enabled/default # remove when webserv ok
+  sudo cp -R html www /usr/share/nginx/    # idem
   run_on_webserv $3
 
 else
