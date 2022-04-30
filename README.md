@@ -18,9 +18,33 @@ make
 ./webserv <config_file>
 ```
 
+### Compile and run in docker
+
+This repo ships a `Dockerfile` to provide a build, run and testing environnement. The underlying image is `ubuntu:latest`.
+
+#### Build the image
+```sh
+make build_image
+```
+
+#### Run the image
+
+| Command (host side) | Effect                                                       |
+|---------------------|--------------------------------------------------------------|
+| `make compile`      | run the docker image, compile webserv in the container, quit |
+| `make cc`           | like above but also generate `compile_commands.json`         |
+| `make run_image`    | run interactively the image,
+
+⚠️ **Beware**: The commands above mount your current working directory on `root/webserv` in **read-write** mode. So be careful.
+
 ### Run tests
 
-TODO!
+| Command (host side)         | Effect                                                                                 |
+|-----------------------------|----------------------------------------------------------------------------------------|
+| `make test CONF=<confname>` | load `conf/confname.conf` in nginx/webserv, run `conf/confname.sh`, compare the output |
+| `make test`                 | run tests for all configuration files, unless an error occurs                          |
+
+⚠️ **Beware**: The commands above mount your current working directory on `root/webserv` in **read-write** mode. So be careful.
 
 ## Resources
 
@@ -32,6 +56,11 @@ TODO!
 ### Authorized system calls
 
 - [select, poll, epoll comparison](http://byteliu.com/2019/05/08/LINUX-%E2%80%93-IO-MULTIPLEXING-%E2%80%93-SELECT-VS-POLL-VS-EPOLL/) (Byteliu)
+
+### Nginx doc
+
+- [index of all directives](http://nginx.org/en/docs/dirindex.html)
+- [how is a request processed (listen, address, server_name, host...)](http://nginx.org/en/docs/http/request_processing.html)
 
 ### More
 

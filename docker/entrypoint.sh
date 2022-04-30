@@ -48,6 +48,9 @@ if [ $# -eq 0 ]; then
 elif [ "$1" = "make" ]; then
   exec $@
 
+elif [ "$1" = "compiledb" ]; then
+  exec compiledb make
+
 elif [ "$1" = "webserv" ] && [ $# -eq 2]; then
   make
   ./webserv $2
