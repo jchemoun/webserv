@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/30 15:01:56 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/01 13:32:55 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ private:
 	bool	handle_send(int client_fd);
 
 	//utils
+	void	delete_client(int client_fd);
 	bool	is_serv(int fd);
 
 	//close/error

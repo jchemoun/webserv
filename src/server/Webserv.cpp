@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/01 13:04:57 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/01 13:35:22 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ void	Webserv::run()
 	{
 		errno = 0;
 		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT);
+		//std::cout << nfds << '\n';
 		if (errno == EINVAL || errno == EFAULT || errno == EBADFD)
 			std::cerr << "epoll error " << strerror(errno) << '\n'; //use errno ?
 		for (int i = 0; i < nfds; i++)
@@ -44,6 +45,11 @@ void	Webserv::run()
 				else if (write events[i])
 					send fonction (response to request)
 			*/
+			//std::cout << "event = " << events[i].events << "fd = " << events[i].data.fd << '\n';
+			//for (client_map::iterator it = clients.begin(); it != clients.end(); it++)
+			//{
+			//	std::cout << "CLIENT FD" << (*it).first << '\n';
+			//}
 			if (events[i].events == EPOLLERR || events[i].events == EPOLLHUP)
 				handle_error();
 			else if (events[i].events == EPOLLIN && is_serv(events[i].data.fd))
@@ -65,6 +71,7 @@ void	Webserv::run()
 
 bool	Webserv::handle_error()
 {
+	std::cout << "error\n";
 	return (true);
 }
 
@@ -101,6 +108,7 @@ bool	Webserv::handle_recv(int client_fd)
 	else if (len == 0)
 	{
 		//connection close don't know what to do exactly;
+		delete_client(client_fd);
 		return (true);
 	}
 	else
@@ -131,7 +139,7 @@ bool	Webserv::handle_send(int client_fd)
 	response.read_file(clients[client_fd].request.get_location());
 	response.set_full_response();
 	send(client_fd, response.get_full_response().c_str(), response.get_len(), 0);
-	
+	//std::cout << "sent\n";
 	event.data.fd = client_fd;
 	event.events = EPOLLIN;
 	epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event);
@@ -217,6 +225,13 @@ int		Webserv::socket_init(Config conf)
 void	Webserv::conf_init()
 {
 	conf.push_back(Config(INADDR_ANY, 8080));
+}
+
+void	Webserv::delete_client(int client_fd)
+{
+	clients.erase(client_fd);
+	epoll_ctl(epfd, EPOLL_CTL_DEL, client_fd, NULL);
+	close(client_fd);
 }
 
 bool	Webserv::is_serv(int fd)
