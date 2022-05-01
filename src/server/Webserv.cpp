@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/29 14:21:57 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/01 13:04:57 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	Webserv::run()
 			else if (events[i].events == EPOLLIN)
 				handle_recv(events[i].data.fd);
 			else if (events[i].events == EPOLLOUT)
-				handle_send();
+				handle_send(events[i].data.fd);
 			//std::cout << "fgh" << (events[i].events) << EPOLLOUT << '\n';
 		}
 		if (nfds == 0)
@@ -119,9 +119,23 @@ bool	Webserv::handle_recv(int client_fd)
 	return (true);
 }
 
-bool	Webserv::handle_send()
+bool	Webserv::handle_send(int client_fd)
 {
-	std::cout << "insend\n";
+	// for now response is here, could be in client
+	Response	response;
+	//std::cout << "insend\n";
+	// need to get right server to response, todo after merge of 2 class config
+	
+	// need to create header, todo after looking at nginx response header && merge of class config
+
+	response.read_file(clients[client_fd].request.get_location());
+	response.set_full_response();
+	send(client_fd, response.get_full_response().c_str(), response.get_len(), 0);
+	
+	event.data.fd = client_fd;
+	event.events = EPOLLIN;
+	epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event);
+
 	return (true);
 }
 

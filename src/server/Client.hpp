@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/29 13:58:06 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/30 14:48:48 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define CLIENT_HPP
 
 # include "Request.hpp"
+# include "Config.hpp"
 
 /*
 get time for session if bonus
@@ -24,7 +25,7 @@ class is useless for now
 class Client
 {
 private:
-
+	
 public:
 	Request	request;
 	Client(/* args */);

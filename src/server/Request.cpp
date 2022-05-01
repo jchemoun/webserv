@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/29 14:14:35 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/04/30 15:04:14 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,11 @@ bool	Request::parse_request()
 void	Request::append_unparsed_request(char *buffer, ssize_t len)
 {
 	unparsed_request.append(buffer, len);
+}
+
+std::string	Request::get_location()
+{
+	return (location);
 }
 
 Request::~Request()
