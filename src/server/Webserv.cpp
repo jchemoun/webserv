@@ -17,10 +17,6 @@ Webserv::Webserv(): epfd(-1), serv(), conf(), clients()
 	
 }
 
-/*
-** TODO: sometimes the server does not accept the client but the client still hangs
-** -> need to send clear refusal
-*/
 void	Webserv::run()
 {
 	int	nfds;
@@ -142,8 +138,8 @@ bool	Webserv::handle_send(int client_fd)
 	
 	// need to create header, todo after looking at nginx response header && merge of class config
 
-	response.set_full_response();
 	response.read_file(clients[client_fd].request.get_location());
+	response.set_header();
 	response.set_full_response();
 	// send(client_fd, response.get_full_response().c_str(), response.get_len(), 0);
 	send(client_fd, response.get_full_response().c_str(), response.get_full_response().size(), 0);

@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include <sstream>
 
 Response::Response(/* args */): header(), body(), full_response(), len(0)
 {
@@ -93,14 +94,21 @@ size_t	Response::read_file(std::string location)
 
 void		Response::set_header() {
 	// TODO: set header according to the response
-	header = "HTTP/1.1 200 OK\n\n";
+	std::ostringstream oss;
+	oss << "HTTP/1.1 200 OK" << std::endl;
+	oss << "Server: webserv/0.1 (Ubuntu)" << std::endl;
+	oss << "Content-Length: " << body.size() << std::endl;
+	oss << "Content-Type: text/plain" << std::endl;
+	oss << "Connection: keep-alive" << std::endl;
+	oss << std::endl;
+	header = oss.str();
 }
 
 void		Response::set_full_response()
 {
 	full_response.append(header);
 	full_response.append(body);
-	full_response.append("\n");
+	// full_response.append("\n");
 }
 
 std::string	Response::get_full_response() const
