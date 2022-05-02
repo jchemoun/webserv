@@ -130,7 +130,7 @@ re: fclean all
 #  ================================= Tests ==================================  #
 
 build_image:
-	docker build -t webserv docker
+	docker build -t webserv .docker
 
 DOCKER_RUN = docker run --rm -v $$(pwd):/home/dev/webserv webserv
 DOCKER_RUN_INTERACTIVE = docker run --rm -it -p 8080:80 -p 4242:4242 -v $$(pwd):/home/dev/webserv --hostname westeros webserv
