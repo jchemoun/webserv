@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/28 14:25:18 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/01 13:35:22 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,14 @@ Webserv::Webserv(): epfd(-1), serv(), conf(), clients()
 	
 }
 
+/*
+** TODO: sometimes the server does not accept the client but the client still hangs
+** -> need to send clear refusal
+*/
 void	Webserv::run()
 {
 	int	nfds;
+	bool color = false; // for debug output
 
 	conf_init();
 	if (!serv_init())
@@ -30,6 +35,7 @@ void	Webserv::run()
 	{
 		errno = 0;
 		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT);
+		//std::cout << nfds << '\n';
 		if (errno == EINVAL || errno == EFAULT || errno == EBADFD)
 			std::cerr << "epoll error " << strerror(errno) << '\n'; //use errno ?
 		for (int i = 0; i < nfds; i++)
@@ -44,6 +50,11 @@ void	Webserv::run()
 				else if (write events[i])
 					send fonction (response to request)
 			*/
+			//std::cout << "event = " << events[i].events << "fd = " << events[i].data.fd << '\n';
+			//for (client_map::iterator it = clients.begin(); it != clients.end(); it++)
+			//{
+			//	std::cout << "CLIENT FD" << (*it).first << '\n';
+			//}
 			if (events[i].events == EPOLLERR || events[i].events == EPOLLHUP)
 				handle_error();
 			else if (events[i].events == EPOLLIN && is_serv(events[i].data.fd))
@@ -51,12 +62,13 @@ void	Webserv::run()
 			else if (events[i].events == EPOLLIN)
 				handle_recv(events[i].data.fd);
 			else if (events[i].events == EPOLLOUT)
-				handle_send();
+				handle_send(events[i].data.fd);
 			//std::cout << "fgh" << (events[i].events) << EPOLLOUT << '\n';
 		}
 		if (nfds == 0)
 		{
-			std::cout << "waiting\n";
+			std::cout << (color ? "\e[34m": "\e[35m") <<  "waiting\n" << "\e[0m";
+			color = !color;
 			// keep waiting ? time out client ?
 		}
 	}
@@ -65,6 +77,7 @@ void	Webserv::run()
 
 bool	Webserv::handle_error()
 {
+	std::cout << "error\n";
 	return (true);
 }
 
@@ -101,25 +114,46 @@ bool	Webserv::handle_recv(int client_fd)
 	else if (len == 0)
 	{
 		//connection close don't know what to do exactly;
+		delete_client(client_fd);
 		return (true);
 	}
 	else
 	{
 		//parse request && identify what client wants
-		std::cout << len << buffer << '\n';
-		
+		//std::cout << len << '\n' << buffer << '\n';
+		clients[client_fd].request.append_unparsed_request(buffer, len);
+		clients[client_fd].request.parse_request();
 		//if response needed set client to epollout
+		event.data.fd = client_fd;
+		event.events = EPOLLOUT;
+		epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event);
 	}
 	std::cout << "inrecv\n";
 	
 	return (true);
 }
 
-bool	Webserv::handle_send()
+bool	Webserv::handle_send(int client_fd)
 {
+	// for now response is here, could be in client
+	Response	response;
+	//std::cout << "insend\n";
+	// need to get right server to response, todo after merge of 2 class config
+	
+	// need to create header, todo after looking at nginx response header && merge of class config
+
+	response.set_full_response();
+	response.read_file(clients[client_fd].request.get_location());
+	response.set_full_response();
+	// send(client_fd, response.get_full_response().c_str(), response.get_len(), 0);
+	send(client_fd, response.get_full_response().c_str(), response.get_full_response().size(), 0);
+	//std::cout << "sent\n";
+	event.data.fd = client_fd;
+	event.events = EPOLLIN;
+	epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event);
+
 	return (true);
 }
-
 
 bool	Webserv::epoll_init()
 {
@@ -199,6 +233,13 @@ int		Webserv::socket_init(Config conf)
 void	Webserv::conf_init()
 {
 	conf.push_back(Config(INADDR_ANY, 8080));
+}
+
+void	Webserv::delete_client(int client_fd)
+{
+	clients.erase(client_fd);
+	epoll_ctl(epfd, EPOLL_CTL_DEL, client_fd, NULL);
+	close(client_fd);
 }
 
 bool	Webserv::is_serv(int fd)
