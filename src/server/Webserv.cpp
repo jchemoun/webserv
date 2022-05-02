@@ -11,8 +11,9 @@
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include <stdexcept>
 
-Webserv::Webserv(): epfd(-1), serv(), conf(), clients()
+Webserv::Webserv(): epfd(-1), conf(), clients()
 {
 	
 }
@@ -23,8 +24,7 @@ void	Webserv::run()
 	bool color = false; // for debug output
 
 	conf_init();
-	if (!serv_init())
-		return ;
+	serv_init();
 	if (!epoll_init())
 		return ;
 	while (1) //change to var to stop ?
@@ -69,6 +69,17 @@ void	Webserv::run()
 		}
 	}
 	
+}
+
+void	Webserv::get_config(int ac, const char **av) {
+	if (ac == 1) {
+		throw std::runtime_error("Missing config file");
+	} else if (ac > 2) {
+		throw (std::runtime_error("Too many arguments"));
+	} else {
+		Parser	parser(av[1]);
+		conf = parser.get_config();
+	}
 }
 
 bool	Webserv::handle_error()
@@ -153,17 +164,18 @@ bool	Webserv::handle_send(int client_fd)
 
 bool	Webserv::epoll_init()
 {
-	if ((epfd = epoll_create(serv.size() + 1)) < 0) // to fix max fd can be more probably not
+	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
 	{
 		std::cerr << "epoll create error\n";
 		return (false);
 	}
 	std::memset((struct epoll_event *) &event, 0, sizeof(event));
-	for (serv_vector::const_iterator cit = serv.begin(); cit != serv.end(); cit++)
+	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
-		event.data.fd = *cit;
+		Config::Server const &serv = *cit;
+		event.data.fd = serv.listen_fd;
 		event.events = EPOLLIN;
-		if (epoll_ctl(epfd, EPOLL_CTL_ADD, *cit, &event) < 0)
+		if (epoll_ctl(epfd, EPOLL_CTL_ADD, serv.listen_fd, &event) < 0)
 		{
 			std::cerr << "epoll ctl error\n";
 			return (false);
@@ -172,63 +184,49 @@ bool	Webserv::epoll_init()
 	return (true);
 }
 
-bool	Webserv::serv_init()
+void	Webserv::serv_init()
 {
-	int	tmp;
-	for (conf_vector::const_iterator cit = conf.begin(); cit != conf.end(); cit++)
-	{
-		tmp = socket_init(*cit);
-		if (tmp == -1)
-			return (false);
-		serv.push_back(tmp);
+	// int	tmp;
+	// for (conf_vector::const_iterator cit = conf.begin(); cit != conf.end(); cit++)
+	// {
+		// tmp = socket_init(*cit);
+		// if (tmp == -1)
+		// 	return (false);
+		// serv.push_back(tmp);
+	// }
+	// return (true);
+	for (serv_vector::iterator it = conf.servers.begin(); it != conf.servers.end(); it++) {
+		Config::Server	&serv = *it;
+		socket_init(serv);
 	}
-	return (true);
 }
 
-int		Webserv::socket_init(Config conf)
+int		Webserv::socket_init(Config::Server &server)
 {
 	int					listen_fd;
-	int					on;
-	int					port;
+	int					on = 1;
+	// int					port = server.listen_port;
 	struct sockaddr_in	address;
 
-	(void)conf;
-	on = 1;
-	port = 8080;
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-	{
-		std::cerr << "failed socket creation" << std::endl;
-		close_serv();
-		return (-1);
-	}
+		throw std::runtime_error("failed socket creation");
+	server.listen_fd = listen_fd;
 	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &on, sizeof(int)) < 0)
-	{
-		std::cerr << "failed socket options" << std::endl;
-		close_serv();
-		return (-1);
-	}
+		throw std::runtime_error("failed socket options");
 	std::memset((char *)&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = htons(INADDR_ANY);	//change to conf addr
-	address.sin_port = htons(port);					//change to conf port;
+	address.sin_addr.s_addr = server.listen_address;
+	address.sin_port = server.listen_port;
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-	{
-		std::cerr << "failed socket bind" << std::endl;
-		close_serv();
-		return (-1);
-	}
+		throw std::runtime_error("failed socket bind");
 	if (listen(listen_fd, MAX_CLIENTS) < 0)
-	{
-		std::cerr << "failed socket listen" << std::endl;
-		close_serv();
-		return (-1);
-	}
-	return (listen_fd);
+		throw std::runtime_error("failed socket listen");
+	return (listen_fd); // unused
 }
 
 void	Webserv::conf_init()
 {
-	conf.push_back(Config(INADDR_ANY, 8080));
+	// conf.push_back(Config(INADDR_ANY, 8080));
 }
 
 void	Webserv::delete_client(int client_fd)
@@ -240,25 +238,27 @@ void	Webserv::delete_client(int client_fd)
 
 bool	Webserv::is_serv(int fd)
 {
-	for (serv_vector::const_iterator cit = serv.begin(); cit != serv.end(); cit++)
+	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
-		if (*cit == fd)
+		Config::Server const &serv = *cit;
+		if (serv.listen_fd == fd)
 			return (true);
 	}
 	return (false);
 }
 
-void	Webserv::close_serv()
-{
-	for (serv_vector::const_iterator cit = serv.begin(); cit != serv.end(); cit++)
-	{
-		close(*cit);
-	}
-	if (epfd != -1)
-		close(epfd);
-}
+// void	Webserv::close_serv()
+// {
+// }
 
 Webserv::~Webserv()
 {
-	
+	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
+	{
+		Config::Server const &serv = *cit;
+		if (serv.listen_fd)
+			close(serv.listen_fd);
+	}
+	if (epfd != -1)
+		close(epfd);
 }

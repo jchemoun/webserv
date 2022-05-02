@@ -27,7 +27,8 @@
 # include <vector>
 # include <map>
 
-# include "Config.hpp"
+// # include "Config.hpp"
+# include "Parser.hpp"
 # include "Client.hpp"
 # include "Response.hpp"
 
@@ -40,26 +41,29 @@
 class Webserv
 {
 public:
-	typedef	std::vector<int>		serv_vector;
-	typedef std::vector<Config>		conf_vector;
+	// typedef	std::vector<int>		serv_vector;
+	typedef std::vector<Config::Server>	serv_vector;
+	// typedef std::vector<Config>		conf_vector;
 	typedef std::map<int, Client>	client_map; // maybe vector ? for now fd/client pair
 	Webserv();
 	~Webserv();
 	void	run();
+	void	get_config(int ac, const char **av);
 private:
 	//epoll
 	int					epfd;
 	struct epoll_event	event;
 	struct epoll_event	events[MAX_EVENTS];
 	//serv
-	serv_vector			serv;
-	conf_vector			conf;
+	// serv_vector			serv;
+	// conf_vector			conf;
+	Config				conf;
 	client_map			clients;
 
 	//init
 	bool	epoll_init();
-	bool	serv_init();
-	int		socket_init(Config conf);
+	void	serv_init();
+	int		socket_init(Config::Server &conf);
 	void	conf_init();
 
 	//handle
@@ -73,7 +77,7 @@ private:
 	bool	is_serv(int fd);
 
 	//close/error
-	void	close_serv();
+	// void	close_serv(); // use destructor instead
 };
 
 #endif
