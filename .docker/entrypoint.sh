@@ -39,11 +39,11 @@ run_on_nginx() {
 run_on_webserv() {
   out="failed_tests/webserv_test"; mkdir -p failed_tests; rm -f $out ${out}_stderr
   if [ ! -f conf/$1.conf ]; then printf "\e[1;31mconf/$1.conf file not found\e[0m\n"; exit 1; fi
-  sudo cp conf/$1.conf /etc/nginx/sites-enabled/
-  sudo nginx; wait_server_up
+  ./webserv conf/$1.conf &
+  pid=$!
+  wait_server_up
   bash conf/$1.sh > $out 2> ${out}_stderr
-  echo "⚠️  webserv not implemented yet!" >> $out
-  sudo nginx -s quit
+  kill $pid
 }
 
 # ================================== Rules =================================== #
@@ -63,7 +63,7 @@ elif [ "$1" = "webserv" ] ; then
   fi
   make
   printf "\e[32mLaunching ./webserv $2\e[0m\n"
-  ./webserv $2
+  nohup ./webserv $2 &> ../webserv.log &
   exec /usr/bin/env zsh
 
 elif [ "$1" = "nginx" ]; then
@@ -87,8 +87,8 @@ elif [ "$1" = "test" ] && [ "$2" = "nginx" ] && [ $# -eq 3 ]; then
 
 elif [ "$1" = "test" ] && [ "$2" = "webserv" ] && [ $# -eq 3 ]; then
   make --silent
-  sudo rm /etc/nginx/sites-enabled/default # remove when webserv ok
-  sudo cp -R html www /usr/share/nginx/    # idem
+  # sudo rm /etc/nginx/sites-enabled/default # remove when webserv ok
+  # sudo cp -R html www /usr/share/nginx/    # idem
   run_on_webserv $3
 
 else
