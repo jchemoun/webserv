@@ -4,7 +4,7 @@ FROM ubuntu:latest
 RUN apt update
 RUN apt install -y zsh clang make git
 RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt install -y nginx
-RUN apt install -y python3-pip && pip install compiledb
+# RUN apt install -y python3-pip && pip install compiledb
 RUN apt install -y curl telnet
 RUN apt install -y netcat
 RUN apt install -y sudo

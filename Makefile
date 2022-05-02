@@ -144,8 +144,8 @@ compile:
 run:
 	$(DOCKER_RUN_INTERACTIVE) webserv $(CONF)
 
-cc:
-	$(DOCKER_RUN) compiledb
+# cc:
+# 	$(DOCKER_RUN) compiledb
 
 nginx:
 	$(DOCKER_RUN_INTERACTIVE) nginx $(CONF)
