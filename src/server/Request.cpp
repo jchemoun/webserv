@@ -27,11 +27,12 @@ bool	Request::parse_request()
 	std::cout << unparsed_request << '\n';
 	//if (method != "GET" || method != "POST" || method != "DELETE")
 	//	return (false);
-	std::cout << method.size() << ' ' << end << method << '\n';
+	std::cout << start << ':' << end << " size: " << method.size() << " method: " << method << '\n';
 	start = ++end;
 	end = unparsed_request.find_first_of(' ', start);
 	location = unparsed_request.substr(start, end - start);
-	std::cout << location.size() << location << '\n';
+	// std::cout << location.size() << location << '\n';
+	std::cout << start << ':' << end << " size: " << location.size() << " location: " << location << '\n';
 	unparsed_request.clear();
 	return (true);
 }

@@ -36,6 +36,7 @@ public:
 	std::string	create_auto_index_page(std::string location);
 	size_t		read_file(std::string location);
 
+	void		set_header();
 	void		set_full_response();
 
 	std::string	get_full_response() const;

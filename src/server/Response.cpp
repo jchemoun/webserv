@@ -47,7 +47,7 @@ bool	Response::check_read_perm(std::string path)
 std::string	Response::create_auto_index_page(std::string location)
 {
 	(void)location;
-	return (0);
+	return ("auto_index not implemented yet\n");
 }
 
 size_t	Response::read_file(std::string location)
@@ -85,16 +85,22 @@ size_t	Response::read_file(std::string location)
 		// 404
 		return (0);
 	}
-	std::cout << body;
-	return (body.length());
+	std::cout << "body: \e[33m" << body << "\e[0m";
+	return (body.length()); // not used
 }
 
 // read file for error pages
+
+void		Response::set_header() {
+	// TODO: set header according to the response
+	header = "HTTP/1.1 200 OK\n\n";
+}
 
 void		Response::set_full_response()
 {
 	full_response.append(header);
 	full_response.append(body);
+	full_response.append("\n");
 }
 
 std::string	Response::get_full_response() const
