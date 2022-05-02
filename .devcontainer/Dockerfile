@@ -9,11 +9,11 @@ FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
 
 # Optionally install the cmake for vcpkg
-COPY ./reinstall-cmake.sh /tmp/
-RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
-        chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE}; \
-    fi \
-    && rm -f /tmp/reinstall-cmake.sh
+# COPY ./reinstall-cmake.sh /tmp/
+# RUN if [ "${REINSTALL_CMAKE_VERSION_FROM_SOURCE}" != "none" ]; then \
+#         chmod +x /tmp/reinstall-cmake.sh && /tmp/reinstall-cmake.sh ${REINSTALL_CMAKE_VERSION_FROM_SOURCE}; \
+#     fi \
+#     && rm -f /tmp/reinstall-cmake.sh
 
 # [Optional] Uncomment this section to install additional vcpkg ports.
 # RUN su vscode -c "${VCPKG_ROOT}/vcpkg install <your-port-name-here>"
@@ -26,8 +26,11 @@ RUN apt install -y fzf
 RUN echo "source /usr/share/doc/fzf/examples/key-bindings.zsh" >> /home/vscode/.zshrc
 
 RUN apt install -y fd-find ripgrep
+
 RUN apt install -y bat
 USER vscode
 RUN mkdir -p /home/vscode/.local/bin && ln -s /usr/bin/batcat /home/vscode/.local/bin/bat && echo 'export PATH="$PATH:$HOME/.local/bin"' >> /home/vscode/.zshrc
-
 USER root
+
+RUN sudo apt install -y telnet
+RUN sudo apt install -y siege
