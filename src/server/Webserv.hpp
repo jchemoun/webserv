@@ -6,7 +6,7 @@
 /*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/26 13:09:37 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/01 13:32:55 by jchemoun         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 
 # include "Config.hpp"
 # include "Client.hpp"
+# include "Response.hpp"
 
 // define temporaire ? valeur un peu random
 # define MAX_CLIENTS	64
@@ -65,9 +66,10 @@ private:
 	bool	handle_error();
 	bool	handle_new_client(int serv_fd);
 	bool	handle_recv(int client_fd);
-	bool	handle_send();
+	bool	handle_send(int client_fd);
 
 	//utils
+	void	delete_client(int client_fd);
 	bool	is_serv(int fd);
 
 	//close/error
