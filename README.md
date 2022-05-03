@@ -33,8 +33,8 @@ make build_image
 |------------------------------|-------------------------------------------------------------------------------|
 | `make compile`               | run the docker image, compile webserv in the container, quit                  |
 | `make cc`                    | like above but also generate `compile_commands.json`                          |
-| `make run CONF=<confname>`   | compile and run `./webserv conf/confname.conf` (interactive)                  |
-| `make nginx CONF=<confname>` | load `conf/confname.conf` in nginx enabled sites, and run nginx (interactive) |
+| `make run CONF=<confpath>`   | compile and run `./webserv confpath` (interactive)                  |
+| `make nginx CONF=<confpath>` | load `confpath` in nginx enabled sites, and run nginx (interactive) |
 | `make run_image`             | run interactively the image (does not compile or run anything)                |
 
 
@@ -44,7 +44,7 @@ make build_image
 
 | Command (host side)         | Effect                                                                                 |
 |-----------------------------|----------------------------------------------------------------------------------------|
-| `make test CONF=<confname>` | load `conf/confname.conf` in nginx/webserv, run `conf/confname.sh`, compare the output |
+| `make test CONF=<confpath>` | load `confpath` in nginx/webserv, run bash script associated, compare the output |
 | `make test`                 | run tests for all configuration files, unless an error occurs                          |
 
 ⚠️ **Beware**: The commands above mount your current working directory on `/home/dev/webserv` in **read-write** mode. So be careful.

@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /usr/bin/env zsh
 
 # ================================== Usage =================================== #
 
@@ -29,20 +29,24 @@ wait_server_up() {
   # done
 }
 run_on_nginx() {
+  conf="$1"
+  tests="${conf:r}.sh"
   out="failed_tests/nginx_test"; mkdir -p failed_tests; rm -f $out ${out}_stderr
-  if [ ! -f conf/$1.conf ]; then printf "\e[1;31mconf/$1.conf file not found\e[0m\n"; exit 1; fi
-  sudo cp conf/$1.conf /etc/nginx/sites-enabled/
+  if [ ! -f "$conf" ]; then printf "\e[1;31m$conf file not found\e[0m\n"; exit 1; fi
+  sudo cp "$conf" /etc/nginx/sites-enabled/
   sudo nginx; wait_server_up
-  bash conf/$1.sh > $out 2> ${out}_stderr
+  bash "$tests" > $out 2> ${out}_stderr
   sudo nginx -s quit
 }
 run_on_webserv() {
+  conf="$1"
+  tests="${conf:r}.sh"
   out="failed_tests/webserv_test"; mkdir -p failed_tests; rm -f $out ${out}_stderr
-  if [ ! -f conf/$1.conf ]; then printf "\e[1;31mconf/$1.conf file not found\e[0m\n"; exit 1; fi
-  ./webserv conf/$1.conf &
+  if [ ! -f "$conf" ]; then printf "\e[1;31m$conf file not found\e[0m\n"; exit 1; fi
+  ./webserv "$conf" &
   pid=$!
   wait_server_up
-  bash conf/$1.sh > $out 2> ${out}_stderr
+  bash "$tests" > $out 2> ${out}_stderr
   kill $pid
 }
 

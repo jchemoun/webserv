@@ -153,7 +153,7 @@ nginx:
 test:
 	@if [ -z "$(CONF)" ]; then \
 		for file in conf/*.conf; do \
-		make --silent test_one CONF=$$file:r:t; \
+		make --silent test_one CONF=$$file; \
 		if [ -d failed_tests ]; then \
 		exit 1; \
 		fi; \
@@ -163,21 +163,21 @@ test:
 		fi
 
 test_one: all
-	mkdir -p failed_tests
-	rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr;
-	printf "\e[33m✓ Running conf/$(CONF).conf on nginx...\e[0m\n"; \
-	$(DOCKER_RUN) test nginx $(CONF); \
-	printf "\e[33m✓ Running conf/$(CONF).conf on webserv...\e[0m\n"; \
+	@mkdir -p failed_tests
+	@rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr;
+	@printf "\e[33m✓ Running $(CONF) on nginx...\e[0m\n";
+	@$(DOCKER_RUN) test nginx $(CONF); \
+		printf "\e[33m✓ Running $(CONF) on webserv...\e[0m\n"; \
 		$(DOCKER_RUN) test webserv $(CONF); \
 		diff="$$(diff --color=always failed_tests/nginx_test failed_tests/webserv_test)"; \
 		if [ $$? -eq 0 ]; then \
-		printf "\e[34m✓ conf/$(CONF).conf tests passed\e[0m\n"; \
+		printf "\e[34m✓ $(CONF) tests passed\e[0m\n"; \
 		rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr; \
 		else \
 		printf "💥 \e[1;38;5;202m$(CONF) tests failed\e[0m\n"; \
 		printf "\e[1mDiff:\e[0m\n%s\n" "$$diff"; \
 		exit 1; \
-		fi; \
-		rm -r failed_tests; \
+		fi
+	@rm -r failed_tests;
 
 .PHONY: all clean fclean re
