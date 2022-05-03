@@ -162,7 +162,7 @@ test:
 		make test_one CONF=$(CONF); \
 		fi
 
-test_one: all
+test_one: compile
 	@mkdir -p failed_tests
 	@rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr;
 	@printf "\e[33m✓ Running $(CONF) on nginx...\e[0m\n";

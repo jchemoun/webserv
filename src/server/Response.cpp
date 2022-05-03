@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 08:42:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/03 10:42:47 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 #include <string>
 
 Response::Response(Config::Server const &serv, Request const &req)
-	: header(), body(), full_response(), _serv(serv), _req(req) {
+	: header(), body(), full_response(), _serv(serv)//, _req(req)
+	{
 	_autoindex = true; // TODO: use parsing to check autoindex
 	std::string	full_location = serv.root + '/' + req.get_location();
 	read_file(full_location);

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 08:40:44 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/03 10:42:37 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ private:
 	std::string	body;
 	std::string	full_response;
 	Config::Server const	&_serv;
-	Request const			&_req;
+	// Request const			&_req;
 	bool	_autoindex;
 public:
 	Response(Config::Server const &serv, Request const &req);

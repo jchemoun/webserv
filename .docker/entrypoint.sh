@@ -75,7 +75,7 @@ elif [ "$1" = "nginx" ]; then
   sudo rm /etc/nginx/sites-enabled/default
   sudo cp -R html www /usr/share/nginx/ # nginx's prefix is /usr/share/nginx and the default root within it is html
   if [ -n "$2" ]; then
-    sudo cp $2 /etc/nginx/sites-enabled/ && printf "\e[32m$2 if loaded.\e[0m\n" || printf "\e[31mCould not load conf/$2.conf.\e[0m\n"
+    sudo cp $2 /etc/nginx/sites-enabled/ && printf "\e[32m$2 if loaded.\e[0m\n" || printf "\e[31mCould not load $2.\e[0m\n"
   else
     printf "\e[33mNginx has no configuration yet loaded.\e[0m\n"
     nginx_conf_usage
