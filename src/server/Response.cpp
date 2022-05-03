@@ -6,19 +6,29 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 06:55:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/03 07:35:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include <cstddef>
 #include <sstream>
 
-Response::Response(/* args */): header(), body(), full_response()
-{
+Response::Response(std::string const &path): header(), body(), full_response() {
+	read_file(path);
+	set_header();
+	set_full_response();
 }
 
-int	Response::check_path(std::string path)
-{
+const char *Response::c_str() const {
+	return (full_response.c_str());
+}
+
+size_t	Response::size() const {
+	return (full_response.size());
+}
+
+int	Response::check_path(std::string const &path) const {
 	struct stat	s;
 
 	if (stat(path.c_str(), &s) == 0)
@@ -33,8 +43,7 @@ int	Response::check_path(std::string path)
 	return (0);
 }
 
-bool	Response::check_read_perm(std::string path)
-{
+bool	Response::check_read_perm(std::string const &path) const {
 	struct stat	s;
 
 	if (stat(path.c_str(), &s) == 0)
@@ -45,13 +54,13 @@ bool	Response::check_read_perm(std::string path)
 	return (false);
 }
 
-std::string	Response::create_auto_index_page(std::string location)
+std::string	Response::create_auto_index_page(std::string const &location)
 {
 	(void)location;
 	return ("auto_index not implemented yet\n");
 }
 
-size_t	Response::read_file(std::string location)
+size_t	Response::read_file(std::string const &location)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
@@ -116,11 +125,5 @@ void		Response::set_full_response()
 	// full_response.append("\n");
 }
 
-std::string	Response::get_full_response() const
-{
-	return (full_response);
-}
-
-Response::~Response()
-{
+Response::~Response() {
 }

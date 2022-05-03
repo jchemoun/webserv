@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 06:52:38 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/03 07:30:59 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,8 @@ Webserv::Webserv(): epfd(-1), conf(), clients()
 void	Webserv::run()
 {
 	int	nfds;
-	bool color = false; // for debug output
+	bool color = false;
 
-	// conf_init();
 	serv_init();
 	if (!epoll_init())
 		return ;
@@ -143,17 +142,13 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	// for now response is here, could be in client
-	Response	response;
+	Response	response(clients[client_fd].request.get_location());
 	//std::cout << "insend\n";
 	// need to get right server to response, todo after merge of 2 class config
 	
 	// need to create header, todo after looking at nginx response header && merge of class config
 
-	response.read_file(clients[client_fd].request.get_location());
-	response.set_header();
-	response.set_full_response();
-	// send(client_fd, response.get_full_response().c_str(), response.get_len(), 0);
-	send(client_fd, response.get_full_response().c_str(), response.get_full_response().size(), 0);
+	send(client_fd, response.c_str(), response.size(), 0);
 	//std::cout << "sent\n";
 	event.data.fd = client_fd;
 	event.events = EPOLLIN;
@@ -186,15 +181,6 @@ bool	Webserv::epoll_init()
 
 void	Webserv::serv_init()
 {
-	// int	tmp;
-	// for (conf_vector::const_iterator cit = conf.begin(); cit != conf.end(); cit++)
-	// {
-		// tmp = socket_init(*cit);
-		// if (tmp == -1)
-		// 	return (false);
-		// serv.push_back(tmp);
-	// }
-	// return (true);
 	for (serv_vector::iterator it = conf.servers.begin(); it != conf.servers.end(); it++) {
 		Config::Server	&serv = *it;
 		socket_init(serv);
@@ -205,7 +191,6 @@ int		Webserv::socket_init(Config::Server &server)
 {
 	int					listen_fd;
 	int					on = 1;
-	// int					port = server.listen_port;
 	struct sockaddr_in	address;
 
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -256,7 +241,7 @@ Webserv::~Webserv()
 	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
 		Config::Server const &serv = *cit;
-		if (serv.listen_fd)
+		if (serv.listen_fd > 0)
 			close(serv.listen_fd);
 	}
 	if (epfd != -1)
