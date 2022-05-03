@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/01 13:03:30 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/03 06:55:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include <sstream>
 
-Response::Response(/* args */): header(), body(), full_response(), len(0)
+Response::Response(/* args */): header(), body(), full_response()
 {
 }
 
@@ -56,9 +56,15 @@ size_t	Response::read_file(std::string location)
 	std::ofstream		file;
 	std::stringstream	buf;
 
-	//std::cout << "fgh";
-	if (check_path(location) == 1 /* && auto_index_on */)
-		body = create_auto_index_page(location);
+	if (check_path(location) == 1) {
+		// if (found_index)
+		// 	body = index_page;
+		// else if (auto_index)
+			body = create_auto_index_page(location);
+		// else
+		//  	body = some_error_page;
+
+	}
 	else if (check_path(location) == 2)
 	{
 		// read file
@@ -78,7 +84,6 @@ size_t	Response::read_file(std::string location)
 		buf << file.rdbuf();
 		file.close();
 		body = buf.str();
-		len += body.length();
 	}
 	else
 	{
@@ -114,11 +119,6 @@ void		Response::set_full_response()
 std::string	Response::get_full_response() const
 {
 	return (full_response);
-}
-
-size_t		Response::get_len() const
-{
-	return (len);
 }
 
 Response::~Response()

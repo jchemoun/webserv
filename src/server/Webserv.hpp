@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/01 13:32:55 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/03 06:55:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,9 +41,7 @@
 class Webserv
 {
 public:
-	// typedef	std::vector<int>		serv_vector;
 	typedef std::vector<Config::Server>	serv_vector;
-	// typedef std::vector<Config>		conf_vector;
 	typedef std::map<int, Client>	client_map; // maybe vector ? for now fd/client pair
 	Webserv();
 	~Webserv();
@@ -55,8 +53,6 @@ private:
 	struct epoll_event	event;
 	struct epoll_event	events[MAX_EVENTS];
 	//serv
-	// serv_vector			serv;
-	// conf_vector			conf;
 	Config				conf;
 	client_map			clients;
 
@@ -64,7 +60,6 @@ private:
 	bool	epoll_init();
 	void	serv_init();
 	int		socket_init(Config::Server &conf);
-	void	conf_init();
 
 	//handle
 	bool	handle_error();

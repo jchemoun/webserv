@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/01 13:35:22 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/03 06:52:38 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	Webserv::run()
 	int	nfds;
 	bool color = false; // for debug output
 
-	conf_init();
+	// conf_init();
 	serv_init();
 	if (!epoll_init())
 		return ;
@@ -215,8 +215,8 @@ int		Webserv::socket_init(Config::Server &server)
 		throw std::runtime_error("failed socket options");
 	std::memset((char *)&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = server.listen_address;
-	address.sin_port = server.listen_port;
+	address.sin_addr.s_addr = htonl(server.listen_address);
+	address.sin_port = htons(server.listen_port);
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
 		throw std::runtime_error("failed socket bind");
 	if (listen(listen_fd, MAX_CLIENTS) < 0)
@@ -224,10 +224,10 @@ int		Webserv::socket_init(Config::Server &server)
 	return (listen_fd); // unused
 }
 
-void	Webserv::conf_init()
-{
+// void	Webserv::conf_init()
+// {
 	// conf.push_back(Config(INADDR_ANY, 8080));
-}
+// }
 
 void	Webserv::delete_client(int client_fd)
 {

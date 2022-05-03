@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/01 13:02:47 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/03 06:56:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,6 @@ private:
 	std::string	header;
 	std::string	body;
 	std::string	full_response;
-	size_t		len;
 public:
 	Response(/* args */);
 
@@ -40,7 +39,6 @@ public:
 	void		set_full_response();
 
 	std::string	get_full_response() const;
-	size_t		get_len() const;
 
 	~Response();
 };
