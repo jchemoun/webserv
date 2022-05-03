@@ -59,6 +59,7 @@ Config::Server::Server():
 	listen_port(8000),
 	listen_address(htonl(INADDR_ANY)),
 	listen_string_address("*"),
+	listen_fd(0),
 	root("html")
 {
 }

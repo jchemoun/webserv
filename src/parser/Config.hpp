@@ -33,6 +33,7 @@ struct Config {
 		in_port_t					listen_port;
 		in_addr_t					listen_address;
 		std::string					listen_string_address; // for printing and debuging
+		int							listen_fd;
 		std::vector<Location>		locations;
 		std::vector<std::string>	index;
 		std::string					root;
