@@ -55,7 +55,7 @@ endif
 
 # Source Names
 SRC_NAME = main.cpp \
-					 $(addprefix server/, Webserv.cpp Config.cpp Client.cpp Request.cpp Response.cpp) \
+					 $(addprefix server/, Webserv.cpp Client.cpp Request.cpp Response.cpp) \
 					 $(addprefix parser/, Config.cpp Lexer.cpp Parser.cpp Token.cpp) \
 
 # Path
