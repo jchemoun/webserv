@@ -1,0 +1,58 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.231.6/containers/cpp
+{
+	"name": "webserv_dev",
+	"build": {
+		"dockerfile": "Dockerfile",
+		// Update 'VARIANT' to pick an Debian / Ubuntu OS version: debian-11, debian-10, debian-9, ubuntu-21.04, ubuntu-20.04, ubuntu-18.04
+		// Use Debian 11, Debian 9, Ubuntu 18.04 or Ubuntu 21.04 on local arm64/Apple Silicon
+		"args": {
+			"VARIANT": "ubuntu-21.04"
+		}
+	},
+	"runArgs": [
+		"--cap-add=SYS_PTRACE",
+		"--security-opt",
+		"seccomp=unconfined"
+	],
+	// "containerEnv": { // I use ssh instead
+	// 	"GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+	// 	"GITHUB_USER": "${localEnv:GITHUB_USER}"
+	//   },
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh",
+	},
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"ms-vscode.cpptools",
+		"llvm-vs-code-extensions.vscode-clangd",
+		"ms-azuretools.vscode-docker",
+		"ms-vscode.makefile-tools"
+	],
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		8000
+	],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "make",
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode",
+	"features": { // not working !
+		// "git": "os-provided",
+		"github-cli": "latest",
+		// "homebrew": "latest",
+		"docker-in-docker": {
+			"version": "latest",
+			"moby": "false"
+		}
+		// "docker-from-docker": { // issue: will not find the workspace directory unless we hardcode the host path of the project
+		// 	"version": "latest",
+		// 	"moby": "false"
+		// }
+	},
+	"remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
+	"mounts": [
+		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+	]
+}

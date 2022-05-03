@@ -69,7 +69,7 @@ OBJ          =  $(patsubst  $(SRC_PATH)%.cpp,    $(OBJ_PATH)%.o, $(SRC))
 # Includes
 INCLUDE_FLAGS = -Iinclude -Isrc/server -Isrc/parser
 # NOTE: include files for compilation dependancy checks only
-INCLUDE_FILES = $(shell find -name "*.hpp")
+INCLUDE_FILES = $(shell find . -name "*.hpp")
 
 #  =============================== Formatting ===============================  #
 
@@ -126,5 +126,58 @@ fclean: clean
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
 
 re: fclean all
+
+#  ================================= Tests ==================================  #
+
+build_image:
+	docker build -t webserv .docker
+
+DOCKER_RUN = docker run --rm -v $$(pwd):/home/dev/webserv webserv
+DOCKER_RUN_INTERACTIVE = docker run --rm -it -p 8080:80 -p 4242:4242 -v $$(pwd):/home/dev/webserv --hostname westeros webserv
+
+run_image:
+	 $(DOCKER_RUN_INTERACTIVE)
+
+compile:
+	$(DOCKER_RUN) make
+
+run:
+	$(DOCKER_RUN_INTERACTIVE) webserv $(CONF)
+
+# cc:
+# 	$(DOCKER_RUN) compiledb
+
+nginx:
+	$(DOCKER_RUN_INTERACTIVE) nginx $(CONF)
+
+test:
+	@if [ -z "$(CONF)" ]; then \
+		for file in conf/*.conf; do \
+		make --silent test_one CONF=$$file:r:t; \
+		if [ -d failed_tests ]; then \
+		exit 1; \
+		fi; \
+		done; \
+		else \
+		make test_one CONF=$(CONF); \
+		fi
+
+test_one:
+	mkdir -p failed_tests
+	rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr;
+	printf "\e[33m✓ Running conf/$(CONF).conf on nginx...\e[0m\n"; \
+	$(DOCKER_RUN) test nginx $(CONF); \
+	printf "\e[33m✓ Running conf/$(CONF).conf on webserv...\e[0m\n"; \
+		$(DOCKER_RUN) test webserv $(CONF); \
+		diff="$$(diff --color=always failed_tests/nginx_test failed_tests/webserv_test)"; \
+		if [ $$? -eq 0 ]; then \
+		printf "\e[34m✓ conf/$(CONF).conf tests passed\e[0m\n"; \
+		rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr; \
+		else \
+		printf "💥 \e[1;38;5;202m$(CONF) tests failed\e[0m\n"; \
+		printf "\e[1mDiff:\e[0m\n%s\n" "$$diff"; \
+		exit 1; \
+		fi; \
+		rm -r failed_tests; \
 
 .PHONY: all clean fclean re
