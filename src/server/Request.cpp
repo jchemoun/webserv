@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/30 15:04:14 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/03 08:11:46 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,7 @@ void	Request::append_unparsed_request(char *buffer, ssize_t len)
 	unparsed_request.append(buffer, len);
 }
 
-std::string	Request::get_location()
-{
+std::string const	&Request::get_location() const {
 	return (location);
 }
 

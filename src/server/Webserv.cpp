@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 07:30:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/03 08:19:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	// for now response is here, could be in client
-	Response	response(clients[client_fd].request.get_location());
+	Response	response(conf.servers[0], clients[client_fd].request);// TODO: select good server
 	//std::cout << "insend\n";
 	// need to get right server to response, todo after merge of 2 class config
 	

@@ -6,16 +6,20 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 07:35:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/03 08:42:59 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include <cstddef>
 #include <sstream>
+#include <string>
 
-Response::Response(std::string const &path): header(), body(), full_response() {
-	read_file(path);
+Response::Response(Config::Server const &serv, Request const &req)
+	: header(), body(), full_response(), _serv(serv), _req(req) {
+	_autoindex = true; // TODO: use parsing to check autoindex
+	std::string	full_location = serv.root + '/' + req.get_location();
+	read_file(full_location);
 	set_header();
 	set_full_response();
 }
@@ -28,19 +32,19 @@ size_t	Response::size() const {
 	return (full_response.size());
 }
 
-int	Response::check_path(std::string const &path) const {
+Response::e_filetype	Response::check_path(std::string const &path) const {
 	struct stat	s;
 
 	if (stat(path.c_str(), &s) == 0)
 	{
 		if (s.st_mode & S_IFDIR)
-			return (1);
+			return (FT_DIR);
 		else if (s.st_mode & S_IFREG)
-			return (2);
+			return (FT_FILE);
 		else
-			return (0);
+			return (FT_UNKOWN);
 	}
-	return (0);
+	return (FT_UNKOWN);
 }
 
 bool	Response::check_read_perm(std::string const &path) const {
@@ -64,17 +68,21 @@ size_t	Response::read_file(std::string const &location)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
+	e_filetype			ft = check_path(location);
 
-	if (check_path(location) == 1) {
-		// if (found_index)
-		// 	body = index_page;
-		// else if (auto_index)
+	if (ft == FT_DIR) {
+		for (size_t i = 0; i < _serv.index.size(); ++i) {
+			std::string	index_candidate = location + '/' + _serv.index.at(i);
+			if (check_path(index_candidate) == FT_FILE)
+				return read_file(index_candidate);
+		}
+		 if (_autoindex)
 			body = create_auto_index_page(location);
 		// else
 		//  	body = some_error_page;
 
 	}
-	else if (check_path(location) == 2)
+	else if (check_path(location) == FT_FILE)
 	{
 		// read file
 		//std::cout << "123\n";
