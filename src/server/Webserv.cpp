@@ -6,16 +6,21 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 08:19:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/04 09:46:50 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include <signal.h> // handle <c-c>
 #include <stdexcept>
+
+// Quit gracefully with <c-c>
+volatile sig_atomic_t should_run = true;
+static void	sigint_handler(int sig) { if (sig == SIGINT) should_run = false; }
 
 Webserv::Webserv(): epfd(-1), conf(), clients()
 {
-	
+	signal(SIGINT, sigint_handler);
 }
 
 void	Webserv::run()
@@ -24,50 +29,36 @@ void	Webserv::run()
 	bool color = false;
 
 	serv_init();
-	if (!epoll_init())
-		return ;
-	while (1) //change to var to stop ?
+	epoll_init();
+	while (should_run)
 	{
 		errno = 0;
-		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT);
-		//std::cout << nfds << '\n';
+		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT); //std::cout << nfds << '\n';
 		if (errno == EINVAL || errno == EFAULT || errno == EBADFD)
 			std::cerr << "epoll error " << strerror(errno) << '\n'; //use errno ?
 		for (int i = 0; i < nfds; i++)
 		{
-			//if else if bloc
-			/*	if (error) 
-					handle error // quelles erreures ? comment gérer ?
-				else if (nouvelle connection events[i])
-					accept fonction (nouveau client) // db de clients ?
-				else if (read events[i])
-					revc fonction (request)
-				else if (write events[i])
-					send fonction (response to request)
-			*/
-			//std::cout << "event = " << events[i].events << "fd = " << events[i].data.fd << '\n';
-			//for (client_map::iterator it = clients.begin(); it != clients.end(); it++)
-			//{
-			//	std::cout << "CLIENT FD" << (*it).first << '\n';
-			//}
-			if (events[i].events == EPOLLERR || events[i].events == EPOLLHUP)
+			const int event = events[i].events;
+			const int event_fd =events[i].data.fd;
+			if (event == EPOLLIN) { // NOTE: epoll events are masks, we probably should do stuff like `if (event & EPOLLIN) ...`
+				if (is_serv(event_fd))
+					handle_new_client(event_fd);
+				else
+					handle_recv(event_fd);
+			}
+			else if (event == EPOLLOUT)
+				handle_send(event_fd);
+			else if (event == EPOLLERR || event == EPOLLHUP)
 				handle_error();
-			else if (events[i].events == EPOLLIN && is_serv(events[i].data.fd))
-				handle_new_client(events[i].data.fd);
-			else if (events[i].events == EPOLLIN)
-				handle_recv(events[i].data.fd);
-			else if (events[i].events == EPOLLOUT)
-				handle_send(events[i].data.fd);
-			//std::cout << "fgh" << (events[i].events) << EPOLLOUT << '\n';
+			else
+				std::cerr << "Unknown epoll event: " << event << std::endl;
 		}
-		if (nfds == 0)
-		{
+		if (nfds == 0) {
 			std::cout << (color ? "\e[34m": "\e[35m") <<  "waiting\n" << "\e[0m";
 			color = !color;
 			// keep waiting ? time out client ?
 		}
 	}
-	
 }
 
 void	Webserv::get_config(int ac, const char **av) {
@@ -83,7 +74,7 @@ void	Webserv::get_config(int ac, const char **av) {
 
 bool	Webserv::handle_error()
 {
-	std::cout << "error\n";
+	std::cout << "error\n"; // recoverable error ? TODO: be more specific
 	return (true);
 }
 
@@ -160,10 +151,7 @@ bool	Webserv::handle_send(int client_fd)
 bool	Webserv::epoll_init()
 {
 	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
-	{
-		std::cerr << "epoll create error\n";
-		return (false);
-	}
+		throw std::runtime_error("epoll create error");
 	std::memset((struct epoll_event *) &event, 0, sizeof(event));
 	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
@@ -171,12 +159,9 @@ bool	Webserv::epoll_init()
 		event.data.fd = serv.listen_fd;
 		event.events = EPOLLIN;
 		if (epoll_ctl(epfd, EPOLL_CTL_ADD, serv.listen_fd, &event) < 0)
-		{
-			std::cerr << "epoll ctl error\n";
-			return (false);
-		}
+			throw std::runtime_error("epoll ctl error");
 	}
-	return (true);
+	return (true); // unused
 }
 
 void	Webserv::serv_init()
@@ -208,11 +193,6 @@ int		Webserv::socket_init(Config::Server &server)
 		throw std::runtime_error("failed socket listen");
 	return (listen_fd); // unused
 }
-
-// void	Webserv::conf_init()
-// {
-	// conf.push_back(Config(INADDR_ANY, 8080));
-// }
 
 void	Webserv::delete_client(int client_fd)
 {
