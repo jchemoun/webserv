@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 13:25:33 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/04 16:20:50 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class is useless for now
 class Client
 {
 private:
-	int	serv_id;
+	int	_serv_id;
 public:
 	Request	request;
 	Client(/* args */);
