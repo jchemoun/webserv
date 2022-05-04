@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 10:42:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/04 13:40:07 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ private:
 	std::string	header;
 	std::string	body;
 	std::string	full_response;
+	std::string	content_type;
+	int			code;
+	std::map<int, std::string>	status_header;
 	Config::Server const	&_serv;
 	// Request const			&_req;
 	bool	_autoindex;
@@ -45,6 +48,8 @@ private:
 	bool		check_read_perm(std::string const &path) const;
 	std::string	create_auto_index_page(std::string const &location);
 	size_t		read_file(std::string const &location);
+
+	void		init_status_header();
 
 	void		set_header();
 	void		set_full_response();
