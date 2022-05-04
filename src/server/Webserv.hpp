@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 09:34:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/04 13:17:57 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ private:
 	//utils
 	void	delete_client(int client_fd);
 	bool	is_serv(int fd);
+	int		find_serv_id(int serv_fd);
 
 	//close/error
 	// void	close_serv(); // use destructor instead
