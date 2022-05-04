@@ -1,0 +1,22 @@
+name: Build CI
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt install -y --no-install-recommends zsh
+
+    - name: Compile
+      run: make
