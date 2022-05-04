@@ -132,8 +132,20 @@ re: fclean all
 build_image:
 	docker build -t webserv .docker
 
-DOCKER_RUN = docker run --rm -v $$(pwd):/home/dev/webserv webserv
-DOCKER_RUN_INTERACTIVE = docker run --rm -it -p 8080:80 -p 4242:4242 -v $$(pwd):/home/dev/webserv --hostname westeros webserv
+DOCKER_RUN = docker run \
+						 --rm \
+						 --env HOST_USER_ID=$$(id -u) \
+						 --env HOST_USER_GROUP=$$(id -g) \
+						 -v $$(pwd):/home/dev/webserv \
+						 webserv
+DOCKER_RUN_INTERACTIVE = docker run \
+												 -it \
+												 --rm \
+												 --env HOST_USER_ID=$$(id -u) \
+												 --env HOST_USER_GROUP=$$(id -g) \
+												 -p 8080:80 -p 4242:4242 \
+												 -v $$(pwd):/home/dev/webserv \
+												 webserv
 
 run_image:
 	 $(DOCKER_RUN_INTERACTIVE)
