@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 18:25:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/04 09:34:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,6 @@ private:
 	//serv
 	Config				conf;
 	client_map			clients;
-	// status
-	bool	_is_running;
 
 	//init
 	bool	epoll_init();
@@ -68,7 +66,6 @@ private:
 	bool	handle_new_client(int serv_fd);
 	bool	handle_recv(int client_fd);
 	bool	handle_send(int client_fd);
-	void	handle_stdin();
 
 	//utils
 	void	delete_client(int client_fd);

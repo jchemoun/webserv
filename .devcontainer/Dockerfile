@@ -22,15 +22,16 @@ ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="none"
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends clangd tree
 
-RUN apt install -y fzf
+RUN apt install -y --no-install-recommends fzf
 RUN echo "source /usr/share/doc/fzf/examples/key-bindings.zsh" >> /home/vscode/.zshrc
 
-RUN apt install -y fd-find ripgrep
+RUN apt install -y --no-install-recommends fd-find ripgrep
 
-RUN apt install -y bat
+RUN apt install -y --no-install-recommends bat
 USER vscode
 RUN mkdir -p /home/vscode/.local/bin && ln -s /usr/bin/batcat /home/vscode/.local/bin/bat && echo 'export PATH="$PATH:$HOME/.local/bin"' >> /home/vscode/.zshrc
 USER root
 
-RUN sudo apt install -y telnet
-RUN sudo apt install -y siege
+RUN sudo apt install -y --no-install-recommends telnet
+RUN sudo apt install -y --no-install-recommends siege
+RUN sudo apt install -y --no-install-recommends valgrind

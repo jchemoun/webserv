@@ -2,13 +2,14 @@ FROM ubuntu:latest
 
 # Dependencies to compile webserv and install nginx
 RUN apt update
-RUN apt install -y zsh clang make git
-RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt install -y nginx
+RUN apt install -y --no-install-recommends zsh clang make git
+RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt install -y --no-install-recommends nginx
 # RUN apt install -y python3-pip && pip install compiledb
-RUN apt install -y curl telnet
-RUN apt install -y netcat
-RUN apt install -y sudo
-RUN apt install -y vim
+RUN apt install -y --no-install-recommends curl telnet
+RUN apt install -y --no-install-recommends netcat
+RUN apt install -y --no-install-recommends sudo
+RUN apt install -y --no-install-recommends vim
+RUN apt install -y --no-install-recommends valgrind
 
 RUN useradd -m dev && echo "dev:dev" | chpasswd && adduser dev sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers

@@ -6,18 +6,21 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/03 18:38:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/04 09:46:50 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include <signal.h> // handle <c-c>
 #include <stdexcept>
-#include <string>
-#include <unistd.h>
 
-Webserv::Webserv(): epfd(-1), conf(), clients(), _is_running(true)
+// Quit gracefully with <c-c>
+volatile sig_atomic_t should_run = true;
+static void	sigint_handler(int sig) { if (sig == SIGINT) should_run = false; }
+
+Webserv::Webserv(): epfd(-1), conf(), clients()
 {
-	
+	signal(SIGINT, sigint_handler);
 }
 
 void	Webserv::run()
@@ -27,7 +30,7 @@ void	Webserv::run()
 
 	serv_init();
 	epoll_init();
-	while (_is_running) //change to var to stop ?
+	while (should_run)
 	{
 		errno = 0;
 		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT); //std::cout << nfds << '\n';
@@ -37,10 +40,8 @@ void	Webserv::run()
 		{
 			const int event = events[i].events;
 			const int event_fd =events[i].data.fd;
-			if (event == EPOLLIN) {
-				if (event_fd == STDIN_FILENO)
-					handle_stdin();
-				else if (is_serv(event_fd))
+			if (event == EPOLLIN) { // NOTE: epoll events are masks, we probably should do stuff like `if (event & EPOLLIN) ...`
+				if (is_serv(event_fd))
 					handle_new_client(event_fd);
 				else
 					handle_recv(event_fd);
@@ -58,7 +59,6 @@ void	Webserv::run()
 			// keep waiting ? time out client ?
 		}
 	}
-	
 }
 
 void	Webserv::get_config(int ac, const char **av) {
@@ -148,19 +148,6 @@ bool	Webserv::handle_send(int client_fd)
 	return (true);
 }
 
-void	Webserv::handle_stdin() {
-	std::string instruction;
-	std::getline(std::cin, instruction);
-	if (std::cin.eof() || instruction == "quit") {
-		_is_running = false;
-		std::cout << "Thanks for using webserv! Bye 👋" << std::endl;
-	}
-	else if (std::cin.bad())
-		throw std::runtime_error("error reading stdin");
-	else
-		std::cout << "Unkown instruction: enter \"quit\" to leave the program." << std::endl;
-}
-
 bool	Webserv::epoll_init()
 {
 	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
@@ -174,10 +161,6 @@ bool	Webserv::epoll_init()
 		if (epoll_ctl(epfd, EPOLL_CTL_ADD, serv.listen_fd, &event) < 0)
 			throw std::runtime_error("epoll ctl error");
 	}
-	event.data.fd = STDIN_FILENO;
-	event.events = EPOLLIN;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &event) < 0)
-		std::cerr << "Warning: could not add stdin to epoll" << std::endl;
 	return (true); // unused
 }
 
@@ -210,11 +193,6 @@ int		Webserv::socket_init(Config::Server &server)
 		throw std::runtime_error("failed socket listen");
 	return (listen_fd); // unused
 }
-
-// void	Webserv::conf_init()
-// {
-	// conf.push_back(Config(INADDR_ANY, 8080));
-// }
 
 void	Webserv::delete_client(int client_fd)
 {
