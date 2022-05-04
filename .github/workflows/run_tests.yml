@@ -15,6 +15,29 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+
+
+    - run: mkdir -p ~/image-cache
+    - id: image-cache
+      uses: actions/cache@v3
+      with:
+          path: ~/image-cache
+                  # Adjust key to meet your cache time requirements e.g.
+                  # ${{ hashFiles(*) }} can be useful here to invalidate
+                  # cache on file changes
+          key: image-cache-${{ runner.os }}
+
+    - if: steps.image-cache.outputs.cache-hit != 'true'
+      run: |
+          docker pull mrgittes/webserv
+          docker save -o ~/image-cache/webserv.tar mrgittes/webserv
+
+    - if: steps.image-cache.outputs.cache-hit == 'true'
+      run: docker load -i ~/image-cache/webserv.tar
+
+
+
+
     - name: Install dependencies
       run: sudo apt install -y --no-install-recommends zsh
       
