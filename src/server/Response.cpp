@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 14:07:54 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/04 14:15:58 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,7 @@ size_t	Response::read_file(std::string const &location)
 		if (_autoindex)
 			body = create_auto_index_page(location);
 		//else
-		//  body = some_error_page;
+		//  body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 
 	}
 	else if (check_path(location) == FT_FILE)
