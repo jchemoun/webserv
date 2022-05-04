@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 09:46:50 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/04 13:26:09 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ bool	Webserv::handle_new_client(int serv_fd)
 	event.events = EPOLLIN;
 	epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event);
 	clients[client_fd] = client;
+	clients[client_fd].set_serv_id(find_serv_id(serv_fd));
 	std::cout << "connection worked\n";
 	return (true);
 }
@@ -133,7 +134,7 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	// for now response is here, could be in client
-	Response	response(conf.servers[0], clients[client_fd].request);// TODO: select good server
+	Response	response(conf.servers[clients[client_fd].get_serv_id()], clients[client_fd].request);// TODO: select good server
 	//std::cout << "insend\n";
 	// need to get right server to response, todo after merge of 2 class config
 	
@@ -210,6 +211,16 @@ bool	Webserv::is_serv(int fd)
 			return (true);
 	}
 	return (false);
+}
+
+int		Webserv::find_serv_id(int serv_fd)
+{
+	for (size_t i = 0; i < conf.servers.size(); i++)
+	{
+		if (conf.servers[i].listen_fd == serv_fd)
+			return ((int)i);
+	}
+	return (-1);	
 }
 
 // void	Webserv::close_serv()

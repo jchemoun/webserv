@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jchemoun <jchemoun@student.42.fr>          +#+  +:+       +#+        */
+/*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/04/30 14:48:48 by jchemoun         ###   ########.fr       */
+/*   Updated: 2022/05/04 13:25:33 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,14 @@ class is useless for now
 class Client
 {
 private:
-	
+	int	serv_id;
 public:
 	Request	request;
 	Client(/* args */);
+
+	void	set_serv_id(int serv_id);
+
+	int		get_serv_id();
 
 	~Client();
 };
