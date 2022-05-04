@@ -24,6 +24,10 @@ COPY zshrc ${HOME}/.zshrc
 
 ENV DOCKER=true
 COPY entrypoint.sh ${HOME}
+
+# ENV HOST_USER_ID=1000
+# ENV HOST_USER_GROUP=${HOST_USER_ID}
+
 ENTRYPOINT ["/home/dev/entrypoint.sh"]
 # CMD ["trivial_server"]
 

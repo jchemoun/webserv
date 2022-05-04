@@ -52,11 +52,15 @@ run_on_webserv() {
 
 # ================================== Rules =================================== #
 
+if [ -n "$HOST_USER_ID" ] && [ "$HOST_USER_ID" != $(id -u) ]; then
+  sudo chown -R $(id -u):$(id -g) .
+fi
+
 if [ $# -eq 0 ]; then
-  exec /usr/bin/env zsh
+  /usr/bin/env zsh
 
 elif [ "$1" = "make" ]; then
-  exec $@
+  $@
 
 # elif [ "$1" = "compiledb" ]; then
 #   exec compiledb make
@@ -68,7 +72,7 @@ elif [ "$1" = "webserv" ] ; then
   make
   printf "\e[32mLaunching ./webserv $2\e[0m\n"
   nohup ./webserv $2 &> ../webserv.log &
-  exec /usr/bin/env zsh
+  /usr/bin/env zsh
 
 elif [ "$1" = "nginx" ]; then
   echo
@@ -82,7 +86,7 @@ elif [ "$1" = "nginx" ]; then
   fi
   echo "Launching nginx..." && sudo nginx && printf "\e[32mnginx is running!\e[0m\n"
   nginx_signal_usage
-  exec /usr/bin/env zsh
+  /usr/bin/env zsh
 
 elif [ "$1" = "test" ] && [ "$2" = "nginx" ] && [ $# -eq 3 ]; then
   sudo rm /etc/nginx/sites-enabled/default
@@ -97,4 +101,8 @@ elif [ "$1" = "test" ] && [ "$2" = "webserv" ] && [ $# -eq 3 ]; then
 
 else
   printf "\e[1;31mUnknown instruction:\e[0m $1 $2 $3...\n"
+fi
+
+if [ -n "$HOST_USER_ID" ] && [ "$HOST_USER_ID" != $(id -u) ]; then
+  sudo chown -R ${HOST_USER_ID}:${HOST_USER_GROUP} .
 fi
