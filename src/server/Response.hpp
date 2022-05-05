@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 13:40:07 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/05 13:35:00 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,8 +48,10 @@ private:
 	bool		check_read_perm(std::string const &path) const;
 	std::string	create_auto_index_page(std::string const &location);
 	size_t		read_file(std::string const &location);
+	size_t		read_error_page();
 
 	void		init_status_header();
+	std::string	build_error_page();
 
 	void		set_header();
 	void		set_full_response();

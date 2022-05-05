@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 16:11:53 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/05 14:16:42 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,12 @@ size_t	Response::read_file(std::string const &location)
 		}
 		if (_autoindex)
 			body = create_auto_index_page(location);
-		//else
-		//  body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
+		else
+		{
+			code = 403;
+			return (read_error_page());
+		}
+		  //body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 
 	}
 	else if (check_path(location) == FT_FILE)
@@ -96,25 +100,28 @@ size_t	Response::read_file(std::string const &location)
 		{
 			//std::cout << "403\n";
 			//403
-			return (0);
+			code = 403;
+			return (read_error_page());
 		}
 		file.open(location.c_str(), std::ifstream::in);
 		if (file.is_open() == false)
 		{
 			// 404
-			return (0);
+			code = 404;
+			return (read_error_page());
 		}
 		buf << file.rdbuf();
 		file.close();
 		body = buf.str();
-		if (body.find("<!DOCTYPE html>") != std::string::npos)
-			content_type = "text/html";
+		//if (body.find("<!DOCTYPE html>") != std::string::npos) // to replace with parse nginx file && extension file
+		//	content_type = "text/html";
 	}
 	else
 	{
 		//std::cout << "404\n";
 		// 404
-		return (0);
+		code = 404;
+		return (read_error_page());
 	}
 	std::cout << "body: \e[33m" << body << "\e[0m";
 	code = 200;
@@ -122,6 +129,60 @@ size_t	Response::read_file(std::string const &location)
 }
 
 // read file for error pages
+size_t		Response::read_error_page()
+{
+	std::ofstream		file;
+	std::stringstream	buf;
+	std::string			location;
+
+	std::cout << "in error\n" << code << "\n";
+	//for (std::map<int, std::string>::const_iterator cit = _serv.error_pages.begin(); cit != _serv.error_pages.end(); cit++)
+	//{
+	//	std::cout << "FGH" << (*cit).second << '\n';
+	//}
+	location = (*(_serv.error_pages.find(code))).second;
+	std::cout << location << '\n';
+	if (check_path(location) == FT_DIR)
+	{
+		body = build_error_page();
+		return (body.length());
+	}
+	if (check_read_perm(location) == false)
+	{
+		// error but not supposed to happen;
+		body = build_error_page();
+		return (body.length());
+	}
+	file.open(location.c_str(), std::ifstream::in);
+	if (file.is_open() == false)
+	{
+		// error but not supposed to happen;
+		body = build_error_page();
+		return (body.length());
+	}
+	buf << file.rdbuf();
+	file.close();
+	body = buf.str();
+	std::cout << "body: \e[33m" << body << "\e[0m";
+	return (body.length()); // not used
+}
+
+std::string	Response::build_error_page()
+{
+	std::ostringstream	oss;
+
+	oss << "<html>\n<head><title>";
+	oss << code << ' ' << status_header[code];
+	oss << "</title></head>\n<body>\n<center><h1>";
+	oss << code << ' ' << status_header[code];
+	oss << "</h1></center>\n<hr><center>";
+	oss << "webserv/0.1"; // to replace with actual serv name
+	oss << "</center>\n</body>\n</html>";
+	oss << std::endl;
+
+	content_type = "text/html";
+	return (oss.str());
+}
 
 void		Response::init_status_header()
 {
