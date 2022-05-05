@@ -2,10 +2,10 @@ name: Build CI
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  # push:
+  #   branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
 
 jobs:
   build:
@@ -18,8 +18,5 @@ jobs:
     - name: Install dependencies
       run: sudo apt install -y --no-install-recommends zsh
 
-    - name: Check apt cache files
-      run: ls ${{ runner.temp }}/cache-linux
-
-    # - name: Compile
-    #   run: make
+    - name: Compile
+      run: make
