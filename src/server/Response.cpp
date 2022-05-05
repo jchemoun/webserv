@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/05 14:06:22 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/05 14:16:42 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,6 +142,11 @@ size_t		Response::read_error_page()
 	//}
 	location = (*(_serv.error_pages.find(code))).second;
 	std::cout << location << '\n';
+	if (check_path(location) == FT_DIR)
+	{
+		body = build_error_page();
+		return (body.length());
+	}
 	if (check_read_perm(location) == false)
 	{
 		// error but not supposed to happen;
