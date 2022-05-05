@@ -46,6 +46,6 @@ jobs:
 
     - name: Install dependencies
       run: sudo apt install -y --no-install-recommends zsh
-      
+
     - name: run tests
       run: make test
