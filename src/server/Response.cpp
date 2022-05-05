@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/05 13:44:24 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/05 14:06:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,11 +168,12 @@ std::string	Response::build_error_page()
 
 	oss << "<html>\n<head><title>";
 	oss << code << ' ' << status_header[code];
-	oss << "</head></title>\n<body>\n<center><h1>";
+	oss << "</title></head>\n<body>\n<center><h1>";
 	oss << code << ' ' << status_header[code];
 	oss << "</h1></center>\n<hr><center>";
-	oss << "webserv/0.1 (ubuntu)"; // to replace with actual serv name
+	oss << "webserv/0.1"; // to replace with actual serv name
 	oss << "</center>\n</body>\n</html>";
+	oss << std::endl;
 
 	content_type = "text/html";
 	return (oss.str());
