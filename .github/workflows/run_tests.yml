@@ -27,12 +27,18 @@ jobs:
                   # cache on file changes
           key: image-cache-${{ runner.os }}
 
-    - if: steps.image-cache.outputs.cache-hit != 'true'
-      run: |
-          docker pull mrgittes/webserv
-          docker save -o ~/image-cache/webserv.tar mrgittes/webserv
-
-    - if: steps.image-cache.outputs.cache-hit == 'true'
+    # - if: steps.image-cache.outputs.cache-hit != 'true'
+    #   run: |
+    #       docker pull mrgittes/webserv
+    #       docker save -o ~/image-cache/webserv.tar mrgittes/webserv
+    - name: Pull Image
+      if: steps.image-cache.outputs.cache-hit != 'true'
+      run: docker pull mrgittes/webserv
+    - name: Save Image
+      if: steps.image-cache.outputs.cache-hit != 'true'
+      run: docker save -o ~/image-cache/webserv.tar mrgittes/webserv
+    - name: Restore image
+      if: steps.image-cache.outputs.cache-hit == 'true'
       run: docker load -i ~/image-cache/webserv.tar
 
 
