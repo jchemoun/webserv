@@ -5,6 +5,8 @@ RUN apt update
 RUN apt install -y --no-install-recommends zsh clang make git
 RUN DEBIAN_FRONTEND="noninteractive" TZ="Europe/Paris" apt install -y --no-install-recommends nginx
 # RUN apt install -y python3-pip && pip install compiledb
+#NOTE:	we might need to install curl with suggested dependencies (like ca-certificates)
+# 			but maybe not (since we don't have to use those with webserv)
 RUN apt install -y --no-install-recommends curl telnet
 RUN apt install -y --no-install-recommends netcat
 RUN apt install -y --no-install-recommends sudo
