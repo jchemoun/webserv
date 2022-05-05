@@ -26,13 +26,6 @@ jobs:
           path: ~/image-cache
           key: image-cache-${{ runner.os }}-${{ hashFiles('.docker/*') }}
 
-    # - if: steps.image-cache.outputs.cache-hit != 'true'
-    #   run: |
-    #       docker pull mrgittes/webserv
-    #       docker save -o ~/image-cache/webserv.tar mrgittes/webserv
-    # - name: Pull Image
-    #   if: steps.image-cache.outputs.cache-hit != 'true'
-    #   run: docker pull mrgittes/webserv
     - name: Build Image
       if: steps.image-cache.outputs.cache-hit != 'true'
       run: make build_image
@@ -41,10 +34,10 @@ jobs:
       run: |
         mkdir -p ~/image-cache
         docker save -o ~/image-cache/webserv.tar mrgittes/webserv
+
     - name: Restore image
       if: steps.image-cache.outputs.cache-hit == 'true'
       run: docker load -i ~/image-cache/webserv.tar
-
 
 
 

@@ -2,9 +2,6 @@
 
 # ================================== Usage =================================== #
 
-# printf "\n\e[34mHello, first you need to make sure that you mounted your sources in docker:\n\
-#      \e[33m\$\e[32m docker\e[0m run -it -p 8080:80 \e[32m-v \$(pwd):${MOUNTING_POINT}\e[0m webserv\n\n" >&2
-
 nginx_conf_usage() {
 if tty &>/dev/null; then
 printf "\n\e[34mTo run nginx with a specific config file, do:\n\
@@ -95,8 +92,6 @@ elif [ "$1" = "test" ] && [ "$2" = "nginx" ] && [ $# -eq 3 ]; then
 
 elif [ "$1" = "test" ] && [ "$2" = "webserv" ] && [ $# -eq 3 ]; then
   make --silent
-  # sudo rm /etc/nginx/sites-enabled/default # remove when webserv ok
-  # sudo cp -R html www /usr/share/nginx/    # idem
   run_on_webserv $3
 
 else
