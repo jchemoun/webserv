@@ -1,0 +1,45 @@
+name: Run Tests CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  run_tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: sudo apt install -y --no-install-recommends zsh
+
+
+    # - run: mkdir -p ~/image-cache
+    - id: image-cache
+      uses: actions/cache@v3
+      with:
+          path: ~/image-cache
+          key: image-cache-${{ runner.os }}-${{ hashFiles('.docker/*') }}
+
+    - name: Build Image
+      if: steps.image-cache.outputs.cache-hit != 'true'
+      run: make build_image
+    - name: Save Image
+      if: steps.image-cache.outputs.cache-hit != 'true'
+      run: |
+        mkdir -p ~/image-cache
+        docker save -o ~/image-cache/webserv.tar mrgittes/webserv
+
+    - name: Restore image
+      if: steps.image-cache.outputs.cache-hit == 'true'
+      run: docker load -i ~/image-cache/webserv.tar
+
+
+
+    - name: run tests
+      run: make test
