@@ -18,5 +18,8 @@ jobs:
     - name: Install dependencies
       run: sudo apt install -y --no-install-recommends zsh
 
-    - name: Compile
-      run: make
+    - name: Check apt cache files
+      run: ls ${{ runner.temp }}/cache-linux
+
+    # - name: Compile
+    #   run: make

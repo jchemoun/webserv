@@ -22,9 +22,6 @@ jobs:
       uses: actions/cache@v3
       with:
           path: ~/image-cache
-                  # Adjust key to meet your cache time requirements e.g.
-                  # ${{ hashFiles(*) }} can be useful here to invalidate
-                  # cache on file changes
           key: image-cache-${{ runner.os }}-${{ hashFiles('.docker/*') }}
 
     # - if: steps.image-cache.outputs.cache-hit != 'true'
