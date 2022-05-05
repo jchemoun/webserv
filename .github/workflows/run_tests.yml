@@ -25,7 +25,7 @@ jobs:
                   # Adjust key to meet your cache time requirements e.g.
                   # ${{ hashFiles(*) }} can be useful here to invalidate
                   # cache on file changes
-          key: image-cache-${{ runner.os }}
+          key: image-cache-${{ runner.os }}-${{ hashFiles('.docker/*') }}
 
     # - if: steps.image-cache.outputs.cache-hit != 'true'
     #   run: |
