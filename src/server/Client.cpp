@@ -12,14 +12,14 @@
 
 #include "Client.hpp"
 
-Client::Client(/* args */): request()
+Client::Client(int serv_id): _serv_id(serv_id), request()
 {
 }
 
-void    Client::set_serv_id(int serv_id)
-{
-    _serv_id = serv_id;
-}
+// void    Client::set_serv_id(int serv_id)
+// {
+//     _serv_id = serv_id;
+// }
 
 int     Client::get_serv_id()
 {

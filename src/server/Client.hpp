@@ -28,13 +28,12 @@ private:
 	int	_serv_id;
 public:
 	Request	request;
-	Client(/* args */);
+	Client(int serv_id = -1);
+	~Client();
 
-	void	set_serv_id(int serv_id);
+	// void	set_serv_id(int serv_id);
 
 	int		get_serv_id();
-
-	~Client();
 };
 
 #endif
