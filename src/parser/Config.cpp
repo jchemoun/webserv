@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/06 13:49:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/06 13:59:56 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,8 @@ Config::Server::Server():
 	listen_address(htonl(INADDR_ANY)),
 	listen_string_address("*"),
 	listen_fd(0),
-	root("html")
+	root("html"),
+	autoindex(false)
 {
 }
 
