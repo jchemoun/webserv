@@ -6,14 +6,11 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 13:47:49 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/06 14:05:53 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
-#include <cstddef>
-#include <sstream>
-#include <string>
 
 Response::Response(Config::Server const &serv, Request const &req)
 	: header(), body(), full_response(), _serv(serv)//, _req(req)
@@ -61,11 +58,40 @@ bool	Response::check_read_perm(std::string const &path) const {
 	return (false);
 }
 
-std::string	Response::create_auto_index_page(std::string const &location)
+size_t	Response::create_auto_index_page(std::string const &location)
 {
-	(void)location;
+	std::ostringstream	oss;
+	DIR					*dir;
+	struct dirent		*ent;
+
+	if (location.back() != '\n')
+	{
+		code = 301;
+		location += '/';
+		return (read_error_page());
+	}
+	if (check_read_perm(location) == false)
+	{
+		code = 403;
+		return (read_error_page());
+	}
+	if (dir = opendir(location) == NULL)
+	{
+		code = 404;
+		return (read_error_page());
+	}
+	oss << "<html>\n<head><title>Index of " << location << "</title></head>\n<body>\n";
+	oss << "<h1>Index of " << location << "</h1><hr><pre><a href=\"../\">../</a>\n";
+	// list of file, last modif, size
+	while ((ent = readdir(dir)) != NULL)
+	{
+		oss << "<a href=\"" << ent->d_name; // maybe add / if folder
+		oss << "\">" << ent->d_name // maybe add / if folder
+		oss << "</a>\t\t" << 
+	}
+	oss << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
-	return ("auto_index not implemented yet\n");
+	return (body.length());
 }
 
 size_t	Response::read_file(std::string const &location)
@@ -83,7 +109,7 @@ size_t	Response::read_file(std::string const &location)
 				return (read_file(index_candidate));
 		}
 		if (_autoindex)
-			body = create_auto_index_page(location);
+			return (create_auto_index_page(location));
 		else
 		{
 			code = 403;
@@ -184,6 +210,11 @@ std::string	Response::build_error_page()
 	return (oss.str());
 }
 
+std::string	Response::time_last_modif(std::string file)
+{
+	
+}
+
 void		Response::init_status_header()
 {
 	status_header[100] = "Continue";
@@ -207,6 +238,10 @@ void		Response::set_header() {
 	oss << "Server: webserv/0.1 (Ubuntu)" << std::endl; // ??? which name; all of them ? wth
 	oss << "Content-Length: " << body.size() << '\n';
 	oss << "Content-Type: " << content_type << '\n';
+	if (code == 301)
+	{
+		oss << "location: "; // todo fill host + location
+	}
 	oss << "Connection: keep-alive" << '\n';
 	oss << std::endl;
 	header = oss.str();
