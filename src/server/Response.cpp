@@ -67,7 +67,7 @@ std::string	Response::time_last_modif(std::string file)
 	stat(file.c_str(), &s);
 	//std::cout << s.st_mtim.tv_nsec;
 	time = localtime(&(s.st_mtim.tv_sec));
-	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", time);
+	strftime(buf, sizeof(buf), "%d-%b-%Y %H:%M", time);
 	std::cout << buf;
 	return (buf);
 }
