@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 16:05:43 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 17:39:21 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <iostream>
 # include <fstream>
 # include <sstream>
+# include <algorithm>
 # include <sys/stat.h>
 # include <sys/types.h>
 # include <unistd.h>

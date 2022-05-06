@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 17:26:49 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 17:41:44 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,10 +81,11 @@ long	Response::size_file(std::string file)
 
 size_t	Response::create_auto_index_page(std::string &location)
 {
-	std::ostringstream	oss;
-	std::ostringstream	oss_file;
-	DIR					*dir;
-	struct dirent		*ent;
+	std::ostringstream			oss;
+	std::ostringstream			oss_file;
+	std::vector<std::string>	ff_vector;
+	DIR							*dir;
+	struct dirent				*ent;
 
 	if (*(location.rbegin()) != '/')
 	{
@@ -106,14 +107,15 @@ size_t	Response::create_auto_index_page(std::string &location)
 	oss << "<h1>Index of " << location.substr(_serv.root.length()) << "</h1><hr><pre><a href=\"../\">../</a>\n";
 	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
-	{
 		if (ent->d_name[0] != '.')
-		{
-			if (check_path(location + ent->d_name) == FT_DIR)
-				oss << "<a href=\"" << ent->d_name << "/\">" << ent->d_name << "/</a>\t" << time_last_modif(location + ent->d_name) << "\t-\n";
-			else
-				oss_file << "<a href=\"" << ent->d_name << "\">" << ent->d_name << "</a>\t" << time_last_modif(location + ent->d_name) << '\t' << size_file(location + ent->d_name) << '\n';
-		}
+			ff_vector.push_back(ent->d_name);
+	std::sort(ff_vector.begin(), ff_vector.end());
+	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
+	{
+		if (check_path(location + *(cit)) == FT_DIR)
+			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << time_last_modif(location + *(cit)) << "\t-\n";
+		else
+			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << time_last_modif(location + *(cit)) << '\t' << size_file(location + *(cit)) << '\n';
 	}
 	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
