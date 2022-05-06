@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 16:11:47 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 16:22:22 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Response::Response(Config::Server const &serv, Request const &req)
 	{
 	_autoindex = serv.autoindex; // location autoindex?
 	content_type = "text/plain";
-	std::string	full_location = serv.root + '/' + req.get_location(); // warning : need to adjust in case of redirection
+	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + req.get_location(); // warning : need to adjust in case of redirection
 	init_status_header();
 	read_file(full_location);
 	set_header();
