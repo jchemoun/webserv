@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 16:34:25 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 17:26:49 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ long	Response::size_file(std::string file)
 size_t	Response::create_auto_index_page(std::string &location)
 {
 	std::ostringstream	oss;
+	std::ostringstream	oss_file;
 	DIR					*dir;
 	struct dirent		*ent;
 
@@ -108,17 +109,13 @@ size_t	Response::create_auto_index_page(std::string &location)
 	{
 		if (ent->d_name[0] != '.')
 		{
-			oss << "<a href=\"" << ent->d_name << (check_path(location + ent->d_name) == FT_DIR ? "/" : ""); // need add / if folder
-			oss << "\">" << ent->d_name << (check_path(location + ent->d_name) == FT_DIR ? "/" : ""); // need add / if folder
-			oss << "</a>\t" << time_last_modif(location + ent->d_name) << '\t';
-			if (check_path(location + ent->d_name) != FT_DIR)
-				oss << size_file(location + ent->d_name);
+			if (check_path(location + ent->d_name) == FT_DIR)
+				oss << "<a href=\"" << ent->d_name << "/\">" << ent->d_name << "/</a>\t" << time_last_modif(location + ent->d_name) << "\t-\n";
 			else
-				oss << '-';
-			oss << '\n';
+				oss_file << "<a href=\"" << ent->d_name << "\">" << ent->d_name << "</a>\t" << time_last_modif(location + ent->d_name) << '\t' << size_file(location + ent->d_name) << '\n';
 		}
 	}
-	oss << "</pre><hr></body>\n</html>" << std::endl;
+	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
 	body = oss.str();
 	content_type = "text/html";
