@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/29 09:09:06 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/06 13:16:01 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,8 @@ private:
 	void	_parse_root(Context &context);                               // http://nginx.org/en/docs/http/ngx_http_core_module.html#root
 	template <class Context>
 	void	_parse_error_page(Context &context);                         // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
+	template <class Context>
+	void	_parse_autoindex(Context &context);                         // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
 
 	// Get parsing function
 	template <class parser_type>

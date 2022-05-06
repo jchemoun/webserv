@@ -6,13 +6,17 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/28 17:45:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/06 13:59:56 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Config.hpp"
 #include <iostream>
 #include <arpa/inet.h> // INADDR_ANY
+
+/*
+** ================================= Utils ================================== **
+*/
 
 static void print_vector(const std::vector<std::string> &v) {
 	for (size_t i = 0; i < v.size(); i++) std::cout << v[i] << " ";
@@ -27,12 +31,34 @@ static void print_map(const std::map<int, std::string> &m, std::string indent = 
 	}
 }
 
+/*
+** ================================ Location ================================ **
+*/
+
+Config::Location::Location(): autoindex(false) { // autoindex should be unset
+}
+
 void	Config::Location::print() const {
 	std::cout << "\e[34mLocation: " << location_path << std::endl;
 	std::cout << "    Indexes: "; print_vector(index);
 	std::cout << "    Root: " << root << std::endl;
+	std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
 	print_map(error_pages, "    ");
 	std::cout << "\e[0m";
+}
+
+/*
+** ================================= Server ================================= **
+*/
+
+Config::Server::Server():
+	listen_port(8000),
+	listen_address(htonl(INADDR_ANY)),
+	listen_string_address("*"),
+	listen_fd(0),
+	root("html"),
+	autoindex(false)
+{
 }
 
 void	Config::Server::print() const {
@@ -43,8 +69,13 @@ void	Config::Server::print() const {
 		locations[i].print();
 	std::cout << "Indexes: "; print_vector(index);
 	std::cout << "Root: " << root << std::endl;
+	std::cout << "Autoindex: " << std::boolalpha << autoindex << std::endl;
 	print_map(error_pages);
 }
+
+/*
+** ================================= Config ================================= **
+*/
 
 void	Config::print() const {
 	std::cout << "> CONFIG:" << std::endl << std::endl;
@@ -55,11 +86,3 @@ void	Config::print() const {
 	}
 }
 
-Config::Server::Server():
-	listen_port(8000),
-	listen_address(htonl(INADDR_ANY)),
-	listen_string_address("*"),
-	listen_fd(0),
-	root("html")
-{
-}
