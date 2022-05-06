@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 14:05:53 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 16:11:47 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,13 +58,34 @@ bool	Response::check_read_perm(std::string const &path) const {
 	return (false);
 }
 
-size_t	Response::create_auto_index_page(std::string const &location)
+std::string	Response::time_last_modif(std::string file)
+{
+	struct stat	s;
+	struct tm	*time;
+	char		buf[200];
+
+	stat(file.c_str(), &s);
+	//std::cout << s.st_mtim.tv_nsec;
+	time = localtime(&(s.st_mtim.tv_sec));
+	strftime(buf, sizeof(buf), "%d/%m/%Y %H:%M:%S", time);
+	std::cout << buf;
+	return (buf);
+}
+
+long	Response::size_file(std::string file)
+{
+	struct stat	s;
+
+	return (stat(file.c_str(), &s));
+}
+
+size_t	Response::create_auto_index_page(std::string &location)
 {
 	std::ostringstream	oss;
 	DIR					*dir;
 	struct dirent		*ent;
 
-	if (location.back() != '\n')
+	if (*(location.rbegin()) != '/')
 	{
 		code = 301;
 		location += '/';
@@ -75,7 +96,7 @@ size_t	Response::create_auto_index_page(std::string const &location)
 		code = 403;
 		return (read_error_page());
 	}
-	if (dir = opendir(location) == NULL)
+	if ((dir = opendir(location.c_str())) == NULL)
 	{
 		code = 404;
 		return (read_error_page());
@@ -85,16 +106,27 @@ size_t	Response::create_auto_index_page(std::string const &location)
 	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
 	{
-		oss << "<a href=\"" << ent->d_name; // maybe add / if folder
-		oss << "\">" << ent->d_name // maybe add / if folder
-		oss << "</a>\t\t" << 
+		if (ent->d_name[0] != '.')
+		{
+			oss << "<a href=\"" << ent->d_name << (check_path(location + ent->d_name) == FT_DIR ? "/" : ""); // need add / if folder
+			oss << "\">" << ent->d_name << (check_path(location + ent->d_name) == FT_DIR ? "/" : ""); // need add / if folder
+			oss << "</a>\t" << time_last_modif(location + ent->d_name) << '\t';
+			if (check_path(location + ent->d_name) != FT_DIR)
+				oss << size_file(location + ent->d_name);
+			else
+				oss << '-';
+			oss << '\n';
+		}
 	}
 	oss << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
+	body = oss.str();
+	content_type = "text/html";
+	closedir(dir);
 	return (body.length());
 }
 
-size_t	Response::read_file(std::string const &location)
+size_t	Response::read_file(std::string &location)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
@@ -208,11 +240,6 @@ std::string	Response::build_error_page()
 
 	content_type = "text/html";
 	return (oss.str());
-}
-
-std::string	Response::time_last_modif(std::string file)
-{
-	
 }
 
 void		Response::init_status_header()
