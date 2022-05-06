@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 17:41:44 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 18:02:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ size_t	Response::create_auto_index_page(std::string &location)
 		location += '/';
 		return (read_error_page());
 	}
+	// probably error need check if exist && exec perm
 	if (check_read_perm(location) == false)
 	{
 		code = 403;
@@ -107,7 +108,7 @@ size_t	Response::create_auto_index_page(std::string &location)
 	oss << "<h1>Index of " << location.substr(_serv.root.length()) << "</h1><hr><pre><a href=\"../\">../</a>\n";
 	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
-		if (ent->d_name[0] != '.')
+		if (ent->d_name[0] != '.') // need check hidden files
 			ff_vector.push_back(ent->d_name);
 	std::sort(ff_vector.begin(), ff_vector.end());
 	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
