@@ -6,21 +6,18 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 13:47:49 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/06 18:02:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
-#include <cstddef>
-#include <sstream>
-#include <string>
 
 Response::Response(Config::Server const &serv, Request const &req)
 	: header(), body(), full_response(), _serv(serv)//, _req(req)
 	{
 	_autoindex = serv.autoindex; // location autoindex?
 	content_type = "text/plain";
-	std::string	full_location = serv.root + '/' + req.get_location(); // warning : need to adjust in case of redirection
+	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + req.get_location(); // warning : need to adjust in case of redirection
 	init_status_header();
 	read_file(full_location);
 	set_header();
@@ -61,14 +58,75 @@ bool	Response::check_read_perm(std::string const &path) const {
 	return (false);
 }
 
-std::string	Response::create_auto_index_page(std::string const &location)
+std::string	Response::time_last_modif(std::string file)
 {
-	(void)location;
-	code = 200;
-	return ("auto_index not implemented yet\n");
+	struct stat	s;
+	struct tm	*time;
+	char		buf[200];
+
+	stat(file.c_str(), &s);
+	//std::cout << s.st_mtim.tv_nsec;
+	time = localtime(&(s.st_mtim.tv_sec));
+	strftime(buf, sizeof(buf), "%d-%b-%Y %H:%M", time);
+	std::cout << buf;
+	return (buf);
 }
 
-size_t	Response::read_file(std::string const &location)
+long	Response::size_file(std::string file)
+{
+	struct stat	s;
+
+	return (stat(file.c_str(), &s));
+}
+
+size_t	Response::create_auto_index_page(std::string &location)
+{
+	std::ostringstream			oss;
+	std::ostringstream			oss_file;
+	std::vector<std::string>	ff_vector;
+	DIR							*dir;
+	struct dirent				*ent;
+
+	if (*(location.rbegin()) != '/')
+	{
+		code = 301;
+		location += '/';
+		return (read_error_page());
+	}
+	// probably error need check if exist && exec perm
+	if (check_read_perm(location) == false)
+	{
+		code = 403;
+		return (read_error_page());
+	}
+	if ((dir = opendir(location.c_str())) == NULL)
+	{
+		code = 404;
+		return (read_error_page());
+	}
+	oss << "<html>\n<head><title>Index of " << location.substr(_serv.root.length()) << "</title></head>\n<body>\n";
+	oss << "<h1>Index of " << location.substr(_serv.root.length()) << "</h1><hr><pre><a href=\"../\">../</a>\n";
+	// list of file, last modif, size
+	while ((ent = readdir(dir)) != NULL)
+		if (ent->d_name[0] != '.') // need check hidden files
+			ff_vector.push_back(ent->d_name);
+	std::sort(ff_vector.begin(), ff_vector.end());
+	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
+	{
+		if (check_path(location + *(cit)) == FT_DIR)
+			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << time_last_modif(location + *(cit)) << "\t-\n";
+		else
+			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << time_last_modif(location + *(cit)) << '\t' << size_file(location + *(cit)) << '\n';
+	}
+	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
+	code = 200;
+	body = oss.str();
+	content_type = "text/html";
+	closedir(dir);
+	return (body.length());
+}
+
+size_t	Response::read_file(std::string &location)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
@@ -83,7 +141,7 @@ size_t	Response::read_file(std::string const &location)
 				return (read_file(index_candidate));
 		}
 		if (_autoindex)
-			body = create_auto_index_page(location);
+			return (create_auto_index_page(location));
 		else
 		{
 			code = 403;
@@ -207,6 +265,10 @@ void		Response::set_header() {
 	oss << "Server: webserv/0.1 (Ubuntu)" << std::endl; // ??? which name; all of them ? wth
 	oss << "Content-Length: " << body.size() << '\n';
 	oss << "Content-Type: " << content_type << '\n';
+	if (code == 301)
+	{
+		oss << "location: "; // todo fill host + location
+	}
 	oss << "Connection: keep-alive" << '\n';
 	oss << std::endl;
 	header = oss.str();
