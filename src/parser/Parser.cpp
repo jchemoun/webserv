@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/29 09:13:44 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/06 13:32:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,12 @@ void	Parser::_init_parsers() {
 	_server_parsers["location"] = &Parser::_parse_location;
 	_server_parsers["root"] = &Parser::_parse_root;
 	_server_parsers["error_page"] = &Parser::_parse_error_page;
+	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
 
 	_location_parsers["root"] = &Parser::_parse_root;
 	_location_parsers["index"] = &Parser::_parse_index;
 	_location_parsers["error_page"] = &Parser::_parse_error_page;
+	_location_parsers["autoindex"] = &Parser::_parse_autoindex;
 }
 
 Parser::Parser(std::string filename): _lexer(filename) {
@@ -214,6 +216,29 @@ void	Parser::_parse_error_page(Context &config) {
 	}
 	for (size_t i = 0; i < codes.size(); i++)
 		config.error_pages[codes.at(i)] = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** ✓ Syntax:	autoindex on | off;
+** ✓ Default:	autoindex off;
+** ✓ Context:	http, server, location
+**
+** Enables or disables the directory listing output.
+*/
+template<class Context>
+void	Parser::_parse_autoindex(Context &context) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("autoindex: missing value [on|off]");
+	const std::string &val(_current_token().get_value());
+	if (val == "on")
+		context.autoindex = true;
+	else if (val == "off")
+		context.autoindex = false;
+	else
+		throw ParsingError(std::string("autoindex: expects:[on|off] (value `") + val + "' not allowed)" );
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
