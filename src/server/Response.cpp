@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 16:22:22 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 16:34:25 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,8 +101,8 @@ size_t	Response::create_auto_index_page(std::string &location)
 		code = 404;
 		return (read_error_page());
 	}
-	oss << "<html>\n<head><title>Index of " << location << "</title></head>\n<body>\n";
-	oss << "<h1>Index of " << location << "</h1><hr><pre><a href=\"../\">../</a>\n";
+	oss << "<html>\n<head><title>Index of " << location.substr(_serv.root.length()) << "</title></head>\n<body>\n";
+	oss << "<h1>Index of " << location.substr(_serv.root.length()) << "</h1><hr><pre><a href=\"../\">../</a>\n";
 	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
 	{
