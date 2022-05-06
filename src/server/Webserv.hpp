@@ -50,7 +50,6 @@ public:
 private:
 	//epoll
 	int					epfd;
-	struct epoll_event	event;
 	struct epoll_event	events[MAX_EVENTS];
 	//serv
 	Config				conf;
@@ -62,7 +61,7 @@ private:
 	int		socket_init(Config::Server &conf);
 
 	//handle
-	bool	handle_error();
+	bool	handle_event_error();
 	bool	handle_new_client(int serv_fd);
 	bool	handle_recv(int client_fd);
 	bool	handle_send(int client_fd);
