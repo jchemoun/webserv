@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 18:02:48 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/07 11:51:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ bool	Response::check_read_perm(std::string const &path) const {
 	return (false);
 }
 
-std::string	Response::time_last_modif(std::string file)
+std::string	Response::time_last_change(std::string file)
 {
 	struct stat	s;
 	struct tm	*time;
@@ -66,7 +66,7 @@ std::string	Response::time_last_modif(std::string file)
 
 	stat(file.c_str(), &s);
 	//std::cout << s.st_mtim.tv_nsec;
-	time = localtime(&(s.st_mtim.tv_sec));
+	time = localtime(&(s.st_ctim.tv_sec));
 	strftime(buf, sizeof(buf), "%d-%b-%Y %H:%M", time);
 	std::cout << buf;
 	return (buf);
@@ -114,9 +114,9 @@ size_t	Response::create_auto_index_page(std::string &location)
 	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
 	{
 		if (check_path(location + *(cit)) == FT_DIR)
-			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << time_last_modif(location + *(cit)) << "\t-\n";
+			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << time_last_change(location + *(cit)) << "\t-\n";
 		else
-			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << time_last_modif(location + *(cit)) << '\t' << size_file(location + *(cit)) << '\n';
+			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << time_last_change(location + *(cit)) << '\t' << size_file(location + *(cit)) << '\n';
 	}
 	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
