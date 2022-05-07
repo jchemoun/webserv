@@ -143,7 +143,7 @@ DOCKER_RUN_INTERACTIVE = docker run \
 												 --rm \
 												 --env HOST_USER_ID=$$(id -u) \
 												 --env HOST_USER_GROUP=$$(id -g) \
-												 -p 8000:80 -p 8080:8080 -p 4242:4242 \
+												 -p 8000:80 -p 8080:8080 -p 4141:4141 \
 												 -v $$(pwd):/home/dev/webserv \
 												 mrgittes/webserv
 
