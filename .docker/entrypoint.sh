@@ -49,9 +49,15 @@ run_on_webserv() {
 
 # ================================== Rules =================================== #
 
-if [ -n "$HOST_USER_ID" ] && [ "$HOST_USER_ID" != $(id -u) ]; then
+# Run as root at school 42
+if [ $(id -u) != "0" ] && [ $(sudo stat --format="%u" .) = "0" ]; then
+  sudo cp /home/dev/.zshrc /root/
+  exec sudo -i /home/dev/entrypoint.sh $@
+# Chown if user is on VM
+elif [ $(id -u) != "0" ] && [ -n "$HOST_USER_ID" ] && [ "$HOST_USER_ID" != $(id -u) ]; then
   sudo chown -R $(id -u):$(id -g) .
 fi
+if [ $(pwd) != /home/dev/webserv ];then cd /home/dev/webserv; fi # 42 root fix
 
 if [ $# -eq 0 ]; then
   /usr/bin/env zsh
@@ -98,6 +104,6 @@ else
   printf "\e[1;31mUnknown instruction:\e[0m $1 $2 $3...\n"
 fi
 
-if [ -n "$HOST_USER_ID" ] && [ "$HOST_USER_ID" != $(id -u) ]; then
+if [ $(id -u) != "0" ] && [ -n "$HOST_USER_ID" ] && [ "$HOST_USER_ID" != $(id -u) ]; then
   sudo chown -R ${HOST_USER_ID}:${HOST_USER_GROUP} .
 fi
