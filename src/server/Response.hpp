@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 17:39:21 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/07 11:51:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ private:
 
 	e_filetype	check_path(std::string const &path) const;
 	bool		check_read_perm(std::string const &path) const;
-	std::string	time_last_modif(std::string file);
+	std::string	time_last_change(std::string file);
 	long	size_file(std::string file);
 
 	size_t		create_auto_index_page(std::string &location);
