@@ -6,19 +6,17 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/07 17:31:15 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/08 18:40:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 
-// Request::Request(std::stringstream &stream): stream(stream), is_complete(false)
-Request::Request(): is_complete(false)
+Request::Request(): _is_complete(false)
 {
-	(void)is_complete;
 }
 
-bool	Request::parse_request()
+void	Request::parse_request()
 {
 	std::stringstream	stream;
 	std::stringstream	header_stream;
@@ -26,10 +24,14 @@ bool	Request::parse_request()
 	std::string			key;
 	std::string			value;
 
-	if (unparsed_request.find("\r\n\r\n") != std::string::npos || unparsed_request.find("\n\n") != std::string::npos)
+	if (unparsed_request.find("\r\n\r\n") != std::string::npos || unparsed_request.find("\n\n") != std::string::npos) {
 		std::cout << "\e[32mComplete request\e[0m\n";
-	else
+		_is_complete = true;
+	}
+	else {
 		std::cout << "\e[31mIncomplete request\e[0m\n";
+		return ;
+	}
 
 	stream << unparsed_request;				std::cout << "\e[32m" << unparsed_request << "\e[0m✋\n";
 	stream.seekg(0);						//std::cout << "\e[32m" << stream.str() << "\e[0m✋" << std::endl;
@@ -68,7 +70,6 @@ bool	Request::parse_request()
 	// 	std::cout << start << ':' << end << " size: " << location.size() << " location: " << location << '\n';
 	// 	unparsed_request.clear();
 	// }
-	return (true);
 }
 
 void	Request::append_unparsed_request(char *buffer, ssize_t len)
@@ -76,6 +77,8 @@ void	Request::append_unparsed_request(char *buffer, ssize_t len)
 	// stream.write(buffer, len);
 	unparsed_request.append(buffer, len);
 }
+
+bool	Request::is_complete() { return (_is_complete); }
 
 std::string const	&Request::get_location() const {
 	return (location);

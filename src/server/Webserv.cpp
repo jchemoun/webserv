@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 13:12:21 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/08 18:47:42 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ bool	Webserv::handle_event_error()
 bool	Webserv::handle_new_client(int serv_fd)
 {
 	int		client_fd;
-	
+
 	if ((client_fd = accept(serv_fd, NULL, NULL)) < 0)
 	{
 		std::cerr << "error accept\n";
@@ -129,17 +129,18 @@ bool	Webserv::handle_recv(int client_fd)
 	}
 	else
 	{
-		//parse request && identify what client wants
-		//std::cout << len << '\n' << buffer << '\n';
-		clients[client_fd].request.append_unparsed_request(buffer, len);
-		clients[client_fd].request.parse_request();
-		//if response needed set client to epollout
-		epoll_event event = {.events = EPOLLOUT, .data = {.fd = client_fd} };
-		if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
-			throw std::runtime_error("epoll_ctl error (handle_recv)");
+		Request	&request = clients[client_fd].request;
+		request.append_unparsed_request(buffer, len);
+		request.parse_request();
+		if (request.is_complete()) {
+			//if response needed set client to epollout
+			epoll_event event = {.events = EPOLLOUT, .data = {.fd = client_fd} };
+			if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
+				throw std::runtime_error("epoll_ctl error (handle_recv)");
+		}
 	}
 	std::cout << "inrecv\n";
-	
+
 	return (true);
 }
 
@@ -163,7 +164,8 @@ bool	Webserv::handle_send(int client_fd)
 }
 
 /*
-** @brief init epoll with epoll_create and 
+** @brief init epoll with epoll_create and add every server listen socket
+** to the epoll tracked fds
 */
 bool	Webserv::epoll_init()
 {
@@ -254,7 +256,7 @@ int		Webserv::find_serv_id(int serv_fd)
 		if (conf.servers[i].listen_fd == serv_fd)
 			return ((int)i);
 	}
-	return (-1);	
+	return (-1);
 }
 
 // void	Webserv::close_serv()

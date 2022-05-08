@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/07 11:51:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/08 19:32:23 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -261,16 +261,16 @@ void		Response::init_status_header()
 void		Response::set_header() {
 	// TODO: set header according to the response
 	std::ostringstream oss;
-	oss << "HTTP/1.1 " << code << " " << status_header[code] << '\n';
-	oss << "Server: webserv/0.1 (Ubuntu)" << std::endl; // ??? which name; all of them ? wth
-	oss << "Content-Length: " << body.size() << '\n';
-	oss << "Content-Type: " << content_type << '\n';
+	oss << "HTTP/1.1 " << code << " " << status_header[code] << "\r\n";
+	oss << "Server: webserv/0.1 (Ubuntu)" << "\r\n"; // ??? which name; all of them ?
+	oss << "Content-Length: " << body.size() << "\r\n";
+	oss << "Content-Type: " << content_type << "\r\n";
 	if (code == 301)
 	{
 		oss << "location: "; // todo fill host + location
 	}
-	oss << "Connection: keep-alive" << '\n';
-	oss << std::endl;
+	oss << "Connection: keep-alive" << "\r\n";
+	oss << "\r\n";
 	header = oss.str();
 }
 
