@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 09:12:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 14:25:22 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,15 +42,15 @@ void	Webserv::run()
 		{
 			const int event = events[i].events;
 			const int event_fd =events[i].data.fd;
-			if (event == EPOLLIN) { // NOTE: epoll events are masks, we probably should do stuff like `if (event & EPOLLIN) ...`
+			if (event & EPOLLIN) { // NOTE: epoll events are masks, we probably should do stuff like `if (event & EPOLLIN) ...`
 				if (is_serv(event_fd))
 					handle_new_client(event_fd);
 				else
 					handle_recv(event_fd);
 			}
-			else if (event == EPOLLOUT)
+			else if (event & EPOLLOUT)
 				handle_send(event_fd);
-			else if (event == EPOLLERR || event == EPOLLHUP)
+			else if (event & EPOLLERR || event & EPOLLHUP)
 				handle_event_error();
 			else
 				std::cerr << "Unknown epoll event: " << event << std::endl;
@@ -168,7 +168,6 @@ bool	Webserv::handle_send(int client_fd)
 	event.data.fd = client_fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
 		throw std::runtime_error("epoll_ctl error (handle_send)");
-
 	return (true);
 }
 

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 13:17:57 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/06 18:25:59 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@
 # define MAX_CLIENTS	64
 # define TIMEOUT		256
 # define MAX_EVENTS		1024
-# define BUFFER_SIZE	4096
+# define BUFFER_SIZE	65536 // was 4096
 
 class Webserv
 {
