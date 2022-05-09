@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/04 16:20:50 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/07 17:26:57 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,6 @@ public:
 	Request	request;
 	Client(int serv_id = -1);
 	~Client();
-
-	// void	set_serv_id(int serv_id);
 
 	int		get_serv_id();
 };
