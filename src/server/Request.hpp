@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 15:17:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 15:51:07 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,15 @@
 class Request
 {
 private:
-	std::string							_raw_str;     // unparsed request
 	std::string							method;
 	std::string							location;
 	std::string							protocol;
 	std::map<std::string, std::string>	header;
-	bool								_is_complete; // when empty line is reached
-	bool								_ongoing;     // when first line received but unfinished
-	size_t								_index;       // used in parsing
-	std::string							_tmp_key;     // used in parsing
+	std::string							_raw_str;               // unparsed request
+	bool								_complete_request_line;
+	bool								_complete_header;
+	size_t								_index;
+	std::string							_tmp_key;
 	// std::string							error;
 public:
 	Request();
@@ -43,6 +43,8 @@ public:
 	void	reset();
 
 private:
+	void	_parse_request_line();
+	void	_parse_header();
 	// Parsing utils
 	void	_eat(const char *s);
 	void	_eat_word(std::string &s);
