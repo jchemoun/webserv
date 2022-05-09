@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 16:05:40 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 16:19:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,21 +29,10 @@ Request::~Request() { }
 ** ================================ Getters ================================= **
 */
 
-std::string const	&Request::get_location() const {
-	return (location);
-}
-
-std::string const	&Request::get_method() const {
-	return (method);
-}
-
-std::string const	&Request::get_protocol() const {
-	return (protocol);
-}
-
-Request::Header const	&Request::get_header() const {
-	return (header);
-}
+std::string     const &Request::get_method()   const { return (method);   }
+std::string     const &Request::get_location() const { return (location); }
+std::string     const &Request::get_protocol() const { return (protocol); }
+Request::Header const &Request::get_header()   const { return (header);   }
 
 /*
 ** ============================== Public Utils ============================== **
@@ -132,7 +121,7 @@ void	Request::_eat_key() {
 
 void	Request::_eat_value() {
 	std::string	value;
-	_eat_word(value, "\r\n");
+	_eat_word(value, "\r\n", true);
 	_eat_eol();
 	header[_tmp_key] = value;
 	std::cout << "\e[36m"<< value << "\e[0m\n";
@@ -153,12 +142,12 @@ void	Request::_eat(const char *s) {
 	_index += size;
 }
 
-void	Request::_eat_word(std::string &s, const char *delimiter) {
+void	Request::_eat_word(std::string &s, const char *delimiter, bool allow_empty) {
 	size_t	count = 0;
 	char c;
 	while ((c = _raw_str[_index + count]) && !strchr(delimiter, c))
 		++count;
-	if (count == 0)
+	if (count == 0 && !allow_empty)
 		throw std::runtime_error("parse_request error");;
 	s = _raw_str.substr(_index, count);
 	_index += s.size();

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 16:03:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 16:09:00 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ private:
 	// Parsing utils
 	void	_eat(const char *s);
 	void	_eat_word(std::string &s);
-	void	_eat_word(std::string &s, const char *delimiter);
+	void	_eat_word(std::string &s, const char *delimiter, bool allow_empty = false);
 	void	_eat_eol();
 	void	_eat_spaces();
 	void	_eat_key();

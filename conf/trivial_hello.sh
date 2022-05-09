@@ -33,6 +33,7 @@ curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not 
 GET    /    HTTP/1.1
 Host:localhost:8080
 User-Agent:    Monkey D. Luffy
+Empty-field:
 Accept:    */*
 
 EOF
