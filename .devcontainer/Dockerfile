@@ -35,3 +35,6 @@ USER root
 RUN sudo apt install -y --no-install-recommends telnet
 RUN sudo apt install -y --no-install-recommends siege
 RUN sudo apt install -y --no-install-recommends valgrind
+
+RUN apt install -y python3-pip
+RUN pip install compiledb

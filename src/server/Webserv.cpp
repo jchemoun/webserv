@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include "Request.hpp"
 #include <signal.h> // handle <c-c>
 #include <stdexcept>
 #include <sys/epoll.h>
@@ -116,6 +117,7 @@ bool	Webserv::handle_recv(int client_fd)
 	ssize_t	len;
 
 	len = recv(client_fd, buffer, BUFFER_SIZE, 0);            // TODO: check that it is working fine with small BUFFER_SIZE values
+	std::cout << "Incoming reception. client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
 		std::cerr << "error recv\n";                          // TODO: better recv error handling
@@ -133,13 +135,13 @@ bool	Webserv::handle_recv(int client_fd)
 		request.append_unparsed_request(buffer, len);
 		request.parse_request();
 		if (request.is_complete()) {
+			// TODO: reset is_complete
 			//if response needed set client to epollout
 			epoll_event event = {.events = EPOLLOUT, .data = {.fd = client_fd} };
 			if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
 				throw std::runtime_error("epoll_ctl error (handle_recv)");
 		}
 	}
-	std::cout << "inrecv\n";
 
 	return (true);
 }
