@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 11:52:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 15:17:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ private:
 	std::string							protocol;
 	std::map<std::string, std::string>	header;
 	bool								_is_complete; // when empty line is reached
+	bool								_ongoing;     // when first line received but unfinished
 	size_t								_index;       // used in parsing
 	std::string							_tmp_key;     // used in parsing
 	// std::string							error;
@@ -39,6 +40,7 @@ public:
 	void	append_unparsed_request(char *buffer, ssize_t len);
 	std::string const	&get_location() const;
 	bool	is_complete() const;
+	void	reset();
 
 private:
 	// Parsing utils

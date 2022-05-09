@@ -139,6 +139,7 @@ DOCKER_RUN = docker run \
 						 -v $$(pwd):/home/dev/webserv \
 						 mrgittes/webserv
 DOCKER_RUN_INTERACTIVE = docker run \
+												 --name webserv \
 												 -it \
 												 --rm \
 												 --env HOST_USER_ID=$$(id -u) \
@@ -155,6 +156,12 @@ compile:
 
 run:
 	$(DOCKER_RUN_INTERACTIVE) webserv $(CONF)
+
+run_fg:
+	$(DOCKER_RUN_INTERACTIVE) webserv_fg $(CONF)
+
+attach:
+	docker exec -it webserv zsh
 
 # cc:
 # 	$(DOCKER_RUN) compiledb
