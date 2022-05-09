@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 15:51:07 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 16:03:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,26 +21,37 @@
 
 class Request
 {
+public:
+	typedef std::map<std::string, std::string>	Header;
 private:
-	std::string							method;
-	std::string							location;
-	std::string							protocol;
-	std::map<std::string, std::string>	header;
-	std::string							_raw_str;               // unparsed request
-	bool								_complete_request_line;
-	bool								_complete_header;
-	size_t								_index;
-	std::string							_tmp_key;
+	// parsed elements
+	std::string		method;
+	std::string		location;
+	std::string		protocol;
+	Header			header;
+	// internal attributes
+	std::string		_raw_str;               // unparsed request
+	bool			_complete_request_line;
+	bool			_complete_header;
+	size_t			_index;
+	std::string		_tmp_key;
 	// std::string							error;
 public:
 	Request();
 	~Request();
 
-	void	parse_request();
-	void	append_unparsed_request(char *buffer, ssize_t len);
+	// Getters
+	std::string const	&get_method() const;
 	std::string const	&get_location() const;
-	bool	is_complete() const;
-	void	reset();
+	std::string const	&get_protocol() const;
+	Header const		&get_header() const;
+
+	void				parse_request();
+
+	// Public Utils
+	void				append_unparsed_request(char *buffer, ssize_t len);
+	bool				is_complete() const;
+	void				reset();
 
 private:
 	void	_parse_request_line();

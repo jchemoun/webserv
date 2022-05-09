@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 15:51:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 16:05:40 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,46 @@
 #include <cstring>
 
 /*
-** ============================= Public methods ============================= **
+** ======================== Constructor / Destructor ======================== **
 */
 
-Request::Request(): _complete_request_line(false), _complete_header(false), _index(0)
-{
-}
+Request::Request():
+	_complete_request_line(false),
+	_complete_header(false),
+	_index(0)
+{ }
 
 Request::~Request() { }
 
-void	Request::append_unparsed_request(char *buffer, ssize_t len)
-{
-	_raw_str.append(buffer, len);
-}
-
-bool	Request::is_complete() const { return (_complete_header); }
+/*
+** ================================ Getters ================================= **
+*/
 
 std::string const	&Request::get_location() const {
 	return (location);
 }
+
+std::string const	&Request::get_method() const {
+	return (method);
+}
+
+std::string const	&Request::get_protocol() const {
+	return (protocol);
+}
+
+Request::Header const	&Request::get_header() const {
+	return (header);
+}
+
+/*
+** ============================== Public Utils ============================== **
+*/
+
+void	Request::append_unparsed_request(char *buffer, ssize_t len) {
+	_raw_str.append(buffer, len);
+}
+
+bool	Request::is_complete() const { return (_complete_header); }
 
 void	Request::reset() {
 	_complete_request_line = false;
@@ -40,6 +61,10 @@ void	Request::reset() {
 	_raw_str.erase(0, _index);
 	_index = 0;
 }
+
+/*
+** ================================ Parsing ================================= **
+*/
 
 void	Request::parse_request()
 {
@@ -50,10 +75,6 @@ void	Request::parse_request()
 	if (_complete_request_line)
 		_parse_header();
 }
-
-/*
-** ============================= Parsing syntax ============================= **
-*/
 
 /*
 ** Syntax:
@@ -159,6 +180,7 @@ void	Request::_eat_spaces() {
 	while (_raw_str[_index] == ' ')
 		++_index;
 }
+
 void	Request::_skip_empty_lines() {
 	while (true) {
 		if (_raw_str[_index] == '\r' && _raw_str[_index + 1] == '\n')
