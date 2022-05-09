@@ -39,51 +39,6 @@ Accept:    */*
 EOF
 echo
 # ---
-# printf "\e[32mShould return index, then folder's autoindex before timeout:\e[0m "
-# # curl telnet://localhost:8080 2>/dev/null <<EOF | grep -v :
-# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now
-# GET / HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-#
-# GET /folder/ HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-#
-# EOF
-# # ---
-# printf "\e[32mShould return index only before timeout:\e[0m "
-# # curl telnet://localhost:8080 2>/dev/null <<EOF | grep -v :
-# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now
-# GET / HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-#
-# GET /folder/ HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-# EOF
-# echo
-# # ---
-# printf "\e[32mSame \e[0m(Should return index, then folder's autoindex before timeout): "
-# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now
-# GET / HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-#
-#
-#
-# GET /folder/ HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-#
-# EOF
 # # ---
 # printf "\e[32mShould return bad request:\e[0m "
 # curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now

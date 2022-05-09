@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 16:19:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/09 17:20:19 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@ bool	Request::is_complete() const { return (_complete_header); }
 void	Request::reset() {
 	_complete_request_line = false;
 	_complete_header = false;
-	_raw_str.erase(0, _index);
+	_raw_str.clear();
+	// _raw_str.erase(0, _index);  // what we should do if we implemented http pipeling (https://developer.mozilla.org/en-US/docs/Web/HTTP/Connection_management_in_HTTP_1.x#http_pipelining)
 	_index = 0;
 }
 
