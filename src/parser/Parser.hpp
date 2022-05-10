@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 17:59:19 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 18:38:11 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ private:
 	void	_parse_server_name(Config::Server &server);                  // http://nginx.org/en/docs/http/ngx_http_core_module.html#server_name
 	void	_parse_listen(Config::Server &server);                       // http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
 	const char	*_parse_address(Config::Server &server, const char *s);  // part of _parse_listen
+	void	_parse_default_type(Config::Server &server);                 // http://nginx.org/en/docs/http/ngx_http_core_module.html#default_type
 	template <class Context>
 	void	_parse_index(Context &context);                              // http://nginx.org/en/docs/http/ngx_http_index_module.html#index
 	void	_parse_location(Config::Server &server);                     // http://nginx.org/en/docs/http/ngx_http_core_module.html#location

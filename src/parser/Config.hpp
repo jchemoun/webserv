@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/06 13:13:18 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 18:27:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ struct Config {
 		std::string					root;
 		std::map<int, std::string>	error_pages;
 		bool						autoindex;
+		std::string					default_type;
 		void print() const;
 	};
 

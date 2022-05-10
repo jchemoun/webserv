@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 18:06:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 18:36:24 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ void	Parser::_init_parsers() {
 	_server_parsers["root"] = &Parser::_parse_root;
 	_server_parsers["error_page"] = &Parser::_parse_error_page;
 	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
+	_server_parsers["default_type"] = &Parser::_parse_default_type;
 
 	_location_parsers["root"] = &Parser::_parse_root;
 	_location_parsers["index"] = &Parser::_parse_index;
@@ -160,6 +161,22 @@ void	Parser::_parse_index(Context &server) {
 		throw ParsingError("index: missing value");
 	while (_lexer.next().expect(Token::type_word))
 		server.index.push_back(_current_token().get_value());
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** ✓ Syntax:	default_type mime-type;
+** ✓ Default:	default_type text/plain;
+** ✓ Context:	[http,] server, [location]
+**
+** Defines the default MIME type of a response.
+** Mapping of file name extensions to MIME types can be set with the types directive.
+*/
+void	Parser::_parse_default_type(Config::Server &server) {
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("default_type: missing value");
+	while (_lexer.next().expect(Token::type_word))
+		server.default_type = _current_token().get_value();
 	_eat(Token::type_special_char, ";");
 }
 

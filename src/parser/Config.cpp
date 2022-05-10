@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 17:48:18 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 18:31:59 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,8 @@ Config::Server::Server():
 	listen_string_address("*"),
 	listen_fd(0),
 	root("html"),
-	autoindex(false)
+	autoindex(false),
+	default_type("text/plain")
 {
 }
 
@@ -71,6 +72,7 @@ void	Config::Server::print() const {
 	std::cout << "Indexes: "; print_vector(index);
 	std::cout << "Root: " << root << std::endl;
 	std::cout << "Autoindex: " << std::boolalpha << autoindex << std::endl;
+	std::cout << "Default type: " << default_type << std::endl;
 	print_map(error_pages, "Error page ");
 }
 
