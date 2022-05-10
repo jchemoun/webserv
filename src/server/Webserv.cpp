@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 15:18:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 09:12:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,6 @@ bool	Webserv::handle_recv(int client_fd)
 		request.append_unparsed_request(buffer, len);
 		request.parse_request();
 		if (request.is_complete()) {
-			request.reset();
 			//if response needed set client to epollout
 			epoll_event event = {.events = EPOLLOUT, .data = {.fd = client_fd} };
 			if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)

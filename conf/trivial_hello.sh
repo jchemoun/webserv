@@ -18,7 +18,7 @@ GET / HTTP/1.1
 EOF
 echo
 # ---
-printf "\e[32mShould return index before timeout:\e[0m "
+printf "\e[32mShould return index before timeout:\e[0m\n"
 curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now
 GET / HTTP/1.1
 Host: localhost:8080
@@ -28,7 +28,7 @@ Accept: */*
 EOF
 echo
 # ---
-printf "\e[32mShould return index before timeout (multiple spaces in uri line, none or many in header):\e[0m "
+printf "\e[32mShould return index before timeout (multiple spaces in uri line, none or many in header):\e[0m\n"
 curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now
 GET    /    HTTP/1.1
 Host:localhost:8080
@@ -40,18 +40,18 @@ EOF
 echo
 # ---
 # # ---
-# printf "\e[32mShould return bad request:\e[0m "
-# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v : # not interested in the header for now
-# GET / HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-# GET /folder/ HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Accept: */*
-#
-# EOF
+printf "\e[32mShould return bad request:\e[0m\n"
+curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | sed 's/nginx[^<]*/webserv\/0.1/g' | sed 's/\//g' | grep -v : 
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: Monkey D. Luffy
+Accept: */*
+GET /folder/ HTTP/1.1
+Host: localhost:8080
+User-Agent: Monkey D. Luffy
+Accept: */*
+
+EOF
 # ---
 # TODO: 404 if missing mandatory headers
 # printf "\e[32mShould return 404 before timeout:\e[0m "

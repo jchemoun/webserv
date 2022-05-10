@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/09 17:20:19 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 09:33:30 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 Request::Request():
 	_complete_request_line(false),
 	_complete_header(false),
+	_invalid_request(false),
 	_index(0)
 { }
 
@@ -42,11 +43,13 @@ void	Request::append_unparsed_request(char *buffer, ssize_t len) {
 	_raw_str.append(buffer, len);
 }
 
-bool	Request::is_complete() const { return (_complete_header); }
+bool	Request::is_complete() const { return (_complete_header || _invalid_request); }
+bool	Request::is_invalid()  const { return (_invalid_request); }
 
 void	Request::reset() {
 	_complete_request_line = false;
 	_complete_header = false;
+	_invalid_request = false;
 	_raw_str.clear();
 	// _raw_str.erase(0, _index);  // what we should do if we implemented http pipeling (https://developer.mozilla.org/en-US/docs/Web/HTTP/Connection_management_in_HTTP_1.x#http_pipelining)
 	_index = 0;
@@ -60,10 +63,18 @@ void	Request::parse_request()
 {
 	std::cout << "\e[32m" << _raw_str << "\e[0m✋\n";
 
-	if (!_complete_request_line)
-		_parse_request_line();
-	if (_complete_request_line)
-		_parse_header();
+	if (is_complete())
+		reset();
+	try {
+		if (!_complete_request_line)
+			_parse_request_line();
+		if (_complete_request_line)
+			_parse_header();
+	}
+	catch (std::runtime_error const &except) {
+		std::cerr << "\e[38;5;208mParsing request: " << except.what() << "\e[0m\n";
+		_invalid_request = true;
+	}
 }
 
 /*
@@ -113,7 +124,7 @@ void	Request::_parse_header() {
 }
 
 void	Request::_eat_key() {
-	_eat_word(_tmp_key, ":");
+	_eat_word(_tmp_key, ":\r\n");
 	_eat(":");
 	while (_raw_str[_index] == ' ')
 		++_index;
@@ -139,7 +150,7 @@ void	Request::_eat_value() {
 void	Request::_eat(const char *s) {
 	size_t	size = std::strlen(s);
 	if (_raw_str.substr(_index, size) != s)
-		throw std::runtime_error("parse_request error");
+		throw std::runtime_error("syntax error");
 	_index += size;
 }
 
@@ -149,7 +160,7 @@ void	Request::_eat_word(std::string &s, const char *delimiter, bool allow_empty)
 	while ((c = _raw_str[_index + count]) && !strchr(delimiter, c))
 		++count;
 	if (count == 0 && !allow_empty)
-		throw std::runtime_error("parse_request error");;
+		throw std::runtime_error("syntax error");;
 	s = _raw_str.substr(_index, count);
 	_index += s.size();
 }
