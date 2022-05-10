@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:24:30 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/11 14:25:56 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,18 @@
 Response::Response(Config::Server const &serv, Request const &req):
 	header(), body(), full_response(),
 	code(0),
-	_serv(serv)
+	_serv(serv), _req(req)
 {
 	_autoindex = serv.autoindex; // location autoindex?
 	content_type = "text/plain";
-	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + req.get_location(); // warning : need to adjust in case of redirection
-	if (req.is_invalid()) {
+	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + _req.get_location(); // warning : need to adjust in case of redirection
+	if (_req.is_invalid()) {
 		code = 400;
 		read_error_page();
 	}
 	else
 		read_file(full_location);
-	set_header();
+	set_header(full_location);
 	set_full_response();
 }
 
@@ -143,6 +143,7 @@ size_t	Response::read_file(std::string &location)
 		for (size_t i = 0; i < _serv.index.size(); ++i)
 		{
 			std::string	index_candidate = location + '/' + _serv.index.at(i);
+			std::cout << "INDEX CANDIDATE" << index_candidate << '\n';
 			if (check_path(index_candidate) == FT_FILE)
 				return (read_file(index_candidate));
 		}
@@ -150,6 +151,7 @@ size_t	Response::read_file(std::string &location)
 			return (create_auto_index_page(location));
 		else
 		{
+			std::cout << "WTF IS THIS\n";
 			code = 403;
 			return (read_error_page());
 		}
@@ -236,6 +238,21 @@ size_t		Response::read_error_page()
 	return (body.length()); // not used
 }
 
+void		Response::getMethod()
+{
+
+}
+
+void		Response::postMethod()
+{
+
+}
+
+void		Response::deleteMethod()
+{
+	
+}
+
 std::string	Response::build_error_page()
 {
 	std::ostringstream	oss;
@@ -270,9 +287,21 @@ Response::StatusMap		Response::init_status_header()
 	status[500] = "Internal Server Error";
 	return (status);
 }
-const Response::StatusMap	Response::status_header = Response::init_status_header();
 
-void		Response::set_header() {
+Response::MethodMap		Response::init_method_map()
+{
+	MethodMap	methods;
+
+	methods["GET"] = &Response::getMethod;
+	methods["POST"] = &Response::postMethod;
+	methods["DELETE"] = &Response::deleteMethod;
+	return (methods);
+}
+
+const Response::StatusMap	Response::status_header = Response::init_status_header();
+const Response::MethodMap	Response::methods = Response::init_method_map();
+
+void		Response::set_header(std::string &location) {
 	// TODO: set header according to the response
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
@@ -281,7 +310,7 @@ void		Response::set_header() {
 	oss << "Content-Type: " << content_type << "\r\n";
 	if (code == 301)
 	{
-		oss << "location: "; // todo fill host + location
+		oss << "location: " << location.substr(_serv.root.length()) << "\r\n"; // todo fill host + location
 	}
 	oss << "Connection: keep-alive" << "\r\n";
 	oss << "\r\n";

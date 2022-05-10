@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/10 10:05:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 15:21:16 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@
 class Response
 {
 public:
-	typedef std::map<int, std::string> StatusMap;
+	typedef std::map<int, std::string>						StatusMap;
+	typedef std::map<std::string, void (Response::*)(void)>	MethodMap;
 private:
 	std::string				header;
 	std::string				body;
@@ -40,6 +41,8 @@ private:
 	bool					_autoindex;
 
 	static const StatusMap	status_header;
+	static const MethodMap	methods;
+	Request const			&_req;
 public:
 	Response(Config::Server const &serv, Request const &req);
 	~Response();
@@ -50,6 +53,7 @@ private:
 	enum	e_filetype { FT_UNKOWN, FT_DIR, FT_FILE };
 
 	static StatusMap	init_status_header();
+	static MethodMap	init_method_map();
 
 	e_filetype	check_path(std::string const &path) const;
 	bool		check_read_perm(std::string const &path) const;
@@ -60,9 +64,13 @@ private:
 	size_t		read_file(std::string &location);
 	size_t		read_error_page();
 
+	void		getMethod();
+	void		postMethod();
+	void		deleteMethod();
+
 	std::string	build_error_page();
 
-	void		set_header();
+	void		set_header(std::string &location);
 	void		set_full_response();
 };
 
