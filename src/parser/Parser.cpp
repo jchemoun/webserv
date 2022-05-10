@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/06 13:32:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 18:06:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,17 @@ void	Parser::_init_parsers() {
 	_location_parsers["autoindex"] = &Parser::_parse_autoindex;
 }
 
-Parser::Parser(std::string filename): _lexer(filename) {
+Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
 	_init_parsers();
 
 	while (_lexer.peek().get_type() != Token::type_eof)
 		_parse_server();
+
+	try { _lexer.tokenize_file(mimefile); }
+	catch (std::exception const &) { _set_default_mime_types(); return ; }
+
+	while (_lexer.peek().get_type() != Token::type_eof)
+		_parse_types();
 }
 
 Parser::~Parser(void) {
@@ -244,6 +250,44 @@ void	Parser::_parse_autoindex(Context &context) {
 }
 
 /*
+** ✓ Syntax:	types { ... }
+** ✓ Default:
+**     text/html  html;
+**     image/gif  gif;
+**     image/jpeg jpg;
+** ✓ Context:	http[, server, location]
+**
+** http://nginx.org/en/docs/http/ngx_http_core_module.html#types
+*/
+void	Parser::_parse_types() {
+	_eat(Token::type_word, "types");
+	_eat(Token::type_special_char, "{");
+	Config::Server	server;
+
+	while (!_current_token().expect(Token::type_special_char, "}")) {
+		if (_current_token().expect(Token::type_eof))
+			throw ParsingError("server: missing `}'");
+		_parse_type_line();
+	}
+	_eat(Token::type_special_char, "}");
+}
+void	Parser::_parse_type_line() {
+	if (!_lexer.peek().expect(Token::type_word))
+		throw ParsingError("types: missing type");
+	std::string	const &type = _current_token().get_value();
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("types: missing extension");
+	while (_lexer.next().expect(Token::type_word))
+		_config.types[_current_token().get_value()] = type;
+	_eat(Token::type_special_char, ";");
+}
+void	Parser::_set_default_mime_types() {
+	_config.types["html"] = "text/html";
+	_config.types["gif"] = "image/gif";
+	_config.types["jpg"] = "image/jpeg";
+}
+
+/*
 ** =============================== Get parser =============================== **
 */
 
@@ -314,3 +358,10 @@ bool Parser::_is_a_number(const char *s) {
 	}
 	return (true);
 }
+
+/*
+** ============================== Parse types =============================== **
+*/
+
+// void	Parser::_parse_types(std::string filename) {
+// }

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/06 13:59:56 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 17:48:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,11 @@ static void print_vector(const std::vector<std::string> &v) {
 	std::cout << std::endl;
 }
 
-static void print_map(const std::map<int, std::string> &m, std::string indent = "") {
-	std::map<int, std::string>::const_iterator	it = m.begin();
+template <class Key, class Value>
+static void print_map(const std::map<Key, Value> &m, std::string indent = "") {
+	typename std::map<Key, Value>::const_iterator	it = m.begin();
 	while (it != m.end()) {
-		std::cout << indent << "Error page " << (*it).first << ": " << (*it).second << std::endl;
+		std::cout << indent << (*it).first << ": " << (*it).second << std::endl;
 		++it;
 	}
 }
@@ -43,7 +44,7 @@ void	Config::Location::print() const {
 	std::cout << "    Indexes: "; print_vector(index);
 	std::cout << "    Root: " << root << std::endl;
 	std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
-	print_map(error_pages, "    ");
+	print_map(error_pages, "    Error page ");
 	std::cout << "\e[0m";
 }
 
@@ -70,7 +71,7 @@ void	Config::Server::print() const {
 	std::cout << "Indexes: "; print_vector(index);
 	std::cout << "Root: " << root << std::endl;
 	std::cout << "Autoindex: " << std::boolalpha << autoindex << std::endl;
-	print_map(error_pages);
+	print_map(error_pages, "Error page ");
 }
 
 /*
@@ -80,6 +81,7 @@ void	Config::Server::print() const {
 void	Config::print() const {
 	std::cout << "> CONFIG:" << std::endl << std::endl;
 		std::cout << "-------" << std::endl;
+	std::cout << "Mime-Types:\n\e[36m"; print_map(types); std::cout << "\e[0m\n";
 	for (size_t i = 0; i < servers.size(); ++i) {
 		servers[i].print();
 		std::cout << "-------" << std::endl;

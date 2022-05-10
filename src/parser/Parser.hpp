@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 12:51:11 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 17:59:19 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 class Parser {
 public:
 	// CANONICAL FORM
-	Parser(std::string filename);
+	Parser(std::string filename, std::string mimefile = "conf/mime.types");
 	virtual ~Parser(void);
 
 	Config const &get_config() const;
@@ -63,6 +63,11 @@ private:
 	void	_parse_error_page(Context &context);                         // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
 	template <class Context>
 	void	_parse_autoindex(Context &context);                         // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
+
+	// Parse types
+	void	_parse_types();
+	void	_parse_type_line();
+	void	_set_default_mime_types();
 
 	// Get parsing function
 	template <class parser_type>

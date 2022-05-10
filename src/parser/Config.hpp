@@ -45,6 +45,8 @@ struct Config {
 	};
 
 	std::vector<Server>	servers;
+	typedef std::map<std::string, std::string>	MimeTypes;
+	MimeTypes	types;
 	void print() const;
 };
 
