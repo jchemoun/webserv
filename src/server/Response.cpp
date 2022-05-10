@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/10 09:19:28 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 10:02:15 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ Response::Response(Config::Server const &serv, Request const &req):
 	_autoindex = serv.autoindex; // location autoindex?
 	content_type = "text/plain";
 	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + req.get_location(); // warning : need to adjust in case of redirection
-	init_status_header();
 	if (req.is_invalid()) {
 		code = 400;
 		read_error_page();
@@ -237,9 +236,9 @@ std::string	Response::build_error_page()
 	std::ostringstream	oss;
 
 	oss << "<html>\n<head><title>";
-	oss << code << ' ' << status_header[code];
+	oss << code << ' ' << status_header.at(code);
 	oss << "</title></head>\n<body>\n<center><h1>";
-	oss << code << ' ' << status_header[code];
+	oss << code << ' ' << status_header.at(code);
 	oss << "</h1></center>\n<hr><center>";
 	oss << "webserv/0.1"; // to replace with actual serv name
 	oss << "</center>\n</body>\n</html>";
@@ -249,26 +248,29 @@ std::string	Response::build_error_page()
 	return (oss.str());
 }
 
-void		Response::init_status_header()
+Response::StatusMap		Response::init_status_header()
 {
-	status_header[100] = "Continue";
-	status_header[200] = "OK";
-	status_header[201] = "Created";
-	status_header[204] = "No Content";
-	status_header[301] = "Moved Permanently";
-	status_header[308] = "Permanent Redirect";
-	status_header[400] = "Bad Request";
-	status_header[403] = "Forbidden";
-	status_header[404] = "Not Found";
-	status_header[405] = "Method Not Allowed";
-	status_header[413] = "Payload Too Large";
-	status_header[500] = "Internal Server Error";
+	StatusMap	status;
+	status[100] = "Continue";
+	status[200] = "OK";
+	status[201] = "Created";
+	status[204] = "No Content";
+	status[301] = "Moved Permanently";
+	status[308] = "Permanent Redirect";
+	status[400] = "Bad Request";
+	status[403] = "Forbidden";
+	status[404] = "Not Found";
+	status[405] = "Method Not Allowed";
+	status[413] = "Payload Too Large";
+	status[500] = "Internal Server Error";
+	return (status);
 }
+const Response::StatusMap	Response::status_header = Response::init_status_header();
 
 void		Response::set_header() {
 	// TODO: set header according to the response
 	std::ostringstream oss;
-	oss << "HTTP/1.1 " << code << " " << status_header[code] << "\r\n";
+	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
 	oss << "Server: webserv/0.1 (Ubuntu)" << "\r\n"; // ??? which name; all of them ?
 	oss << "Content-Length: " << body.size() << "\r\n";
 	oss << "Content-Type: " << content_type << "\r\n";
