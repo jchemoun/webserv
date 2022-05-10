@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/07 11:51:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 10:05:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,16 +28,18 @@
 
 class Response
 {
+public:
+	typedef std::map<int, std::string> StatusMap;
 private:
-	std::string	header;
-	std::string	body;
-	std::string	full_response;
-	std::string	content_type;
-	int			code;
-	std::map<int, std::string>	status_header;
+	std::string				header;
+	std::string				body;
+	std::string				full_response;
+	std::string				content_type;
+	int						code;
 	Config::Server const	&_serv;
-	// Request const			&_req;
-	bool	_autoindex;
+	bool					_autoindex;
+
+	static const StatusMap	status_header;
 public:
 	Response(Config::Server const &serv, Request const &req);
 	~Response();
@@ -47,16 +49,17 @@ public:
 private:
 	enum	e_filetype { FT_UNKOWN, FT_DIR, FT_FILE };
 
+	static StatusMap	init_status_header();
+
 	e_filetype	check_path(std::string const &path) const;
 	bool		check_read_perm(std::string const &path) const;
 	std::string	time_last_change(std::string file);
-	long	size_file(std::string file);
+	long		size_file(std::string file);
 
 	size_t		create_auto_index_page(std::string &location);
 	size_t		read_file(std::string &location);
 	size_t		read_error_page();
 
-	void		init_status_header();
 	std::string	build_error_page();
 
 	void		set_header();
