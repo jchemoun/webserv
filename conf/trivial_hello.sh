@@ -39,7 +39,6 @@ Accept:    */*
 EOF
 echo
 # ---
-# # ---
 printf "\e[32mShould return bad request:\e[0m\n"
 curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | sed 's/nginx[^<]*/webserv\/0.1/g' | sed 's/\//g' | grep -v : 
 GET / HTTP/1.1
@@ -52,6 +51,43 @@ User-Agent: Monkey D. Luffy
 Accept: */*
 
 EOF
+echo
+# ---
+printf "\e[32mShould return OK (body with right size):\e[0m\n"
+curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | grep -v :
+GET / HTTP/1.1
+Host: localhost:8080
+User-Agent: Monkey D. Luffy
+Content-Length: 12
+Accept: */*
+
+summer_body
+EOF
+# there are 12 characters because the heredoc adds a final \n
+echo
+# ---
+# printf "\e[32mShould return Bad request (Content-Length too short):\e[0m\n"
+# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF
+# GET / HTTP/1.1
+# Host: localhost:8080
+# User-Agent: Monkey D. Luffy
+# Content-Length: 10
+# Accept: */*
+#
+# summer_body
+# EOF
+# echo
+# # ---
+# printf "\e[32mShould return OK (Content-Length too long):\e[0m\n"
+# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF
+# GET /folder/ HTTP/1.1
+# Host: localhost:8080
+# User-Agent: Monkey D. Luffy
+# Content-Length: 4242
+# Accept: */*
+#
+# summer_body
+# EOF
 # ---
 # TODO: 404 if missing mandatory headers
 # printf "\e[32mShould return 404 before timeout:\e[0m "
