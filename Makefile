@@ -139,6 +139,7 @@ DOCKER_RUN = docker run \
 						 -v $$(pwd):/home/dev/webserv \
 						 mrgittes/webserv
 DOCKER_RUN_INTERACTIVE = docker run \
+												 --name webserv \
 												 -it \
 												 --rm \
 												 --env HOST_USER_ID=$$(id -u) \
@@ -155,6 +156,12 @@ compile:
 
 run:
 	$(DOCKER_RUN_INTERACTIVE) webserv $(CONF)
+
+run_fg:
+	$(DOCKER_RUN_INTERACTIVE) webserv_fg $(CONF)
+
+attach:
+	docker exec -it webserv zsh
 
 # cc:
 # 	$(DOCKER_RUN) compiledb
@@ -180,7 +187,7 @@ test_one: compile
 	@printf "\e[33m✓ Running $(CONF) on nginx...\e[0m\n";
 	@$(DOCKER_RUN) test nginx $(CONF); \
 		printf "\e[33m✓ Running $(CONF) on webserv...\e[0m\n"; \
-		$(DOCKER_RUN) test webserv $(CONF); \
+		$(DOCKER_RUN) test webserv $(CONF) &>/dev/null; \
 		diff="$$(diff --color=always failed_tests/nginx_test failed_tests/webserv_test)"; \
 		if [ $$? -eq 0 ]; then \
 		printf "\e[34m✓ $(CONF) tests passed\e[0m\n"; \

@@ -77,6 +77,14 @@ elif [ "$1" = "webserv" ] ; then
   nohup ./webserv $2 &> ../webserv.log &
   /usr/bin/env zsh
 
+elif [ "$1" = "webserv_fg" ] ; then
+  if [ -z "$2" ]; then
+    printf "\e[33mWarning: you did not provide any configuration file.\e[0m\n"
+  fi
+  make
+  printf "\e[32mLaunching ./webserv $2\e[0m\n"
+  ./webserv $2
+
 elif [ "$1" = "nginx" ]; then
   echo
   sudo rm /etc/nginx/sites-enabled/default

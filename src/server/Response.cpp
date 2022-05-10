@@ -6,20 +6,27 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/08 19:32:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 09:19:28 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 
-Response::Response(Config::Server const &serv, Request const &req)
-	: header(), body(), full_response(), _serv(serv)//, _req(req)
-	{
+Response::Response(Config::Server const &serv, Request const &req):
+	header(), body(), full_response(),
+	code(0),
+	_serv(serv)
+{
 	_autoindex = serv.autoindex; // location autoindex?
 	content_type = "text/plain";
 	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + req.get_location(); // warning : need to adjust in case of redirection
 	init_status_header();
-	read_file(full_location);
+	if (req.is_invalid()) {
+		code = 400;
+		read_error_page();
+	}
+	else
+		read_file(full_location);
 	set_header();
 	set_full_response();
 }
@@ -147,7 +154,7 @@ size_t	Response::read_file(std::string &location)
 			code = 403;
 			return (read_error_page());
 		}
-		  //body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
+		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 
 	}
 	else if (check_path(location) == FT_FILE)
