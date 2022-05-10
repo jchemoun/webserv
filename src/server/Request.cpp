@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/10 13:47:56 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 15:15:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ void	Request::reset() {
 	_complete_body = false;
 	_invalid_request = false;
 	_raw_str.clear();
+	body.clear();
 	// _raw_str.erase(0, _index);  // what we should do if we implemented http pipeling (https://developer.mozilla.org/en-US/docs/Web/HTTP/Connection_management_in_HTTP_1.x#http_pipelining)
 	_index = 0;
 	_content_length = 0;
@@ -69,8 +70,6 @@ void	Request::parse_request()
 {
 	std::cout << "\e[32m" << _raw_str << "\e[0m✋\n";
 
-	if (is_complete())
-		reset();
 	try {
 		if (!_complete_request_line)
 			_parse_request_line();
