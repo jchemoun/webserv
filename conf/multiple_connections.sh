@@ -24,8 +24,8 @@ multi_get() {
     sed 's/\s\+/ /g' |
     sed 's/[0-9]\+:[0-9]\+/hour:min/' |
     sed 's/ $//' |
-    sed '/^\S\+:.*$/d' |            # remove headers
-    sed '/^[0-9]*$/d' | sed '/^$/d' # remove chuck encoding lines
+    sed '/^\S\+:.*$/d' |               # remove headers
+    sed '/^[0-9a-f]*$/d' | sed '/^$/d' # remove chuck encoding lines (https://fr.wikipedia.org/wiki/Chunked_transfer_encoding)
 }
 
 multi_get 0.02 / /foler/ /not_found /
