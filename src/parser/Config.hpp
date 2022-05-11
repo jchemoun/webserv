@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 18:27:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 09:51:40 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ struct Config {
 		std::vector<std::string>	index;
 		std::map<int, std::string>	error_pages;
 		bool						autoindex;
-		void print() const;
+		void	print() const;
 	};
 
 	struct	Server {
@@ -42,13 +42,17 @@ struct Config {
 		std::map<int, std::string>	error_pages;
 		bool						autoindex;
 		std::string					default_type;
-		void print() const;
+		void	print() const;
+		void	set_defaults();
 	};
 
-	std::vector<Server>	servers;
 	typedef std::map<std::string, std::string>	MimeTypes;
-	MimeTypes	types;
-	void print() const;
+
+	std::vector<Server>	servers;
+	MimeTypes			types;
+
+	void	print() const;
+	void	set_defaults();
 };
 
 #endif

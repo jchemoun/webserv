@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 18:36:24 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 09:47:24 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
 
 	while (_lexer.peek().get_type() != Token::type_eof)
 		_parse_server();
+
+	_config.set_defaults();
 
 	try { _lexer.tokenize_file(mimefile); }
 	catch (std::exception const &) { _set_default_mime_types(); return ; }
@@ -152,7 +154,7 @@ const char	*Parser::_parse_address(Config::Server &server, const char *s) {
 
 /*
 ** ✓ Syntax:	index file ...;
-** ⨯ Default:	index index.html;
+** ✓ Default:	index index.html;
 ** ✓ Context:	(http, -> no need) server, location
 */
 template <class Context>

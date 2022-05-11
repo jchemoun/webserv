@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 18:31:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 09:44:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void	Config::Location::print() const {
 */
 
 Config::Server::Server():
-	listen_port(8000),
+	listen_port(0),
 	listen_address(htonl(INADDR_ANY)),
 	listen_string_address("*"),
 	listen_fd(0),
@@ -61,6 +61,13 @@ Config::Server::Server():
 	autoindex(false),
 	default_type("text/plain")
 {
+}
+
+void	Config::Server::set_defaults() {
+	if (!listen_port)
+		listen_port = 80;
+	if (index.empty())
+		index.push_back("index.html");
 }
 
 void	Config::Server::print() const {
@@ -80,6 +87,11 @@ void	Config::Server::print() const {
 ** ================================= Config ================================= **
 */
 
+void	Config::set_defaults() {
+	for (size_t	i = 0; i < servers.size(); ++i)
+		servers[i].set_defaults();
+}
+
 void	Config::print() const {
 	std::cout << "> CONFIG:" << std::endl << std::endl;
 		std::cout << "-------" << std::endl;
@@ -89,4 +101,3 @@ void	Config::print() const {
 		std::cout << "-------" << std::endl;
 	}
 }
-
