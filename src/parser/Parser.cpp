@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 09:47:24 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 13:22:38 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ void	Parser::_init_parsers() {
 	_server_parsers["error_page"] = &Parser::_parse_error_page;
 	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
 	_server_parsers["default_type"] = &Parser::_parse_default_type;
+	_server_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
 
 	_location_parsers["root"] = &Parser::_parse_root;
 	_location_parsers["index"] = &Parser::_parse_index;
@@ -268,6 +269,20 @@ void	Parser::_parse_autoindex(Context &context) {
 	_eat(Token::type_special_char, ";");
 }
 
+void	Parser::_parse_client_max_body_size(Config::Server	&server) {
+	if (!_lexer.next().expect(Token::type_word))
+		throw ParsingError("client_max_body_size: missing argument");
+	const char *arg = _current_token().get_value().c_str();
+	try { server.client_max_body_size = _stoi(arg, 0, server._overflow_body_size - 1); }
+	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** ============================== Parse types =============================== **
+*/
+
 /*
 ** ✓ Syntax:	types { ... }
 ** ✓ Default:
@@ -377,10 +392,3 @@ bool Parser::_is_a_number(const char *s) {
 	}
 	return (true);
 }
-
-/*
-** ============================== Parse types =============================== **
-*/
-
-// void	Parser::_parse_types(std::string filename) {
-// }

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 09:51:40 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 13:19:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ struct Config {
 	};
 
 	struct	Server {
+		typedef size_t	body_size;
+
 		Server();
 		std::vector<std::string>	server_names;
 		in_port_t					listen_port;
@@ -42,6 +44,8 @@ struct Config {
 		std::map<int, std::string>	error_pages;
 		bool						autoindex;
 		std::string					default_type;
+		body_size					client_max_body_size;
+		static body_size const		_overflow_body_size;
 		void	print() const;
 		void	set_defaults();
 	};
