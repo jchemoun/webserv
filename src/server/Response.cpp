@@ -204,30 +204,35 @@ size_t		Response::read_error_page()
 	//{
 	//	std::cout << "FGH" << (*cit).second << '\n';
 	//}
-	location = (*(_serv.error_pages.find(code))).second;
-	std::cout << location << '\n';
-	if (check_path(location) == FT_DIR)
-	{
+	std::map<int, std::string>::const_iterator	error_page_it = _serv.error_pages.find(code);
+	if (error_page_it == _serv.error_pages.end())
 		body = build_error_page();
-		return (body.length());
+	else {
+		location = error_page_it->second;
+		std::cout << location << '\n';
+		if (check_path(location) == FT_DIR)
+		{
+			body = build_error_page();
+			return (body.length());
+		}
+		if (check_read_perm(location) == false)
+		{
+			// error but not supposed to happen;
+			body = build_error_page();
+			return (body.length());
+		}
+		file.open(location.c_str(), std::ifstream::in);
+		if (file.is_open() == false)
+		{
+			// error but not supposed to happen;
+			body = build_error_page();
+			return (body.length());
+		}
+		buf << file.rdbuf();
+		file.close();
+		body = buf.str();
+		std::cout << "body: \e[33m" << body << "\e[0m";
 	}
-	if (check_read_perm(location) == false)
-	{
-		// error but not supposed to happen;
-		body = build_error_page();
-		return (body.length());
-	}
-	file.open(location.c_str(), std::ifstream::in);
-	if (file.is_open() == false)
-	{
-		// error but not supposed to happen;
-		body = build_error_page();
-		return (body.length());
-	}
-	buf << file.rdbuf();
-	file.close();
-	body = buf.str();
-	std::cout << "body: \e[33m" << body << "\e[0m";
 	return (body.length()); // not used
 }
 

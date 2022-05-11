@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/10 15:16:44 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 09:12:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ void	Webserv::get_config(int ac, const char **av) {
 	} else {
 		Parser	parser(av[1]);
 		conf = parser.get_config();
+		conf.print();
 	}
 }
 
@@ -97,7 +98,9 @@ bool	Webserv::handle_new_client(int serv_fd)
 		std::cerr << "error accept\n";
 		return (false);
 	}
-	epoll_event	event = { .events = EPOLLIN, .data = {.fd = client_fd } };
+	epoll_event event = { };
+	event.events = EPOLLIN;
+	event.data.fd = client_fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event) < 0)
 		throw std::runtime_error("epoll_ctl error");
 	clients[client_fd] = Client(find_serv_id(serv_fd));
@@ -136,7 +139,9 @@ bool	Webserv::handle_recv(int client_fd)
 		request.parse_request();
 		if (request.is_complete()) {
 			//if response needed set client to epollout
-			epoll_event event = {.events = EPOLLOUT, .data = {.fd = client_fd} };
+			epoll_event event = { };
+			event.events = EPOLLOUT;
+			event.data.fd = client_fd;
 			if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
 				throw std::runtime_error("epoll_ctl error (handle_recv)");
 		}
@@ -158,7 +163,9 @@ bool	Webserv::handle_send(int client_fd)
 	// need to create header, todo after looking at nginx response header && merge of class config
 
 	send(client_fd, response.c_str(), response.size(), 0); // TODO: what to do in case of send error
-	epoll_event event = {.events = EPOLLIN, .data = {.fd = client_fd} };
+	epoll_event	event = { };
+	event.events = EPOLLIN;
+	event.data.fd = client_fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
 		throw std::runtime_error("epoll_ctl error (handle_send)");
 

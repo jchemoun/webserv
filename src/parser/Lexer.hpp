@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 17:53:06 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/25 14:53:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 17:08:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ public:
 	Lexer(std::string filename);
 	virtual ~Lexer(void);
 
+	void	tokenize_file(std::string filename);
 	void	print() const;
 	size_t	size() const;
 	Token const	&next();
@@ -36,9 +37,9 @@ private:
 	Lexer(Lexer const &copy);
 	Lexer	&operator=(Lexer const &copy);
 
+	void	_clear();
 	void	_open(std::string &filename);
 
-	void	_tokenize_file();
 	void	_tokenize_line();
 	void	_tokenize_special_char();
 	void	_tokenize_word();

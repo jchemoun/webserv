@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/04/26 17:01:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/10 17:08:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,7 @@
 
 Lexer::Lexer(std::string filename):
 	_line(), _pos(0), _vect(), _istream(), _token_pos(0) {
-	_open(filename);
-	_tokenize_file();
+	tokenize_file(filename);
 }
 
 Lexer::~Lexer(void) {
@@ -58,13 +57,23 @@ Token const	&Lexer::peek_next() const {
 ** ============================ Private methods ============================= **
 */
 
+void	Lexer::_clear() {
+	_line.clear();
+	_pos = 0;
+	_vect.clear();
+	_istream.close();
+	_token_pos = 0;
+}
+
 void	Lexer::_open(std::string &filename) {
 	_istream.open(filename.c_str()); // Calls setstate(failbit) on failure.
 	if (!_istream)
 		throw std::runtime_error("Fails to open file.");
 }
 
-void	Lexer::_tokenize_file() {
+void	Lexer::tokenize_file(std::string filename) {
+	_clear();
+	_open(filename);
 	while (std::getline(_istream, _line)) {
 		_tokenize_line();
 	}

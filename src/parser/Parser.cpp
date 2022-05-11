@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/06 13:32:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 13:22:38 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ void	Parser::_init_parsers() {
 	_server_parsers["root"] = &Parser::_parse_root;
 	_server_parsers["error_page"] = &Parser::_parse_error_page;
 	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
+	_server_parsers["default_type"] = &Parser::_parse_default_type;
+	_server_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
 
 	_location_parsers["root"] = &Parser::_parse_root;
 	_location_parsers["index"] = &Parser::_parse_index;
@@ -30,11 +32,19 @@ void	Parser::_init_parsers() {
 	_location_parsers["autoindex"] = &Parser::_parse_autoindex;
 }
 
-Parser::Parser(std::string filename): _lexer(filename) {
+Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
 	_init_parsers();
 
 	while (_lexer.peek().get_type() != Token::type_eof)
 		_parse_server();
+
+	_config.set_defaults();
+
+	try { _lexer.tokenize_file(mimefile); }
+	catch (std::exception const &) { _set_default_mime_types(); return ; }
+
+	while (_lexer.peek().get_type() != Token::type_eof)
+		_parse_types();
 }
 
 Parser::~Parser(void) {
@@ -145,7 +155,7 @@ const char	*Parser::_parse_address(Config::Server &server, const char *s) {
 
 /*
 ** ✓ Syntax:	index file ...;
-** ⨯ Default:	index index.html;
+** ✓ Default:	index index.html;
 ** ✓ Context:	(http, -> no need) server, location
 */
 template <class Context>
@@ -154,6 +164,22 @@ void	Parser::_parse_index(Context &server) {
 		throw ParsingError("index: missing value");
 	while (_lexer.next().expect(Token::type_word))
 		server.index.push_back(_current_token().get_value());
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** ✓ Syntax:	default_type mime-type;
+** ✓ Default:	default_type text/plain;
+** ✓ Context:	[http,] server, [location]
+**
+** Defines the default MIME type of a response.
+** Mapping of file name extensions to MIME types can be set with the types directive.
+*/
+void	Parser::_parse_default_type(Config::Server &server) {
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("default_type: missing value");
+	while (_lexer.next().expect(Token::type_word))
+		server.default_type = _current_token().get_value();
 	_eat(Token::type_special_char, ";");
 }
 
@@ -241,6 +267,58 @@ void	Parser::_parse_autoindex(Context &context) {
 		throw ParsingError(std::string("autoindex: expects:[on|off] (value `") + val + "' not allowed)" );
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
+}
+
+void	Parser::_parse_client_max_body_size(Config::Server	&server) {
+	if (!_lexer.next().expect(Token::type_word))
+		throw ParsingError("client_max_body_size: missing argument");
+	const char *arg = _current_token().get_value().c_str();
+	try { server.client_max_body_size = _stoi(arg, 0, server._overflow_body_size - 1); }
+	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** ============================== Parse types =============================== **
+*/
+
+/*
+** ✓ Syntax:	types { ... }
+** ✓ Default:
+**     text/html  html;
+**     image/gif  gif;
+**     image/jpeg jpg;
+** ✓ Context:	http[, server, location]
+**
+** http://nginx.org/en/docs/http/ngx_http_core_module.html#types
+*/
+void	Parser::_parse_types() {
+	_eat(Token::type_word, "types");
+	_eat(Token::type_special_char, "{");
+	Config::Server	server;
+
+	while (!_current_token().expect(Token::type_special_char, "}")) {
+		if (_current_token().expect(Token::type_eof))
+			throw ParsingError("server: missing `}'");
+		_parse_type_line();
+	}
+	_eat(Token::type_special_char, "}");
+}
+void	Parser::_parse_type_line() {
+	if (!_lexer.peek().expect(Token::type_word))
+		throw ParsingError("types: missing type");
+	std::string	const &type = _current_token().get_value();
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("types: missing extension");
+	while (_lexer.next().expect(Token::type_word))
+		_config.types[_current_token().get_value()] = type;
+	_eat(Token::type_special_char, ";");
+}
+void	Parser::_set_default_mime_types() {
+	_config.types["html"] = "text/html";
+	_config.types["gif"] = "image/gif";
+	_config.types["jpg"] = "image/jpeg";
 }
 
 /*

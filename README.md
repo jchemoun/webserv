@@ -29,13 +29,14 @@ make build_image
 
 #### Compile, run webserv or nginx in a container
 
-| Command (host side)          | Effect                                                                        |
-|------------------------------|-------------------------------------------------------------------------------|
-| `make compile`               | run the docker image, compile webserv in the container, quit                  |
-| `make cc`                    | like above but also generate `compile_commands.json`                          |
-| `make run CONF=<confpath>`   | compile and run `./webserv confpath` (interactive)                  |
-| `make nginx CONF=<confpath>` | load `confpath` in nginx enabled sites, and run nginx (interactive) |
-| `make run_image`             | run interactively the image (does not compile or run anything)                |
+| Command (host side)           | Effect                                                                                       |
+|-------------------------------|----------------------------------------------------------------------------------------------|
+| `make compile`                | run the docker image, compile webserv in the container, quit                                 |
+| `make run CONF=<confpath>`    | compile and run `./webserv confpath` (interactive)                                           |
+| `make run_fg CONF=<confpath>` | compile and run `./webserv confpath` in the foreground                                       |
+| `make attach`                 | open a zsh session on the current container lauched with make run, make run_fg or make nginx |
+| `make nginx CONF=<confpath>`  | load `confpath` in nginx enabled sites, and run nginx (interactive)                          |
+| `make run_image`              | run interactively the image (does not compile or run anything)                               |
 
 
 ⚠️ **Beware**: The commands above mount your current working directory on `/home/dev/webserv` in **read-write** mode. So be careful.
