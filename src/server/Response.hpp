@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:59:55 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/11 22:21:37 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,11 @@
 class Response
 {
 public:
-	typedef std::map<int, std::string>						StatusMap;
+	typedef std::map<int, std::string>								StatusMap;
 	typedef std::map<std::string, void (Response::*)(std::string&)>	MethodMap;
+	typedef std::map<std::string, std::string>						HeaderMap;
 private:
+	HeaderMap				header_map;
 	std::string				header;
 	std::string				body;
 	std::string				full_response;
@@ -72,6 +74,7 @@ private:
 	std::string	build_error_page();
 
 	void		set_header(std::string &location);
+	void		set_content_type(std::string const &location);
 	void		set_full_response();
 };
 

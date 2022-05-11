@@ -6,11 +6,15 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 15:09:44 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/11 22:46:33 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+
+/*
+** ============================= Public methods ============================= **
+*/
 
 Response::Response(Config::Server const &serv, Request const &req):
 	header(), body(), full_response(),
@@ -18,7 +22,6 @@ Response::Response(Config::Server const &serv, Request const &req):
 	_serv(serv), _req(req)
 {
 	_autoindex = serv.autoindex; // location autoindex?
-	content_type = "text/plain";
 	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + _req.get_location(); // warning : need to adjust in case of redirection
 	if (_req.is_invalid()) {
 		code = 400;
@@ -35,13 +38,13 @@ Response::Response(Config::Server const &serv, Request const &req):
 	set_full_response();
 }
 
-const char *Response::c_str() const {
-	return (full_response.c_str());
-}
+const char *Response::c_str() const { return (full_response.c_str()); }
 
-size_t	Response::size() const {
-	return (full_response.size());
-}
+size_t		Response::size()  const { return (full_response.size());  }
+
+/*
+** ============================ Private Methods ============================= **
+*/
 
 Response::e_filetype	Response::check_path(std::string const &path) const {
 	struct stat	s;
@@ -87,7 +90,6 @@ std::string	Response::time_last_change(std::string file)
 	char		buf[200];
 
 	stat(file.c_str(), &s);
-	//std::cout << s.st_mtim.tv_nsec;
 	time = localtime(&(s.st_ctim.tv_sec));
 	strftime(buf, sizeof(buf), "%d-%b-%Y %H:%M", time);
 	std::cout << buf;
@@ -331,22 +333,52 @@ Response::MethodMap		Response::init_method_map()
 {
 	MethodMap	methods;
 
-	methods["GET"] = &Response::getMethod;
-	methods["POST"] = &Response::postMethod;
+	methods["GET"]    = &Response::getMethod;
+	methods["POST"]   = &Response::postMethod;
 	methods["DELETE"] = &Response::deleteMethod;
 	return (methods);
 }
 
 const Response::StatusMap	Response::status_header = Response::init_status_header();
-const Response::MethodMap	Response::methods = Response::init_method_map();
+const Response::MethodMap	Response::methods       = Response::init_method_map();
+
+static std::string get_file_extension(std::string const &path) {
+	if (path.size() < 2)
+		return ("");
+	for (size_t i = path.size() - 2; i > 0; --i)
+		if (path[i] == '.')
+			return (path.substr(i + 1));
+	return ("");
+}
+void		Response::set_content_type(std::string const &location) {
+	std::string	extension = get_file_extension(location);
+	std::string	mime_type = _serv.default_type;
+	if (!extension.empty()) {
+		HeaderMap::const_iterator	it = _serv.mime_types->find(extension);
+		if (it != header_map.end())
+			mime_type = it->second;
+	}
+	header_map["Content-Type"] = mime_type;
+}
+
+template <class T>
+static std::string	to_str(T streamable_obj) {
+	std::ostringstream	oss;
+	oss << streamable_obj;
+	return (oss.str());
+}
 
 void		Response::set_header(std::string &location) {
-	// TODO: set header according to the response
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
-	oss << "Server: webserv/0.1 (Ubuntu)" << "\r\n"; // ??? which name; all of them ?
-	oss << "Content-Length: " << body.size() << "\r\n";
-	oss << "Content-Type: " << content_type << "\r\n";
+	header_map["Server"] = "wevserv/0.1 (ubuntu)";
+	header_map["Content-Length"] = to_str(body.size());
+	set_content_type(location);
+	for (HeaderMap::const_iterator header_cit = header_map.begin(); header_cit != header_map.end(); ++header_cit)
+		oss << header_cit->first << ": " << header_cit->second << "\r\n";
+	// oss << "Content-Length: " << body.size() << "\r\n";
+	// oss << "Server: webserv/0.1 (Ubuntu)" << "\r\n"; // ??? which name; all of them ?
+	// oss << "Content-Type: " << content_type << "\r\n";
 	if (code == 301)
 	{
 		oss << "location: " << location.substr(_serv.root.length()) << "\r\n"; // todo fill host + location
@@ -360,7 +392,6 @@ void		Response::set_full_response()
 {
 	full_response.append(header);
 	full_response.append(body);
-	// full_response.append("\n");
 }
 
 Response::~Response() {
