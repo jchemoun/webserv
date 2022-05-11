@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:25:56 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/11 15:09:44 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,13 @@ Response::Response(Config::Server const &serv, Request const &req):
 		code = 400;
 		read_error_page();
 	}
+	else if (methods.find(req.get_method()) != methods.end())
+		(this->*methods.at(req.get_method()))(full_location);
 	else
-		read_file(full_location);
+	{
+		code = 405;
+		read_error_page();
+	}
 	set_header(full_location);
 	set_full_response();
 }
@@ -59,6 +64,17 @@ bool	Response::check_read_perm(std::string const &path) const {
 	if (stat(path.c_str(), &s) == 0)
 	{
 		if (s.st_mode & S_IROTH)
+			return (true);
+	}
+	return (false);
+}
+
+bool	Response::check_write_perm(std::string const &path) const {
+	struct stat	s;
+
+	if (stat(path.c_str(), &s) == 0)
+	{
+		if (s.st_mode & S_IWOTH)
 			return (true);
 	}
 	return (false);
@@ -238,19 +254,42 @@ size_t		Response::read_error_page()
 	return (body.length()); // not used
 }
 
-void		Response::getMethod()
+void		Response::getMethod(std::string &full_location)
 {
-
+	read_file(full_location);
+	// cgi
 }
 
-void		Response::postMethod()
+void		Response::postMethod(std::string &full_location)
 {
-
+	read_file(full_location);
+	//cgi;
 }
 
-void		Response::deleteMethod()
+void		Response::deleteMethod(std::string &full_location)
 {
-	
+	//(void)full_location;
+	if (check_path(full_location) == FT_UNKOWN)
+	{
+		code = 404;
+		read_error_page();
+	}
+	else if (check_write_perm(full_location) == false)
+	{
+		code = 403;
+		read_error_page();
+	}
+	else if (remove(full_location.c_str()) != -1)
+	{
+		code = 204; // or 200 and return something;
+		//body = "";
+	}
+	else
+	{
+		std::cerr << "error delete\n";
+		code = 500;
+		read_error_page();
+	}
 }
 
 std::string	Response::build_error_page()

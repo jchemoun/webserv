@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/10 15:21:16 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/11 14:59:55 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class Response
 {
 public:
 	typedef std::map<int, std::string>						StatusMap;
-	typedef std::map<std::string, void (Response::*)(void)>	MethodMap;
+	typedef std::map<std::string, void (Response::*)(std::string&)>	MethodMap;
 private:
 	std::string				header;
 	std::string				body;
@@ -57,6 +57,7 @@ private:
 
 	e_filetype	check_path(std::string const &path) const;
 	bool		check_read_perm(std::string const &path) const;
+	bool		check_write_perm(std::string const &path) const;
 	std::string	time_last_change(std::string file);
 	long		size_file(std::string file);
 
@@ -64,9 +65,9 @@ private:
 	size_t		read_file(std::string &location);
 	size_t		read_error_page();
 
-	void		getMethod();
-	void		postMethod();
-	void		deleteMethod();
+	void		getMethod(std::string &full_location);
+	void		postMethod(std::string &full_location);
+	void		deleteMethod(std::string &full_location);
 
 	std::string	build_error_page();
 
