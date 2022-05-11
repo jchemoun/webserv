@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 08:55:06 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 09:12:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ void	Webserv::get_config(int ac, const char **av) {
 	} else {
 		Parser	parser(av[1]);
 		conf = parser.get_config();
+		conf.print();
 	}
 }
 
