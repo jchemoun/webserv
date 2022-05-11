@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/10 10:02:15 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 15:09:44 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,23 @@
 Response::Response(Config::Server const &serv, Request const &req):
 	header(), body(), full_response(),
 	code(0),
-	_serv(serv)
+	_serv(serv), _req(req)
 {
 	_autoindex = serv.autoindex; // location autoindex?
 	content_type = "text/plain";
-	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + req.get_location(); // warning : need to adjust in case of redirection
-	if (req.is_invalid()) {
+	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + _req.get_location(); // warning : need to adjust in case of redirection
+	if (_req.is_invalid()) {
 		code = 400;
 		read_error_page();
 	}
+	else if (methods.find(req.get_method()) != methods.end())
+		(this->*methods.at(req.get_method()))(full_location);
 	else
-		read_file(full_location);
-	set_header();
+	{
+		code = 405;
+		read_error_page();
+	}
+	set_header(full_location);
 	set_full_response();
 }
 
@@ -59,6 +64,17 @@ bool	Response::check_read_perm(std::string const &path) const {
 	if (stat(path.c_str(), &s) == 0)
 	{
 		if (s.st_mode & S_IROTH)
+			return (true);
+	}
+	return (false);
+}
+
+bool	Response::check_write_perm(std::string const &path) const {
+	struct stat	s;
+
+	if (stat(path.c_str(), &s) == 0)
+	{
+		if (s.st_mode & S_IWOTH)
 			return (true);
 	}
 	return (false);
@@ -143,6 +159,7 @@ size_t	Response::read_file(std::string &location)
 		for (size_t i = 0; i < _serv.index.size(); ++i)
 		{
 			std::string	index_candidate = location + '/' + _serv.index.at(i);
+			std::cout << "INDEX CANDIDATE" << index_candidate << '\n';
 			if (check_path(index_candidate) == FT_FILE)
 				return (read_file(index_candidate));
 		}
@@ -150,6 +167,7 @@ size_t	Response::read_file(std::string &location)
 			return (create_auto_index_page(location));
 		else
 		{
+			std::cout << "WTF IS THIS\n";
 			code = 403;
 			return (read_error_page());
 		}
@@ -236,6 +254,44 @@ size_t		Response::read_error_page()
 	return (body.length()); // not used
 }
 
+void		Response::getMethod(std::string &full_location)
+{
+	read_file(full_location);
+	// cgi
+}
+
+void		Response::postMethod(std::string &full_location)
+{
+	read_file(full_location);
+	//cgi;
+}
+
+void		Response::deleteMethod(std::string &full_location)
+{
+	//(void)full_location;
+	if (check_path(full_location) == FT_UNKOWN)
+	{
+		code = 404;
+		read_error_page();
+	}
+	else if (check_write_perm(full_location) == false)
+	{
+		code = 403;
+		read_error_page();
+	}
+	else if (remove(full_location.c_str()) != -1)
+	{
+		code = 204; // or 200 and return something;
+		//body = "";
+	}
+	else
+	{
+		std::cerr << "error delete\n";
+		code = 500;
+		read_error_page();
+	}
+}
+
 std::string	Response::build_error_page()
 {
 	std::ostringstream	oss;
@@ -270,9 +326,21 @@ Response::StatusMap		Response::init_status_header()
 	status[500] = "Internal Server Error";
 	return (status);
 }
-const Response::StatusMap	Response::status_header = Response::init_status_header();
 
-void		Response::set_header() {
+Response::MethodMap		Response::init_method_map()
+{
+	MethodMap	methods;
+
+	methods["GET"] = &Response::getMethod;
+	methods["POST"] = &Response::postMethod;
+	methods["DELETE"] = &Response::deleteMethod;
+	return (methods);
+}
+
+const Response::StatusMap	Response::status_header = Response::init_status_header();
+const Response::MethodMap	Response::methods = Response::init_method_map();
+
+void		Response::set_header(std::string &location) {
 	// TODO: set header according to the response
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
@@ -281,7 +349,7 @@ void		Response::set_header() {
 	oss << "Content-Type: " << content_type << "\r\n";
 	if (code == 301)
 	{
-		oss << "location: "; // todo fill host + location
+		oss << "location: " << location.substr(_serv.root.length()) << "\r\n"; // todo fill host + location
 	}
 	oss << "Connection: keep-alive" << "\r\n";
 	oss << "\r\n";
