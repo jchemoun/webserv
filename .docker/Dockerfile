@@ -12,6 +12,7 @@ RUN apt install -y --no-install-recommends netcat
 RUN apt install -y --no-install-recommends sudo
 RUN apt install -y --no-install-recommends vim
 RUN apt install -y --no-install-recommends valgrind
+RUN apt install -y expect
 
 RUN useradd -m dev && echo "dev:dev" | chpasswd && adduser dev sudo
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
