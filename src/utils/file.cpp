@@ -63,8 +63,8 @@ std::string	file::time_last_change(std::string const &file) {
 
 long	file::size(std::string const &file) {
 	struct stat	s;
-
-	return (stat(file.c_str(), &s));
+	stat(file.c_str(), &s);
+	return (s.st_size);
 }
 
 std::string file::get_extension(std::string const &path) {
