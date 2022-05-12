@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 22:21:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 12:07:35 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@
 # include <dirent.h>
 # include "Config.hpp"
 # include "Request.hpp"
+# include "utils.hpp"
+# include "file.hpp"
 
 class Response
 {
@@ -52,16 +54,8 @@ public:
 	size_t		size() const;
 
 private:
-	enum	e_filetype { FT_UNKOWN, FT_DIR, FT_FILE };
-
 	static StatusMap	init_status_header();
 	static MethodMap	init_method_map();
-
-	e_filetype	check_path(std::string const &path) const;
-	bool		check_read_perm(std::string const &path) const;
-	bool		check_write_perm(std::string const &path) const;
-	std::string	time_last_change(std::string file);
-	long		size_file(std::string file);
 
 	size_t		create_auto_index_page(std::string &location);
 	size_t		read_file(std::string &location);
@@ -73,6 +67,7 @@ private:
 
 	std::string	build_error_page();
 
+	void		set_header_map(std::string const &location);
 	void		set_header(std::string &location);
 	void		set_content_type(std::string const &location);
 	void		set_full_response();

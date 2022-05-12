@@ -57,6 +57,7 @@ endif
 SRC_NAME = main.cpp \
 					 $(addprefix server/, Webserv.cpp Client.cpp Request.cpp Response.cpp) \
 					 $(addprefix parser/, Config.cpp Lexer.cpp Parser.cpp Token.cpp) \
+					 $(addprefix utils/, utils.cpp file.cpp) \
 
 # Path
 SRC_PATH      =  ./src/
@@ -67,7 +68,7 @@ SRC          =  $(addprefix $(SRC_PATH),    $(SRC_NAME))
 OBJ          =  $(patsubst  $(SRC_PATH)%.cpp,    $(OBJ_PATH)%.o, $(SRC))
 
 # Includes
-INCLUDE_FLAGS = -Iinclude -Isrc/server -Isrc/parser
+INCLUDE_FLAGS = -Iinclude -Isrc/server -Isrc/parser -Isrc/utils
 # NOTE: include files for compilation dependancy checks only
 INCLUDE_FILES = $(shell find . -name "*.hpp")
 
