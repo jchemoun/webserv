@@ -18,8 +18,6 @@
 
 namespace utils {
 
-	std::string get_file_extension(std::string const &path);
-
 	template <class T>
 		std::string	to_str(T streamable_obj) {
 			std::ostringstream	oss;

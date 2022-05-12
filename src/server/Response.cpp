@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 12:17:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 12:42:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -286,7 +286,7 @@ Response::MethodMap		Response::init_method_map()
 const Response::StatusMap	Response::status_header = Response::init_status_header();
 const Response::MethodMap	Response::methods       = Response::init_method_map();
 
-void		Response::set_content_type(std::string const &location) {
+std::string	Response::get_content_type(std::string const &location) const {
 	std::string	extension = file::get_extension(location);
 	std::string	mime_type = _serv.default_type;
 	if (!extension.empty()) {
@@ -294,31 +294,31 @@ void		Response::set_content_type(std::string const &location) {
 		if (it != header_map.end())
 			mime_type = it->second;
 	}
-	header_map["Content-Type"] = mime_type;
+	return (mime_type);
 }
 
 void	Response::set_header_map(std::string const &location) {
-	header_map["Server"] = "wevserv/0.1 (ubuntu)";
+	header_map["Server"]         = "wevserv/0.1 (ubuntu)";
 	header_map["Content-Length"] = utils::to_str(body.size());
-	set_content_type(location);
+	header_map["Content-Type"]   = get_content_type(location);
+	header_map["Connection"]     = "keep-alive";
+	if (code == 301)
+		header_map["location"] = location.substr(_serv.root.length()); // todo fill host + location
 }
 
-void		Response::set_header(std::string &location) {
+void		Response::set_header(std::string &location)
+{
+	set_header_map(location);
+
 	std::ostringstream oss;
 
-	set_header_map(location);
 	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
-	for (HeaderMap::const_iterator header_cit = header_map.begin(); header_cit != header_map.end(); ++header_cit)
-		oss << header_cit->first << ": " << header_cit->second << "\r\n";
-	// oss << "Content-Length: " << body.size() << "\r\n";
-	// oss << "Server: webserv/0.1 (Ubuntu)" << "\r\n"; // ??? which name; all of them ?
-	// oss << "Content-Type: " << content_type << "\r\n";
-	if (code == 301)
-	{
-		oss << "location: " << location.substr(_serv.root.length()) << "\r\n"; // todo fill host + location
-	}
-	oss << "Connection: keep-alive" << "\r\n";
+
+	for (HeaderMap::const_iterator it = header_map.begin(); it != header_map.end(); ++it)
+		oss << it->first << ": " << it->second << "\r\n";
+
 	oss << "\r\n";
+
 	header = oss.str();
 }
 
