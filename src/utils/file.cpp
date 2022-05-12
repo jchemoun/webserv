@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:59:54 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/12 13:47:06 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 15:40:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,4 +82,15 @@ std::string	file::join(std::string const &head, std::string const &tail) {
 		return (head + sep + tail);
 	else
 		return (head + tail);
+}
+
+std::string	file::get_mime(std::string const &file, Config::MimeMap const &mime_map, std::string const &default_mime) {
+	std::string	extension = file::get_extension(file);
+	std::string mime_type = default_mime;
+	if (!extension.empty()) {
+		Config::MimeMap::const_iterator	it = mime_map.find(extension);
+		if (it != mime_map.end())
+			mime_type = it->second;
+	}
+	return (mime_type);
 }

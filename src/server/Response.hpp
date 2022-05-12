@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 13:04:48 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 15:39:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,6 @@ private:
 
 	void		set_header_map(std::string const &location);
 	void		set_header(std::string &location);
-	std::string get_content_type(std::string const &location) const;
 	void		set_full_response();
 };
 

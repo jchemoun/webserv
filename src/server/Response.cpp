@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 13:49:56 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 16:03:07 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,14 +98,14 @@ size_t	Response::read_file(std::string &location)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
-	file::e_type			ft = file::get_type(location);
+	file::e_type		ft = file::get_type(location);
 
 	if (ft == file::FT_DIR)
 	{
 		for (size_t i = 0; i < _serv.index.size(); ++i)
 		{
-			std::string	index_candidate = location + '/' + _serv.index.at(i);
-			std::cout << "INDEX CANDIDATE" << index_candidate << '\n';
+			std::string	index_candidate = file::join(location, _serv.index.at(i));
+			std::cout << "INDEX CANDIDATE: " << index_candidate << '\n';
 			if (file::get_type(index_candidate) == file::FT_FILE)
 				return (read_file(index_candidate));
 		}
@@ -168,7 +168,7 @@ size_t		Response::read_error_page()
 	//{
 	//	std::cout << "FGH" << (*cit).second << '\n';
 	//}
-	std::map<int, std::string>::const_iterator	error_page_it = _serv.error_pages.find(code);
+	Config::ErrPageMap::const_iterator	error_page_it = _serv.error_pages.find(code);
 	if (error_page_it == _serv.error_pages.end())
 		body = build_error_page();
 	else {
@@ -286,23 +286,15 @@ Response::MethodMap		Response::init_method_map()
 const Response::StatusMap	Response::status_header = Response::init_status_header();
 const Response::MethodMap	Response::methods       = Response::init_method_map();
 
-std::string	Response::get_content_type(std::string const &location) const {
-	std::string	extension = file::get_extension(location);
-	std::string	mime_type = _serv.default_type;
-	if (!extension.empty()) {
-		HeaderMap::const_iterator	it = _serv.mime_types->find(extension);
-		if (it != header_map.end())
-			mime_type = it->second;
-	}
-	return (mime_type);
-}
-
-void	Response::set_header_map(std::string const &location) {
+void	Response::set_header_map(std::string const &location)
+{
 	header_map["Server"]         = "wevserv/0.1 (ubuntu)";
 	header_map["Content-Length"] = utils::to_str(body.size());
 	header_map["Connection"]     = "keep-alive";
+
 	if (header_map.find("Content-Type") == header_map.end())
-		header_map["Content-Type"]   = get_content_type(location);
+		header_map["Content-Type"] = file::get_mime(location, *_serv.mime_types, _serv.default_type);
+
 	if (code == 301)
 		header_map["location"] = location.substr(_serv.root.length()); // todo fill host + location
 }
