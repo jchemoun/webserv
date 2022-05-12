@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:27:58 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/11 22:24:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -203,6 +203,7 @@ void	Webserv::serv_init()
 	for (serv_vector::iterator it = conf.servers.begin(); it != conf.servers.end(); it++) {
 		Config::Server	&serv = *it;
 		socket_init(serv);
+		serv.mime_types = &conf.types;
 	}
 }
 

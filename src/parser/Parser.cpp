@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 13:22:38 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 22:02:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ void	Parser::_parse_server() {
 			throw ParsingError("server: missing `}'");
 		(this->*_get_directive_parser(_server_parsers))(server);
 	}
+	server.mime_types = &_config.types;
 	_config.servers.push_back(server);
 	_eat(Token::type_special_char, "}");
 }

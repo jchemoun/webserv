@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:59:55 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/12 13:04:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,17 +25,20 @@
 # include <dirent.h>
 # include "Config.hpp"
 # include "Request.hpp"
+# include "utils.hpp"
+# include "file.hpp"
 
 class Response
 {
 public:
-	typedef std::map<int, std::string>						StatusMap;
+	typedef std::map<int, std::string>								StatusMap;
 	typedef std::map<std::string, void (Response::*)(std::string&)>	MethodMap;
+	typedef std::map<std::string, std::string>						HeaderMap;
 private:
+	HeaderMap				header_map;
 	std::string				header;
 	std::string				body;
 	std::string				full_response;
-	std::string				content_type;
 	int						code;
 	Config::Server const	&_serv;
 	bool					_autoindex;
@@ -50,16 +53,8 @@ public:
 	size_t		size() const;
 
 private:
-	enum	e_filetype { FT_UNKOWN, FT_DIR, FT_FILE };
-
 	static StatusMap	init_status_header();
 	static MethodMap	init_method_map();
-
-	e_filetype	check_path(std::string const &path) const;
-	bool		check_read_perm(std::string const &path) const;
-	bool		check_write_perm(std::string const &path) const;
-	std::string	time_last_change(std::string file);
-	long		size_file(std::string file);
 
 	size_t		create_auto_index_page(std::string &location);
 	size_t		read_file(std::string &location);
@@ -71,7 +66,9 @@ private:
 
 	std::string	build_error_page();
 
+	void		set_header_map(std::string const &location);
 	void		set_header(std::string &location);
+	std::string get_content_type(std::string const &location) const;
 	void		set_full_response();
 };
 

@@ -6,20 +6,23 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 15:09:44 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/12 13:49:56 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+
+/*
+** ============================= Public methods ============================= **
+*/
 
 Response::Response(Config::Server const &serv, Request const &req):
 	header(), body(), full_response(),
 	code(0),
 	_serv(serv), _req(req)
 {
-	_autoindex = serv.autoindex; // location autoindex?
-	content_type = "text/plain";
-	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + _req.get_location(); // warning : need to adjust in case of redirection
+	_autoindex = serv.autoindex;
+	std::string	full_location = file::join(serv.root, _req.get_location()); // warning : need to adjust in case of redirection
 	if (_req.is_invalid()) {
 		code = 400;
 		read_error_page();
@@ -35,71 +38,14 @@ Response::Response(Config::Server const &serv, Request const &req):
 	set_full_response();
 }
 
-const char *Response::c_str() const {
-	return (full_response.c_str());
-}
+const char *Response::c_str() const { return (full_response.c_str()); }
 
-size_t	Response::size() const {
-	return (full_response.size());
-}
+size_t		Response::size()  const { return (full_response.size());  }
 
-Response::e_filetype	Response::check_path(std::string const &path) const {
-	struct stat	s;
+/*
+** ============================ Private Methods ============================= **
+*/
 
-	if (stat(path.c_str(), &s) == 0)
-	{
-		if (s.st_mode & S_IFDIR)
-			return (FT_DIR);
-		else if (s.st_mode & S_IFREG)
-			return (FT_FILE);
-		else
-			return (FT_UNKOWN);
-	}
-	return (FT_UNKOWN);
-}
-
-bool	Response::check_read_perm(std::string const &path) const {
-	struct stat	s;
-
-	if (stat(path.c_str(), &s) == 0)
-	{
-		if (s.st_mode & S_IROTH)
-			return (true);
-	}
-	return (false);
-}
-
-bool	Response::check_write_perm(std::string const &path) const {
-	struct stat	s;
-
-	if (stat(path.c_str(), &s) == 0)
-	{
-		if (s.st_mode & S_IWOTH)
-			return (true);
-	}
-	return (false);
-}
-
-std::string	Response::time_last_change(std::string file)
-{
-	struct stat	s;
-	struct tm	*time;
-	char		buf[200];
-
-	stat(file.c_str(), &s);
-	//std::cout << s.st_mtim.tv_nsec;
-	time = localtime(&(s.st_ctim.tv_sec));
-	strftime(buf, sizeof(buf), "%d-%b-%Y %H:%M", time);
-	std::cout << buf;
-	return (buf);
-}
-
-long	Response::size_file(std::string file)
-{
-	struct stat	s;
-
-	return (stat(file.c_str(), &s));
-}
 
 size_t	Response::create_auto_index_page(std::string &location)
 {
@@ -116,7 +62,7 @@ size_t	Response::create_auto_index_page(std::string &location)
 		return (read_error_page());
 	}
 	// probably error need check if exist && exec perm
-	if (check_read_perm(location) == false)
+	if (file::has_read_perm(location) == false)
 	{
 		code = 403;
 		return (read_error_page());
@@ -135,15 +81,15 @@ size_t	Response::create_auto_index_page(std::string &location)
 	std::sort(ff_vector.begin(), ff_vector.end());
 	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
 	{
-		if (check_path(location + *(cit)) == FT_DIR)
-			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << time_last_change(location + *(cit)) << "\t-\n";
+		if (file::get_type(location + *(cit)) == file::FT_DIR)
+			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(location + *(cit)) << "\t-\n";
 		else
-			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << time_last_change(location + *(cit)) << '\t' << size_file(location + *(cit)) << '\n';
+			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(location + *(cit)) << '\t' << file::size(location + *(cit)) << '\n';
 	}
 	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
 	body = oss.str();
-	content_type = "text/html";
+	header_map["Content-Type"] = "text/html";
 	closedir(dir);
 	return (body.length());
 }
@@ -152,15 +98,15 @@ size_t	Response::read_file(std::string &location)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
-	e_filetype			ft = check_path(location);
+	file::e_type			ft = file::get_type(location);
 
-	if (ft == FT_DIR)
+	if (ft == file::FT_DIR)
 	{
 		for (size_t i = 0; i < _serv.index.size(); ++i)
 		{
 			std::string	index_candidate = location + '/' + _serv.index.at(i);
 			std::cout << "INDEX CANDIDATE" << index_candidate << '\n';
-			if (check_path(index_candidate) == FT_FILE)
+			if (file::get_type(index_candidate) == file::FT_FILE)
 				return (read_file(index_candidate));
 		}
 		if (_autoindex)
@@ -174,11 +120,11 @@ size_t	Response::read_file(std::string &location)
 		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 
 	}
-	else if (check_path(location) == FT_FILE)
+	else if (file::get_type(location) == file::FT_FILE)
 	{
 		// read file
 		//std::cout << "123\n";
-		if (check_read_perm(location) == false)
+		if (file::has_read_perm(location) == false)
 		{
 			//std::cout << "403\n";
 			//403
@@ -228,12 +174,12 @@ size_t		Response::read_error_page()
 	else {
 		location = error_page_it->second;
 		std::cout << location << '\n';
-		if (check_path(location) == FT_DIR)
+		if (file::get_type(location) == file::FT_DIR)
 		{
 			body = build_error_page();
 			return (body.length());
 		}
-		if (check_read_perm(location) == false)
+		if (file::has_read_perm(location) == false)
 		{
 			// error but not supposed to happen;
 			body = build_error_page();
@@ -269,12 +215,12 @@ void		Response::postMethod(std::string &full_location)
 void		Response::deleteMethod(std::string &full_location)
 {
 	//(void)full_location;
-	if (check_path(full_location) == FT_UNKOWN)
+	if (file::get_type(full_location) == file::FT_UNKOWN)
 	{
 		code = 404;
 		read_error_page();
 	}
-	else if (check_write_perm(full_location) == false)
+	else if (file::has_write_perm(full_location) == false)
 	{
 		code = 403;
 		read_error_page();
@@ -305,7 +251,7 @@ std::string	Response::build_error_page()
 	oss << "</center>\n</body>\n</html>";
 	oss << std::endl;
 
-	content_type = "text/html";
+	header_map["Content-Type"] = "text/html";
 	return (oss.str());
 }
 
@@ -331,28 +277,49 @@ Response::MethodMap		Response::init_method_map()
 {
 	MethodMap	methods;
 
-	methods["GET"] = &Response::getMethod;
-	methods["POST"] = &Response::postMethod;
+	methods["GET"]    = &Response::getMethod;
+	methods["POST"]   = &Response::postMethod;
 	methods["DELETE"] = &Response::deleteMethod;
 	return (methods);
 }
 
 const Response::StatusMap	Response::status_header = Response::init_status_header();
-const Response::MethodMap	Response::methods = Response::init_method_map();
+const Response::MethodMap	Response::methods       = Response::init_method_map();
 
-void		Response::set_header(std::string &location) {
-	// TODO: set header according to the response
-	std::ostringstream oss;
-	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
-	oss << "Server: webserv/0.1 (Ubuntu)" << "\r\n"; // ??? which name; all of them ?
-	oss << "Content-Length: " << body.size() << "\r\n";
-	oss << "Content-Type: " << content_type << "\r\n";
-	if (code == 301)
-	{
-		oss << "location: " << location.substr(_serv.root.length()) << "\r\n"; // todo fill host + location
+std::string	Response::get_content_type(std::string const &location) const {
+	std::string	extension = file::get_extension(location);
+	std::string	mime_type = _serv.default_type;
+	if (!extension.empty()) {
+		HeaderMap::const_iterator	it = _serv.mime_types->find(extension);
+		if (it != header_map.end())
+			mime_type = it->second;
 	}
-	oss << "Connection: keep-alive" << "\r\n";
+	return (mime_type);
+}
+
+void	Response::set_header_map(std::string const &location) {
+	header_map["Server"]         = "wevserv/0.1 (ubuntu)";
+	header_map["Content-Length"] = utils::to_str(body.size());
+	header_map["Connection"]     = "keep-alive";
+	if (header_map.find("Content-Type") == header_map.end())
+		header_map["Content-Type"]   = get_content_type(location);
+	if (code == 301)
+		header_map["location"] = location.substr(_serv.root.length()); // todo fill host + location
+}
+
+void		Response::set_header(std::string &location)
+{
+	set_header_map(location);
+
+	std::ostringstream oss;
+
+	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
+
+	for (HeaderMap::const_iterator it = header_map.begin(); it != header_map.end(); ++it)
+		oss << it->first << ": " << it->second << "\r\n";
+
 	oss << "\r\n";
+
 	header = oss.str();
 }
 
@@ -360,7 +327,6 @@ void		Response::set_full_response()
 {
 	full_response.append(header);
 	full_response.append(body);
-	// full_response.append("\n");
 }
 
 Response::~Response() {

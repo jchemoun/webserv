@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 13:24:31 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 22:24:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,8 @@ Config::Server::Server():
 	root("html"),
 	autoindex(false),
 	default_type("text/plain"),
-	client_max_body_size(1024 * 1024) // 1MB
+	client_max_body_size(1024 * 1024), // 1MB
+	mime_types(NULL)
 {
 }
 

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 13:19:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/11 22:23:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@
 # include <arpa/inet.h>  // in_addr_t
 
 struct Config {
+
+	typedef std::map<std::string, std::string>	MimeTypes;
 
 	struct	Location {
 		Location();
@@ -46,11 +48,10 @@ struct Config {
 		std::string					default_type;
 		body_size					client_max_body_size;
 		static body_size const		_overflow_body_size;
+		const MimeTypes				*mime_types;
 		void	print() const;
 		void	set_defaults();
 	};
-
-	typedef std::map<std::string, std::string>	MimeTypes;
 
 	std::vector<Server>	servers;
 	MimeTypes			types;
