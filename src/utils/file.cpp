@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:59:54 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/12 12:17:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 13:47:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,3 +76,10 @@ std::string file::get_extension(std::string const &path) {
 	return ("");
 }
 
+std::string	file::join(std::string const &head, std::string const &tail) {
+	char	sep = '/';
+	if (head.at(head.size() - 1) != sep && tail.at(0) != sep)
+		return (head + sep + tail);
+	else
+		return (head + tail);
+}

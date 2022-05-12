@@ -25,6 +25,7 @@ namespace file {
 	std::string	time_last_change(std::string const &file);
 	long		size(std::string const &file);
 	std::string get_extension(std::string const &path);
+	std::string	join(std::string const &head, std::string const &tail);
 
 }
 

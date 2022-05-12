@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 13:05:22 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 13:49:56 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ Response::Response(Config::Server const &serv, Request const &req):
 	code(0),
 	_serv(serv), _req(req)
 {
-	_autoindex = serv.autoindex; // location autoindex?
-	std::string	full_location = serv.root + (*(serv.root.rbegin()) == '/' ? "/" : "") + _req.get_location(); // warning : need to adjust in case of redirection
+	_autoindex = serv.autoindex;
+	std::string	full_location = file::join(serv.root, _req.get_location()); // warning : need to adjust in case of redirection
 	if (_req.is_invalid()) {
 		code = 400;
 		read_error_page();
