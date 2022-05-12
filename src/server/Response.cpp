@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 12:42:06 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 13:05:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ size_t	Response::create_auto_index_page(std::string &location)
 	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
 	code = 200;
 	body = oss.str();
-	content_type = "text/html";
+	header_map["Content-Type"] = "text/html";
 	closedir(dir);
 	return (body.length());
 }
@@ -251,7 +251,7 @@ std::string	Response::build_error_page()
 	oss << "</center>\n</body>\n</html>";
 	oss << std::endl;
 
-	content_type = "text/html";
+	header_map["Content-Type"] = "text/html";
 	return (oss.str());
 }
 
@@ -300,8 +300,9 @@ std::string	Response::get_content_type(std::string const &location) const {
 void	Response::set_header_map(std::string const &location) {
 	header_map["Server"]         = "wevserv/0.1 (ubuntu)";
 	header_map["Content-Length"] = utils::to_str(body.size());
-	header_map["Content-Type"]   = get_content_type(location);
 	header_map["Connection"]     = "keep-alive";
+	if (header_map.find("Content-Type") == header_map.end())
+		header_map["Content-Type"]   = get_content_type(location);
 	if (code == 301)
 		header_map["location"] = location.substr(_serv.root.length()); // todo fill host + location
 }
