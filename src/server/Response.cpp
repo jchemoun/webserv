@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 16:03:07 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 16:16:45 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,11 @@
 Response::Response(Config::Server const &serv, Request const &req):
 	header(), body(), full_response(),
 	code(0),
+	_autoindex(serv.autoindex),
+	location(req.get_location()),
+	full_location(file::join(serv.root, location)),
 	_serv(serv), _req(req)
 {
-	_autoindex = serv.autoindex;
-	std::string	full_location = file::join(serv.root, _req.get_location()); // warning : need to adjust in case of redirection
 	if (_req.is_invalid()) {
 		code = 400;
 		read_error_page();
@@ -106,8 +107,11 @@ size_t	Response::read_file(std::string &location)
 		{
 			std::string	index_candidate = file::join(location, _serv.index.at(i));
 			std::cout << "INDEX CANDIDATE: " << index_candidate << '\n';
-			if (file::get_type(index_candidate) == file::FT_FILE)
+			if (file::get_type(index_candidate) == file::FT_FILE) {
+				location = index_candidate;
+				full_location = file::join(_serv.root, location);
 				return (read_file(index_candidate));
+			}
 		}
 		if (_autoindex)
 			return (create_auto_index_page(location));

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 15:39:51 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 16:11:14 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,10 @@ private:
 	std::string				body;
 	std::string				full_response;
 	int						code;
-	Config::Server const	&_serv;
 	bool					_autoindex;
+	std::string				location;
+	std::string				full_location;
+	Config::Server const	&_serv;
 
 	static const StatusMap	status_header;
 	static const MethodMap	methods;

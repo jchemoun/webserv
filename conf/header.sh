@@ -2,8 +2,8 @@
 
 supported_headers="^HTTP|Content-Length|Content-Type|Connection"
 
-  printf "\e[33mUri is empty\e[0m\n"
-# curl -i localhost:8080 | grep -E "$supported_headers" | sort # FIX: get right location file
+printf "\e[33mUri is empty\e[0m\n"
+curl -i localhost:8080 | grep -E "$supported_headers" | sort
 
 check_header() {
   delay = "0.02"
@@ -17,7 +17,14 @@ check_header() {
   done
 }
 
-# check_header / /folder/ /42_logo.png /index.html # /folder # FIX: move permanently
+check_header / /42_logo.png /index.html # /folder # FIX: move permanently
+
+# For error and autoindex, Content-Length will differ
+supported_headers="^HTTP|Content-Type|Connection"
+printf "\n\e[34mAutoindex and error page: Content-Length may differ\e[0m\n"
+check_header /folder/ /not_found.png
+
+# ==================================== # ===================================== #
 
 # curl -i localhost:8080/42_logo.png # curl behaves weirdly with binaries
 
