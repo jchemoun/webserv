@@ -166,20 +166,13 @@ bool	Webserv::handle_send(int client_fd)
 		std::cout << response.size_file / BUFFER_SIZE << "\n";
 		send(client_fd, response.c_str(), response.size(), 0);
 		char	buf[BUFFER_SIZE] = {0};
-		for (long i = response.size_file / BUFFER_SIZE; i > -1; i--)
+		for (long i = response.size_file / BUFFER_SIZE; i > 0; i--)
 		{
-			if (i != 0)
-			{
-				response.file.read((char*)&buf, BUFFER_SIZE);
-				send(client_fd, buf, BUFFER_SIZE, 0);
-			}
-			else
-			{
-				response.file.read((char*)&buf, response.size_file % BUFFER_SIZE);
-				send(client_fd, buf, response.size_file % BUFFER_SIZE, 0);
-			}
-			std::cout << i << " post send\n";
-		}	
+			response.file.read((char*)&buf, BUFFER_SIZE);
+			send(client_fd, buf, BUFFER_SIZE, 0);
+		}
+		response.file.read((char*)&buf, response.size_file % BUFFER_SIZE);
+		send(client_fd, buf, response.size_file % BUFFER_SIZE, 0);
 	}
 	else // TODO: what to do in case of send error
 	{
