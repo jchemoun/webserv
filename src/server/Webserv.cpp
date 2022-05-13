@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 16:58:02 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 17:22:16 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,7 @@ void	Webserv::run()
 	epoll_init();
 	while (should_run)
 	{
-		errno = 0;
-		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT); //std::cout << nfds << '\n';
-		if (errno == EINVAL || errno == EFAULT || errno == EBADFD)
-			throw std::runtime_error(std::string("epoll error: ") + strerror(errno));
+		nfds = epoll_wait();
 		for (int i = 0; i < nfds; i++)
 		{
 			const int event = events[i].events;
@@ -251,6 +248,15 @@ bool	Webserv::is_serv(int fd)
 void	Webserv::epoll_add(int fd, int events) { utils::epoll_ctl(epfd, EPOLL_CTL_ADD, fd, events); }
 void	Webserv::epoll_mod(int fd, int events) { utils::epoll_ctl(epfd, EPOLL_CTL_MOD, fd, events); }
 void	Webserv::epoll_del(int fd)             { epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL); }
+
+int		Webserv::epoll_wait() {
+	int	nfds;
+	if ((nfds = ::epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT)) < 0 && errno != EINTR) // only error tolerated is if signal is caught
+		throw std::runtime_error(std::string("epoll error: ") + strerror(errno)); // EINVAL, EFAULT, EBADFD
+	else
+		return (nfds);
+
+}
 
 Webserv::~Webserv()
 {

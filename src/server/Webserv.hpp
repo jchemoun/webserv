@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 16:47:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 17:12:01 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ private:
 	void	epoll_add(int fd, int events);
 	void	epoll_mod(int fd, int events);
 	void	epoll_del(int fd);
+	int		epoll_wait();
 
 	//close/error
 	// void	close_serv(); // use destructor instead
