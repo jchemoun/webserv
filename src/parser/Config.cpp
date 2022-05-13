@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 05:48:11 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 10:01:38 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ void	Config::Location::print() const {
 	std::cout << "\e[0m";
 }
 
-Config::Server::Listen::Listen():
+Config::Listen::Listen():
 	port(80),
 	addr(htonl(INADDR_ANY)),
 	str_addr("*"),
@@ -64,7 +64,7 @@ Config::Server::Listen::Listen():
 const Config::Server::body_size Config::Server::_overflow_body_size = std::numeric_limits<int>::max();
 
 Config::Server::Server():
-	listen(),
+	listen_vect(),
 	root("html"),
 	autoindex(false),
 	default_type("text/plain"),
@@ -73,17 +73,17 @@ Config::Server::Server():
 { }
 
 void	Config::Server::set_defaults() {
-	if (listen.empty())
-		listen.push_back(Listen());
+	if (listen_vect.empty())
+		listen_vect.push_back(Listen());
 	if (index.empty())
 		index.push_back("index.html");
 }
 
 void	Config::Server::print() const {
 	std::cout << "Server names: "; print_vector(server_names);
-	for (size_t i = 0; i < listen.size(); ++i) {
-		std::cout << "\eListening port: \e[35m" << listen[i].port << "\e[0m" << std::endl;
-		std::cout << "Listening address: " << listen[i].str_addr << std::endl;
+	for (size_t i = 0; i < listen_vect.size(); ++i) {
+		std::cout << "\eListening port: \e[35m" << listen_vect[i].port << "\e[0m" << std::endl;
+		std::cout << "Listening address: " << listen_vect[i].str_addr << std::endl;
 	}
 	for (size_t i = 0; i < locations.size(); i++)
 		locations[i].print();

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 05:37:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 10:02:33 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,8 +123,8 @@ void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
 
-	const char *			arg = _current_token().get_value().c_str();
-	Config::Server::Listen	listen;
+	const char *	arg = _current_token().get_value().c_str();
+	Config::Listen	listen;
 
 	if (!_is_a_number(arg))
 		arg = _parse_address(listen, arg);
@@ -135,10 +135,10 @@ void	Parser::_parse_listen(Config::Server &server) {
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
-	server.listen.push_back(listen);
+	server.listen_vect.push_back(listen);
 }
 
-const char	*Parser::_parse_address(Config::Server::Listen &listen, const char *s) {
+const char	*Parser::_parse_address(Config::Listen &listen, const char *s) {
 	listen.str_addr = s;
 	listen.str_addr = listen.str_addr.substr(0, listen.str_addr.find(':'));
 	if (s[0] == '*')

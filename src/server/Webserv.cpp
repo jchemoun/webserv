@@ -42,7 +42,7 @@ void	Webserv::run()
 		{
 			const int event = events[i].events;
 			const int event_fd =events[i].data.fd;
-			if (event & EPOLLIN) { // NOTE: epoll events are masks, we probably should do stuff like `if (event & EPOLLIN) ...`
+			if (event & EPOLLIN) {
 				if (is_serv(event_fd))
 					handle_new_client(event_fd);
 				else
