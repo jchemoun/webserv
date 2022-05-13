@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 22:24:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 14:55:47 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,14 +158,36 @@ bool	Webserv::handle_send(int client_fd)
 {
 	// for now response is here, could be in client
 	Response	response(conf.servers[clients[client_fd].get_serv_id()], clients[client_fd].request);
-	clients[client_fd].request.reset();
-	// need to get right server to response, todo after merge of 2 class config
-	// need to create header, todo after looking at nginx response header && merge of class config
 
-	if (send(client_fd, response.c_str(), response.size(), 0) < 0) // TODO: what to do in case of send error
+	clients[client_fd].request.reset();
+	if (response.is_large_file)
 	{
-		std::cerr << "error send\n";
-		return (false);
+		// todo boucle while read/send
+		std::cout << response.size_file / BUFFER_SIZE << "\n";
+		send(client_fd, response.c_str(), response.size(), 0);
+		char	buf[BUFFER_SIZE] = {0};
+		for (long i = response.size_file / BUFFER_SIZE; i > -1; i--)
+		{
+			if (i != 0)
+			{
+				response.file.read((char*)&buf, BUFFER_SIZE);
+				send(client_fd, buf, BUFFER_SIZE, 0);
+			}
+			else
+			{
+				response.file.read((char*)&buf, response.size_file % BUFFER_SIZE);
+				send(client_fd, buf, response.size_file % BUFFER_SIZE, 0);
+			}
+			std::cout << i << " post send\n";
+		}	
+	}
+	else // TODO: what to do in case of send error
+	{
+		if (send(client_fd, response.c_str(), response.size(), 0) < 0)
+		{
+			std::cerr << "error send\n";
+			return (false);
+		}
 	}
 	epoll_event event = { };
 	event.events = EPOLLIN;
