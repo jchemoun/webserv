@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 22:21:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 22:53:00 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,10 +142,9 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
-	Config::Server	*serv = client.resolve_server(server_map);
-	if (!serv)
-		serv = default_server_map[client.serv_fd];
-	Response	response(*serv, clients[client_fd].request);
+	Config::Server	&serv   = client.resolve_server(server_map, default_server_map);
+	Response		response(serv, clients[client_fd].request);
+
 	clients[client_fd].request.reset();
 	// need to get right server to response, todo after merge of 2 class config
 	// need to create header, todo after looking at nginx response header && merge of class config
@@ -272,13 +271,6 @@ int		Webserv::epoll_wait() {
 
 Webserv::~Webserv()
 {
-	// for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
-	// {
-	// 	Config::Server const &serv = *cit;
-	// 	for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
-	// 		if (serv.listen_vect[i].fd > 0)
-	// 			close(serv.listen_vect[i].fd);
-	// }
 	for (Connections::iterator it = connections.begin(); it != connections.end(); ++it)
 		if (it->second.fd > 0)
 			close(it->second.fd);

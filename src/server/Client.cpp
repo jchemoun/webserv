@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 22:30:17 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 22:49:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,20 +46,15 @@ void	Client::close_connection() {
 	}
 }
 
-Config::Server	*Client::resolve_server(ServerMap &serverMap) {
+Config::Server	&Client::resolve_server(ServerMap &serverMap, DefaultServerMap &default_server_map) const
+{
 	NameToServMap	&name_to_serv_map = serverMap.at(serv_fd);
-
 	Request::Header::const_iterator	host_match = request.get_header().find("Host");
-	if (host_match == request.get_header().end()) {
-			return (NULL); // missing Host with multiple servers on same fd
-	}
-	else {
+	if (host_match != request.get_header().end()) { // else missing Host with multiple servers on same fd
 		std::string	server_name = host_match->second.substr(0, host_match->second.find(':'));
 		NameToServMap::iterator server_match = name_to_serv_map.find(server_name);
-		if (server_match == name_to_serv_map.end())
-			return (NULL); // Host not found
-		else
-			return (server_match->second);
+		if (server_match != name_to_serv_map.end()) // else 'Host' not found
+			return (*server_match->second);
 	}
-	return (NULL);
+	return (*default_server_map.at(serv_fd));
 }
