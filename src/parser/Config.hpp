@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 12:28:58 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 17:40:30 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,15 @@ struct Config {
 	typedef std::map<std::string, std::string>	MimeMap;
 	typedef std::map<int, std::string>			ErrPageMap;
 
-	struct 			Listen {
+	struct 			Connection {
 		in_port_t	port;
 		in_addr_t	addr;
 		std::string	str_addr;
 		int			fd;
-		Listen();
+		Connection();
 	};
 
-	typedef	std::vector<Listen>	ListenVect;
+	typedef	std::vector<Connection>	ListenVect;
 
 	struct	Location {
 		Location();

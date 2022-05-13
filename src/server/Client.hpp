@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 12:54:15 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 17:42:40 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class is useless for now
 class Client
 {
 public:
-	Config::Listen	connection;
+	Config::Connection	connection;
 	Request			request;
 	int				serv_fd;
 

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 17:22:16 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 17:43:23 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,7 @@ void	Webserv::serv_init()
 /*
 ** @brief create server.listen_fd socket, set socket options, bind and listen
 */
-int		Webserv::socket_init(Config::Listen &sock)
+int		Webserv::socket_init(Config::Connection &sock)
 {
 	int					listen_fd;
 	int					optval = 1;
