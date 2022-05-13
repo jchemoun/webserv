@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 22:25:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 22:30:17 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,8 @@ Config::Server	*Client::resolve_server(ServerMap &serverMap) {
 			return (NULL); // missing Host with multiple servers on same fd
 	}
 	else {
-		NameToServMap::iterator server_match = name_to_serv_map.find(host_match->second);
+		std::string	server_name = host_match->second.substr(0, host_match->second.find(':'));
+		NameToServMap::iterator server_match = name_to_serv_map.find(server_name);
 		if (server_match == name_to_serv_map.end())
 			return (NULL); // Host not found
 		else
