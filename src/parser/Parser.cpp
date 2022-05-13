@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 22:02:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 10:02:33 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,30 +122,33 @@ void	Parser::_parse_server_name(Config::Server &server) {
 void	Parser::_parse_listen(Config::Server &server) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("listen: missing argument");
-	const char *arg = _current_token().get_value().c_str();
+
+	const char *	arg = _current_token().get_value().c_str();
+	Config::Listen	listen;
+
 	if (!_is_a_number(arg))
-		arg = _parse_address(server, arg);
+		arg = _parse_address(listen, arg);
 	try {
 		if (*arg)
-			server.listen_port = _stoi(arg, 0, std::numeric_limits<in_port_t>::max());
+			listen.port = _stoi(arg, 0, std::numeric_limits<in_port_t>::max());
 	}
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
+	server.listen_vect.push_back(listen);
 }
 
-const char	*Parser::_parse_address(Config::Server &server, const char *s) {
-	std::string	&addr_part(server.listen_string_address);
-	addr_part = s;
-	addr_part = addr_part.substr(0, addr_part.find(':'));
+const char	*Parser::_parse_address(Config::Listen &listen, const char *s) {
+	listen.str_addr = s;
+	listen.str_addr = listen.str_addr.substr(0, listen.str_addr.find(':'));
 	if (s[0] == '*')
-		server.listen_address = htonl(INADDR_ANY);
+		listen.addr = htonl(INADDR_ANY);
 	else if (!std::strchr(s, '.'))
 		throw ParsingError("listen: address hostname not handled: ipv4 only");
 	else {
-		if ( (server.listen_address = inet_addr(addr_part.c_str())) == std::numeric_limits<in_addr_t>::max())
+		if ( (listen.addr = inet_addr(listen.str_addr.c_str())) == std::numeric_limits<in_addr_t>::max())
 			throw ParsingError("listen: address: bad format");
-		server.listen_address = htonl(server.listen_address);
+		listen.addr = htonl(listen.addr);
 	}
 	while (*s && *s != ':')
 		++s;

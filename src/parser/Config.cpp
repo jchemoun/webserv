@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 22:24:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 10:01:38 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,13 @@ void	Config::Location::print() const {
 	std::cout << "\e[0m";
 }
 
+Config::Listen::Listen():
+	port(80),
+	addr(htonl(INADDR_ANY)),
+	str_addr("*"),
+	fd(0)
+{ }
+
 /*
 ** ================================= Server ================================= **
 */
@@ -57,29 +64,27 @@ void	Config::Location::print() const {
 const Config::Server::body_size Config::Server::_overflow_body_size = std::numeric_limits<int>::max();
 
 Config::Server::Server():
-	listen_port(0),
-	listen_address(htonl(INADDR_ANY)),
-	listen_string_address("*"),
-	listen_fd(0),
+	listen_vect(),
 	root("html"),
 	autoindex(false),
 	default_type("text/plain"),
 	client_max_body_size(1024 * 1024), // 1MB
 	mime_types(NULL)
-{
-}
+{ }
 
 void	Config::Server::set_defaults() {
-	if (!listen_port)
-		listen_port = 80;
+	if (listen_vect.empty())
+		listen_vect.push_back(Listen());
 	if (index.empty())
 		index.push_back("index.html");
 }
 
 void	Config::Server::print() const {
 	std::cout << "Server names: "; print_vector(server_names);
-	std::cout << "Listening port: " << listen_port << std::endl;
-	std::cout << "Listening address: " << listen_string_address << std::endl;
+	for (size_t i = 0; i < listen_vect.size(); ++i) {
+		std::cout << "\eListening port: \e[35m" << listen_vect[i].port << "\e[0m" << std::endl;
+		std::cout << "Listening address: " << listen_vect[i].str_addr << std::endl;
+	}
 	for (size_t i = 0; i < locations.size(); i++)
 		locations[i].print();
 	std::cout << "Indexes: "; print_vector(index);
