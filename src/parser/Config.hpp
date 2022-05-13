@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/11 22:23:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/12 15:51:28 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@
 
 struct Config {
 
-	typedef std::map<std::string, std::string>	MimeTypes;
+	typedef std::map<std::string, std::string>	MimeMap;
+	typedef std::map<int, std::string>			ErrPageMap;
 
 	struct	Location {
 		Location();
@@ -29,9 +30,7 @@ struct Config {
 		std::map<int, std::string>	error_pages;
 		bool						autoindex;
 		void	print() const;
-	};
-
-	struct	Server {
+	}; struct	Server {
 		typedef size_t	body_size;
 
 		Server();
@@ -43,18 +42,18 @@ struct Config {
 		std::vector<Location>		locations;
 		std::vector<std::string>	index;
 		std::string					root;
-		std::map<int, std::string>	error_pages;
+		ErrPageMap					error_pages;
 		bool						autoindex;
 		std::string					default_type;
 		body_size					client_max_body_size;
 		static body_size const		_overflow_body_size;
-		const MimeTypes				*mime_types;
+		const MimeMap				*mime_types;
 		void	print() const;
 		void	set_defaults();
 	};
 
 	std::vector<Server>	servers;
-	MimeTypes			types;
+	MimeMap			types;
 
 	void	print() const;
 	void	set_defaults();
