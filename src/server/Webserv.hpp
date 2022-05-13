@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 22:52:17 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 23:13:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ public:
 	typedef std::vector<Config::Server>	serv_vector;
 	typedef std::map<int, Client>		client_map;
 
-	typedef std::map<int, Config::Connection>			Connections;
+	typedef std::map<int, Config::Connection>			Connections;      // key: listen_fd
 	typedef std::map<std::string, Config::Server *>		NameToServMap;    // key: server_name
 	typedef std::map<int, NameToServMap>				ServerMap;        // first key: listen_fd, second: server_name
 	typedef std::map<int, Config::Server *>				DefaultServerMap; // key: listen_fd

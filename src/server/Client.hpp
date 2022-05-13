@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 22:50:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 23:21:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,16 @@ class is useless for now
 
 class Client
 {
+	int					_listen_fd;
 public:
 	Config::Connection	connection;
 	Request				request;
-	int					serv_fd;
 
 	Client();
 	~Client();
 
 	bool	accept_connection(int listen_fd);
+	void	_print_connection_info();
 	void	close_connection();
 
 	typedef std::map<std::string, Config::Server *>	NameToServMap;    // key: server_name
