@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 20:05:32 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 22:21:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,11 +143,8 @@ bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
 	Config::Server	*serv = client.resolve_server(server_map);
-	if (!serv) {
-		// delete_client(client_fd);
-		return (false);
-	}
-	// for now response is here, could be in client
+	if (!serv)
+		serv = default_server_map[client.serv_fd];
 	Response	response(*serv, clients[client_fd].request);
 	clients[client_fd].request.reset();
 	// need to get right server to response, todo after merge of 2 class config
@@ -170,13 +167,6 @@ bool	Webserv::epoll_init()
 {
 	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
 		throw std::runtime_error("epoll create error");
-	// for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
-	// {
-	// 	Config::Server const &serv = *cit;
-	// 	for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
-	// 		epoll_add(serv.listen_vect[i].fd, EPOLLIN);
-	// 	}
-	// }
 	for (Connections::const_iterator cit = connections.begin(); cit != connections.end(); ++cit)
 		epoll_add(cit->second.fd, EPOLLIN);
 	return (true); // unused
@@ -200,8 +190,10 @@ void	Webserv::serv_init()
 		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
 			Config::Connection	&new_conn = serv.listen_vect[i];
 			Config::Connection	*existing_conn = find_connection(new_conn);
-			if (!existing_conn)
+			if (!existing_conn) {
 				socket_init(new_conn);
+				default_server_map[new_conn.fd] = &serv;
+			}
 			else
 				new_conn.fd = existing_conn->fd;
 			NameToServMap	&name_to_serv_map = server_map[new_conn.fd];

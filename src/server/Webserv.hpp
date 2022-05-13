@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 18:42:22 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 22:23:55 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ public:
 	typedef std::map<int, Config::Connection>			Connections;
 	typedef std::map<std::string, Config::Server *>		NameToServMap; // key: server_name
 	typedef std::map<int, NameToServMap>				ServerMap; // first key: listen_fd, second: server_name
+	typedef std::map<int, Config::Server *>				DefaultServerMap;
 
 	Webserv();
 	~Webserv();
@@ -65,6 +66,7 @@ private:
 	client_map			clients;
 	Connections			connections;
 	ServerMap			server_map;
+	DefaultServerMap	default_server_map;
 
 	//init
 	bool	epoll_init();
