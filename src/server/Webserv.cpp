@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 12:52:22 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 16:58:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,12 +94,8 @@ bool	Webserv::handle_new_client(int serv_fd)
 	Client	client;
 	if (!client.accept_connection(serv_fd))
 		return (false);
-	epoll_event event = { };
-	event.events = EPOLLIN;
-	event.data.fd = client.connection.fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, event.data.fd, &event) < 0)
-		throw std::runtime_error("epoll_ctl error");
-	clients[event.data.fd] = client;
+	epoll_add(client.connection.fd, EPOLLIN);
+	clients[client.connection.fd] = client;
 	std::cout << "connection worked\n";
 	return (true);
 }
@@ -135,11 +131,7 @@ bool	Webserv::handle_recv(int client_fd)
 		request.parse_request();
 		if (request.is_complete()) {
 			//if response needed set client to epollout
-			epoll_event event = { };
-			event.events = EPOLLOUT;
-			event.data.fd = client_fd;
-			if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
-				throw std::runtime_error("epoll_ctl error (handle_recv)");
+			epoll_mod(client_fd, EPOLLOUT);
 		}
 	}
 
@@ -169,11 +161,7 @@ bool	Webserv::handle_send(int client_fd)
 		std::cerr << "error send\n";
 		return (false);
 	}
-	epoll_event event = { };
-	event.events = EPOLLIN;
-	event.data.fd = client_fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
-		throw std::runtime_error("epoll_ctl error (handle_send)");
+	epoll_mod(client_fd, EPOLLIN);
 	return (true);
 }
 
@@ -185,15 +173,11 @@ bool	Webserv::epoll_init()
 {
 	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
 		throw std::runtime_error("epoll create error");
-	epoll_event event = { };
 	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
 		Config::Server const &serv = *cit;
 		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
-			event.data.fd = serv.listen_vect[i].fd;
-			event.events = EPOLLIN;
-			if (epoll_ctl(epfd, EPOLL_CTL_ADD, event.data.fd, &event) < 0)
-				throw std::runtime_error("epoll ctl error");
+			epoll_add(serv.listen_vect[i].fd, EPOLLIN);
 		}
 	}
 	return (true); // unused
@@ -245,7 +229,7 @@ int		Webserv::socket_init(Config::Listen &sock)
 void	Webserv::delete_client(int client_fd)
 {
 	clients.erase(client_fd);
-	epoll_ctl(epfd, EPOLL_CTL_DEL, client_fd, NULL);
+	epoll_del(client_fd);
 	close(client_fd);
 }
 
@@ -264,24 +248,9 @@ bool	Webserv::is_serv(int fd)
 	return (false);
 }
 
-/*
-** @brief returns the index (in the vector of servers)
-** matching the server listening on the `serv_fd` socket
-*/
-// int		Webserv::find_serv_id(int serv_fd)
-// {
-// 	for (size_t i = 0; i < conf.servers.size(); i++)
-// 	{
-// 		for (size_t	j = 0; j < conf.servers[i].listen_vect.size(); ++j)
-// 			if (conf.servers[i].listen_vect[j].fd == serv_fd)
-// 				return (static_cast<int>(i));
-// 	}
-// 	return (-1);
-// }
-
-// void	Webserv::close_serv()
-// {
-// }
+void	Webserv::epoll_add(int fd, int events) { utils::epoll_ctl(epfd, EPOLL_CTL_ADD, fd, events); }
+void	Webserv::epoll_mod(int fd, int events) { utils::epoll_ctl(epfd, EPOLL_CTL_MOD, fd, events); }
+void	Webserv::epoll_del(int fd)             { epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL); }
 
 Webserv::~Webserv()
 {
