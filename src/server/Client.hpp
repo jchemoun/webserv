@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 17:42:40 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 19:01:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,10 @@ public:
 
 	bool			accept_connection(int listen_fd);
 	void			close_connection();
-	Config::Server	*resolve_server(std::vector<Config::Server> &servers);
+	// Config::Server	*resolve_server(std::vector<Config::Server> &servers);
+	typedef std::map<std::string, Config::Server *>		NameToServMap; // key: server_name
+	typedef std::map<int, NameToServMap>				ServerMap; // first key: listen_fd, second: server_name
+	Config::Server	*resolve_server(ServerMap &serverMap);
 };
 
 #endif

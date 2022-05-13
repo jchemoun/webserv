@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 16:28:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 19:59:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,29 @@ void	Client::close_connection() {
 	}
 }
 
-Config::Server	*Client::resolve_server(std::vector<Config::Server> &servers) {
-	for (size_t i = 0; i < servers.size(); i++)
-	{
-		for (size_t	j = 0; j < servers[i].listen_vect.size(); ++j)
-			if (servers[i].listen_vect[j].fd == serv_fd)
-				return (&servers[i]);
+// Config::Server	*Client::resolve_server(std::vector<Config::Server> &servers) {
+Config::Server	*Client::resolve_server(ServerMap &serverMap) {
+	NameToServMap	&name_to_serv_map = serverMap.at(serv_fd);
+
+	Request::Header::const_iterator	host_match = request.get_header().find("Host");
+	if (host_match == request.get_header().end()) {
+		if (name_to_serv_map.size() == 1)
+			return (name_to_serv_map.begin()->second);
+		else
+			return (NULL); // missing Host with multiple servers on same fd
 	}
+	else {
+		NameToServMap::iterator server_match = name_to_serv_map.find(host_match->second);
+		if (server_match == name_to_serv_map.end())
+			return (NULL); // Host not found
+		else
+			return (server_match->second);
+	}
+	// for (size_t i = 0; i < servers.size(); i++)
+	// {
+	// 	for (size_t	j = 0; j < servers[i].listen_vect.size(); ++j)
+	// 		if (servers[i].listen_vect[j].fd == serv_fd)
+	// 			return (&servers[i]);
+	// }
 	return (NULL);
 }

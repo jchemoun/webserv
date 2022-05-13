@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 17:43:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 20:05:32 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
-	Config::Server	*serv = client.resolve_server(conf.servers);
+	Config::Server	*serv = client.resolve_server(server_map);
 	if (!serv) {
 		// delete_client(client_fd);
 		return (false);
@@ -170,14 +170,24 @@ bool	Webserv::epoll_init()
 {
 	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
 		throw std::runtime_error("epoll create error");
-	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
-	{
-		Config::Server const &serv = *cit;
-		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
-			epoll_add(serv.listen_vect[i].fd, EPOLLIN);
-		}
-	}
+	// for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
+	// {
+	// 	Config::Server const &serv = *cit;
+	// 	for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
+	// 		epoll_add(serv.listen_vect[i].fd, EPOLLIN);
+	// 	}
+	// }
+	for (Connections::const_iterator cit = connections.begin(); cit != connections.end(); ++cit)
+		epoll_add(cit->second.fd, EPOLLIN);
 	return (true); // unused
+}
+
+Config::Connection	*Webserv::find_connection(Config::Connection &conn) {
+	for (Connections::iterator it = connections.begin(); it != connections.end(); ++it) {
+		if (it->second.port == conn.port && it->second.addr == conn.addr)
+			return (&it->second);
+	}
+	return (NULL);
 }
 
 /*
@@ -187,8 +197,17 @@ void	Webserv::serv_init()
 {
 	for (serv_vector::iterator it = conf.servers.begin(); it != conf.servers.end(); it++) {
 		Config::Server	&serv = *it;
-		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
-			socket_init(serv.listen_vect[i]);
+		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
+			Config::Connection	&new_conn = serv.listen_vect[i];
+			Config::Connection	*existing_conn = find_connection(new_conn);
+			if (!existing_conn)
+				socket_init(new_conn);
+			else
+				new_conn.fd = existing_conn->fd;
+			NameToServMap	&name_to_serv_map = server_map[new_conn.fd];
+			for (size_t	i = 0; i < serv.server_names.size(); ++i)
+				name_to_serv_map[serv.server_names.at(i)] = &serv;
+		}
 		serv.mime_types = &conf.types;
 	}
 }
@@ -204,6 +223,7 @@ int		Webserv::socket_init(Config::Connection &sock)
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("failed socket creation");
 	sock.fd = listen_fd;
+	connections[listen_fd] = sock;
 	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval)) < 0)
 		throw std::runtime_error("failed socket options");
 	sockaddr_in	address = {
@@ -260,13 +280,16 @@ int		Webserv::epoll_wait() {
 
 Webserv::~Webserv()
 {
-	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
-	{
-		Config::Server const &serv = *cit;
-		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
-			if (serv.listen_vect[i].fd > 0)
-				close(serv.listen_vect[i].fd);
-	}
+	// for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
+	// {
+	// 	Config::Server const &serv = *cit;
+	// 	for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
+	// 		if (serv.listen_vect[i].fd > 0)
+	// 			close(serv.listen_vect[i].fd);
+	// }
+	for (Connections::iterator it = connections.begin(); it != connections.end(); ++it)
+		if (it->second.fd > 0)
+			close(it->second.fd);
 	if (epfd != -1)
 		close(epfd);
 }
