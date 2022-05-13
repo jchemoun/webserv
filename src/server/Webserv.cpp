@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 10:23:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 12:52:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,19 +91,15 @@ bool	Webserv::handle_event_error()
 */
 bool	Webserv::handle_new_client(int serv_fd)
 {
-	int		client_fd;
-
-	if ((client_fd = accept(serv_fd, NULL, NULL)) < 0)
-	{
-		std::cerr << "error accept\n";
+	Client	client;
+	if (!client.accept_connection(serv_fd))
 		return (false);
-	}
 	epoll_event event = { };
 	event.events = EPOLLIN;
-	event.data.fd = client_fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event) < 0)
+	event.data.fd = client.connection.fd;
+	if (epoll_ctl(epfd, EPOLL_CTL_ADD, event.data.fd, &event) < 0)
 		throw std::runtime_error("epoll_ctl error");
-	clients[client_fd] = Client(find_serv_id(serv_fd));
+	clients[event.data.fd] = client;
 	std::cout << "connection worked\n";
 	return (true);
 }
@@ -156,8 +152,14 @@ bool	Webserv::handle_recv(int client_fd)
 */
 bool	Webserv::handle_send(int client_fd)
 {
+	Client			&client = clients[client_fd];
+	Config::Server	*serv = client.resolve_server(conf.servers);
+	if (!serv) {
+		// delete_client(client_fd);
+		return (false);
+	}
 	// for now response is here, could be in client
-	Response	response(conf.servers[clients[client_fd].get_serv_id()], clients[client_fd].request);
+	Response	response(*serv, clients[client_fd].request);
 	clients[client_fd].request.reset();
 	// need to get right server to response, todo after merge of 2 class config
 	// need to create header, todo after looking at nginx response header && merge of class config
@@ -266,16 +268,16 @@ bool	Webserv::is_serv(int fd)
 ** @brief returns the index (in the vector of servers)
 ** matching the server listening on the `serv_fd` socket
 */
-int		Webserv::find_serv_id(int serv_fd)
-{
-	for (size_t i = 0; i < conf.servers.size(); i++)
-	{
-		for (size_t	j = 0; j < conf.servers[i].listen_vect.size(); ++j)
-			if (conf.servers[i].listen_vect[j].fd == serv_fd)
-				return (static_cast<int>(i));
-	}
-	return (-1);
-}
+// int		Webserv::find_serv_id(int serv_fd)
+// {
+// 	for (size_t i = 0; i < conf.servers.size(); i++)
+// 	{
+// 		for (size_t	j = 0; j < conf.servers[i].listen_vect.size(); ++j)
+// 			if (conf.servers[i].listen_vect[j].fd == serv_fd)
+// 				return (static_cast<int>(i));
+// 	}
+// 	return (-1);
+// }
 
 // void	Webserv::close_serv()
 // {

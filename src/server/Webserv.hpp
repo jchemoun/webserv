@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 10:09:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 11:52:10 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,11 @@ class Webserv
 public:
 	typedef std::vector<Config::Server>	serv_vector;
 	typedef std::map<int, Client>		client_map; // maybe vector ? for now fd/client pair
+
+	typedef std::map<std::string, Config::Server *>	ServerNameMap;
+	typedef std::map<int, ServerNameMap>			PortToServersMap;
+	typedef	std::map<int, int>						PortToFdMap;
+
 	Webserv();
 	~Webserv();
 	void	run();

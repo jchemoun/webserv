@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/07 17:26:57 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 12:54:15 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,17 @@ class is useless for now
 
 class Client
 {
-private:
-	int	_serv_id;
 public:
-	Request	request;
-	Client(int serv_id = -1);
+	Config::Listen	connection;
+	Request			request;
+	int				serv_fd;
+
+	Client();
 	~Client();
 
-	int		get_serv_id();
+	bool			accept_connection(int listen_fd);
+	void			close_connection();
+	Config::Server	*resolve_server(std::vector<Config::Server> &servers);
 };
 
 #endif
