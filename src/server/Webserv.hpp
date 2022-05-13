@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 09:54:47 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 10:09:03 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ private:
 	//init
 	bool	epoll_init();
 	void	serv_init();
-	int		socket_init(Config::Server &conf);
+	int		socket_init(Config::Listen &sock);
 
 	//handle
 	bool	handle_event_error();
