@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 18:37:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 14:15:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@
 # include "Request.hpp"
 # include "utils.hpp"
 # include "file.hpp"
+# include "Webserv.hpp"
 
 class Response
 {
@@ -49,6 +50,9 @@ private:
 	static const MethodMap	methods;
 	Request const			&_req;
 public:
+	bool			is_large_file;
+	long			size_file;
+	std::ifstream	file;
 	Response(Config::Server const &serv, Request const &req);
 	~Response();
 	const char *c_str() const;

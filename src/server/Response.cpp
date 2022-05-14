@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/14 13:25:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 14:53:00 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@ Response::Response(Config::Server const &serv, Request const &req):
 	_autoindex(serv.autoindex),
 	location(req.get_location()),
 	full_location(file::join(serv.root, location)),
-	_serv(serv), _req(req)
+	_serv(serv), _req(req),
+	is_large_file(false), size_file(),file()
 {
 	if (_req.is_invalid()) {
 		code = 400;
@@ -99,7 +100,7 @@ size_t	Response::create_auto_index_page()
 
 size_t	Response::read_file()
 {
-	std::ofstream		file;
+	//std::ofstream		file;
 	std::stringstream	buf;
 	file::e_type		ft = file::get_type(full_location);
 
@@ -124,7 +125,6 @@ size_t	Response::read_file()
 			return (read_error_page());
 		}
 		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
-
 	}
 	else if (file::get_type(full_location) == file::FT_FILE)
 	{
@@ -144,11 +144,15 @@ size_t	Response::read_file()
 			code = 404;
 			return (read_error_page());
 		}
+		if ((size_file = file::size(location)) + 200 >= BUFFER_SIZE)
+		{
+			is_large_file = true;
+			code = 200;
+			return (0);
+		}
 		buf << file.rdbuf();
 		file.close();
 		body = buf.str();
-		//if (body.find("<!DOCTYPE html>") != std::string::npos) // to replace with parse nginx file && extension file
-		//	content_type = "text/html";
 	}
 	else
 	{
@@ -294,7 +298,7 @@ const Response::MethodMap	Response::methods       = Response::init_method_map();
 void	Response::set_header_map()
 {
 	header_map["Server"]         = "wevserv/0.1 (ubuntu)";
-	header_map["Content-Length"] = utils::to_str(body.size());
+	header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(body.size()));//utils::to_str(is_large_file ? file::size(location) : body.size());
 	header_map["Connection"]     = "keep-alive";
 
 	if (header_map.find("Content-Type") == header_map.end())
@@ -311,12 +315,10 @@ void		Response::set_header()
 	std::ostringstream oss;
 
 	oss << "HTTP/1.1 " << code << " " << status_header.at(code) << "\r\n";
-
 	for (HeaderMap::const_iterator it = header_map.begin(); it != header_map.end(); ++it)
 		oss << it->first << ": " << it->second << "\r\n";
 
 	oss << "\r\n";
-
 	header = oss.str();
 }
 
