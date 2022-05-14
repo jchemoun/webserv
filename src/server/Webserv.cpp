@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 23:31:00 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 11:14:59 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,6 @@ Webserv::Webserv(): epfd(-1), conf(), clients()
 void	Webserv::run()
 {
 	int	nfds;
-	bool color = false;
 
 	serv_init();
 	epoll_init();
@@ -52,10 +51,7 @@ void	Webserv::run()
 			else
 				std::cerr << "Unknown epoll event: " << event << std::endl;
 		}
-		if (nfds == 0) {
-			std::cout << (color ? "\e[34m": "\e[35m") <<  "waiting\n" << "\e[0m";
-			color = !color;
-			// keep waiting ? time out client ?
+		if (nfds == 0) { // keep waiting ? time out client ?
 		}
 	}
 }
@@ -263,9 +259,11 @@ void	Webserv::epoll_del(int fd)             { epoll_ctl(epfd, EPOLL_CTL_DEL, fd,
 int		Webserv::epoll_wait() {
 	int	nfds;
 	if ((nfds = ::epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT)) < 0 && errno != EINTR) // only error tolerated is if signal is caught
-		throw std::runtime_error(std::string("epoll error: ") + strerror(errno)); // EINVAL, EFAULT, EBADFD
-	else
+		throw std::runtime_error(std::string("\nepoll error: ") + strerror(errno)); // EINVAL, EFAULT, EBADFD
+	else {
+		std::cout << (nfds == 0 ? "." : "\n") << std::flush;
 		return (nfds);
+	}
 
 }
 
