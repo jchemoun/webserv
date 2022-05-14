@@ -6,13 +6,14 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:25:59 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/14 13:10:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Request.hpp"
 #include "Parser.hpp"
 #include <cstring>
+#include <color.hpp>
 
 /*
 ** ======================== Constructor / Destructor ======================== **
@@ -68,7 +69,7 @@ void	Request::reset() {
 
 void	Request::parse_request()
 {
-	std::cout << "\e[32m" << _raw_str << "\e[0m✋\n";
+	std::cout << color::bold << "\nOngoing raw request:\n" << color::reset << color::green << _raw_str << color::reset << "✋\n";
 
 	try {
 		if (!_complete_request_line)
@@ -79,7 +80,7 @@ void	Request::parse_request()
 			_parse_body();
 	}
 	catch (std::runtime_error const &except) {
-		std::cerr << "\e[38;5;208mParsing request: " << except.what() << "\e[0m\n";
+		std::cerr << color::red << "Parsing request: " << except.what() << color::reset << "\n";
 		_invalid_request = true;
 	}
 }
@@ -96,17 +97,18 @@ void	Request::parse_request()
 ** - https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
 */
 void	Request::_parse_request_line() {
+	std::cout << color::bold << "\nParse request line and headers:\n" << color::reset;
 	_skip_empty_lines();
 	if (!_raw_str[_index] || _raw_str.find("\n", _index) == std::string::npos) {
 		_raw_str.erase(0, _index);
 		_index = 0;
 		return ;
 	}
-	_eat_word(method);		std::cout << "> method: " << method << "\n";
+	_eat_word(method);		std::cout << "> " << color::cyan << "method: " << color::magenta << method << "\n" << color::reset;
 	_eat_spaces();
-	_eat_word(location);	std::cout << "> location: " << location << "\n";
+	_eat_word(location);	std::cout << "> " << color::cyan << "location: " << color::magenta << location << "\n" << color::reset;
 	_eat_spaces();
-	_eat_word(protocol);	std::cout << "> protocol: " << protocol << "\n";
+	_eat_word(protocol);	std::cout << "> " << color::cyan << "protocol: " << color::magenta << protocol << "\n" << color::reset;
 	_eat_eol();
 	_complete_request_line = true;
 }
@@ -135,7 +137,7 @@ void	Request::_eat_key() {
 	_eat(":");
 	while (_raw_str[_index] == ' ')
 		++_index;
-	std::cout << "\e[36m> " << _tmp_key << ": \e[0m";
+	std::cout << "  >> " << color::cyan << _tmp_key << color::reset << ": ";
 }
 
 void	Request::_eat_value() {
@@ -145,7 +147,7 @@ void	Request::_eat_value() {
 	if (_tmp_key == "Content-Length")
 		_parse_content_length(value);
 	header[_tmp_key] = value;
-	std::cout << "\e[36m"<< value << "\e[0m\n";
+	std::cout << color::magenta << value << color::reset << "\n";
 }
 
 void	Request::_parse_body() {
@@ -158,7 +160,7 @@ void	Request::_parse_body() {
 			throw std::runtime_error("body size exceeds expected content length");
 		else {
 			_complete_body = true;
-			std::cout << "Parsed body:\n\e[38;5;218m" << body << "✋\e[0m\n";
+			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << body << color::reset << "✋\n";
 		}
 	}
 }

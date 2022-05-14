@@ -6,11 +6,12 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/12 18:04:35 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 13:25:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include "color.hpp"
 
 /*
 ** ============================= Public methods ============================= **
@@ -107,8 +108,8 @@ size_t	Response::read_file()
 		for (size_t i = 0; i < _serv.index.size(); ++i)
 		{
 			std::string	const &index_candidate =_serv.index.at(i);
-			std::cout << "INDEX CANDIDATE: " << index_candidate << '\n';
 			if (file::get_type(file::join(full_location, index_candidate)) == file::FT_FILE) {
+				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
 				location = index_candidate;
 				full_location = file::join(full_location, index_candidate);
 				return (read_file());
@@ -156,7 +157,6 @@ size_t	Response::read_file()
 		code = 404;
 		return (read_error_page());
 	}
-	std::cout << "body: \e[33m" << body << "\e[0m";
 	code = 200;
 	return (body.length()); // not used
 }
@@ -200,7 +200,7 @@ size_t		Response::read_error_page()
 		buf << file.rdbuf();
 		file.close();
 		body = buf.str();
-		std::cout << "body: \e[33m" << body << "\e[0m";
+		std::cout << "body: " << color::yellow << body << color::reset << "✋\n";
 	}
 	return (body.length()); // not used
 }
@@ -324,6 +324,8 @@ void		Response::set_full_response()
 {
 	full_response.append(header);
 	full_response.append(body);
+	std::cout << "\n" << color::bold << "Header to send:\n" << color::magenta << header << color::reset << "✋\n";
+	std::cout << color::bold << "Body to send:\n" << color::yellow << body << color::reset << "✋\n";
 }
 
 Response::~Response() {

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 17:44:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 12:35:32 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void	Config::Server::set_defaults() {
 void	Config::Server::print() const {
 	std::cout << "Server names: "; print_vector(server_names);
 	for (size_t i = 0; i < listen_vect.size(); ++i) {
-		std::cout << "\eListening port: \e[35m" << listen_vect[i].port << "\e[0m" << std::endl;
+		std::cout << "Listening port: \e[35m" << listen_vect[i].port << "\e[0m" << std::endl;
 		std::cout << "Listening address: " << listen_vect[i].str_addr << std::endl;
 	}
 	for (size_t i = 0; i < locations.size(); i++)

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/14 11:14:59 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 13:18:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <signal.h> // handle <c-c>
 #include <stdexcept>
 #include <sys/epoll.h>
+#include "color.hpp"
 
 // Quit gracefully with <c-c>
 volatile sig_atomic_t should_run = true;
@@ -89,7 +90,6 @@ bool	Webserv::handle_new_client(int serv_fd)
 		return (false);
 	epoll_add(client.connection.fd, EPOLLIN);
 	clients[client.connection.fd] = client;
-	std::cout << "connection worked\n";
 	return (true);
 }
 
@@ -105,10 +105,10 @@ bool	Webserv::handle_recv(int client_fd)
 	ssize_t	len;
 
 	len = recv(client_fd, buffer, BUFFER_SIZE, 0);            // TODO: check that it is working fine with small BUFFER_SIZE values
-	std::cout << "Incoming reception. client fd: " << client_fd << "\n";
+	std::cout << color::bold << "> Incoming reception of len " << len << color::reset << " on client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
-		std::cerr << "error recv\n";                          // TODO: better recv error handling
+		std::cerr << color::red << "error recv\n" << color::reset;                          // TODO: better recv error handling
 		return (false);
 	}
 	else if (len == 0)

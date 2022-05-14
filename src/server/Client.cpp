@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 23:41:28 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 12:39:08 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <netinet/in.h> // inet_ntop
 #include <unistd.h>
 #include <cstring> // bzero
+#include "color.hpp"
 
 Client::Client(): _listen_fd(-1)
 { }
@@ -46,8 +47,10 @@ void	Client::_print_connection_info() {
 	struct sockaddr_in sin;
 	socklen_t len = sizeof(sin);
 	if (getsockname(_listen_fd, (struct sockaddr *)&sin, &len) == 0)
-	std::cout << "\e[1;32mNew connection accepted\e[0m on " << get_printable_address(sin) << ":\e[1;32m" << ntohs(sin.sin_port)
-		<< "\e[0m by client: @" << connection.str_addr << ":" << connection.port
+	std::cout << color::bold << color::green << "New connection accepted" << color::reset
+		<< " on " << get_printable_address(sin)
+		<< ":" << color::bold << color::green << ntohs(sin.sin_port) << color::reset
+		<< " by client: @" << connection.str_addr << ":" << connection.port
 		<< " (listen_fd: " << _listen_fd << ", connection_fd: " << connection.fd << ")\n";
 }
 
