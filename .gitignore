@@ -6,3 +6,6 @@ compile_commands.json
 .cache
 *.dSYM
 failed_tests
+galaxy.jpg
+tmp.jpg
+tmp.png
