@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/06 18:25:59 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/13 10:09:03 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class Webserv
 {
 public:
 	typedef std::vector<Config::Server>	serv_vector;
-	typedef std::map<int, Client>	client_map; // maybe vector ? for now fd/client pair
+	typedef std::map<int, Client>		client_map; // maybe vector ? for now fd/client pair
 	Webserv();
 	~Webserv();
 	void	run();
@@ -58,7 +58,7 @@ private:
 	//init
 	bool	epoll_init();
 	void	serv_init();
-	int		socket_init(Config::Server &conf);
+	int		socket_init(Config::Listen &sock);
 
 	//handle
 	bool	handle_event_error();

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 15:00:53 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/13 10:23:34 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void	Webserv::run()
 		{
 			const int event = events[i].events;
 			const int event_fd =events[i].data.fd;
-			if (event & EPOLLIN) { // NOTE: epoll events are masks, we probably should do stuff like `if (event & EPOLLIN) ...`
+			if (event & EPOLLIN) {
 				if (is_serv(event_fd))
 					handle_new_client(event_fd);
 				else
@@ -202,10 +202,12 @@ bool	Webserv::epoll_init()
 	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
 		Config::Server const &serv = *cit;
-		event.data.fd = serv.listen_fd;
-		event.events = EPOLLIN;
-		if (epoll_ctl(epfd, EPOLL_CTL_ADD, serv.listen_fd, &event) < 0)
-			throw std::runtime_error("epoll ctl error");
+		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
+			event.data.fd = serv.listen_vect[i].fd;
+			event.events = EPOLLIN;
+			if (epoll_ctl(epfd, EPOLL_CTL_ADD, event.data.fd, &event) < 0)
+				throw std::runtime_error("epoll ctl error");
+		}
 	}
 	return (true); // unused
 }
@@ -217,7 +219,8 @@ void	Webserv::serv_init()
 {
 	for (serv_vector::iterator it = conf.servers.begin(); it != conf.servers.end(); it++) {
 		Config::Server	&serv = *it;
-		socket_init(serv);
+		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
+			socket_init(serv.listen_vect[i]);
 		serv.mime_types = &conf.types;
 	}
 }
@@ -225,20 +228,20 @@ void	Webserv::serv_init()
 /*
 ** @brief create server.listen_fd socket, set socket options, bind and listen
 */
-int		Webserv::socket_init(Config::Server &server)
+int		Webserv::socket_init(Config::Listen &sock)
 {
 	int					listen_fd;
 	int					optval = 1;
 
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("failed socket creation");
-	server.listen_fd = listen_fd;
+	sock.fd = listen_fd;
 	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval)) < 0)
 		throw std::runtime_error("failed socket options");
 	sockaddr_in	address = {
 		.sin_family = AF_INET,
-		.sin_port = htons(server.listen_port),
-		.sin_addr = { .s_addr = htonl(server.listen_address) },
+		.sin_port = htons(sock.port),
+		.sin_addr = { .s_addr = htonl(sock.addr) },
 		.sin_zero = { }
 	};
 	if (bind(listen_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
@@ -267,8 +270,9 @@ bool	Webserv::is_serv(int fd)
 	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
 		Config::Server const &serv = *cit;
-		if (serv.listen_fd == fd)
-			return (true);
+		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
+			if (serv.listen_vect[i].fd == fd)
+				return (true);
 	}
 	return (false);
 }
@@ -281,8 +285,9 @@ int		Webserv::find_serv_id(int serv_fd)
 {
 	for (size_t i = 0; i < conf.servers.size(); i++)
 	{
-		if (conf.servers[i].listen_fd == serv_fd)
-			return ((int)i);
+		for (size_t	j = 0; j < conf.servers[i].listen_vect.size(); ++j)
+			if (conf.servers[i].listen_vect[j].fd == serv_fd)
+				return (static_cast<int>(i));
 	}
 	return (-1);
 }
@@ -296,8 +301,9 @@ Webserv::~Webserv()
 	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
 	{
 		Config::Server const &serv = *cit;
-		if (serv.listen_fd > 0)
-			close(serv.listen_fd);
+		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
+			if (serv.listen_vect[i].fd > 0)
+				close(serv.listen_vect[i].fd);
 	}
 	if (epfd != -1)
 		close(epfd);
