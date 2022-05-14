@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 10:01:38 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 12:35:32 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ void	Config::Location::print() const {
 	std::cout << "\e[0m";
 }
 
-Config::Listen::Listen():
+Config::Connection::Connection():
 	port(80),
 	addr(htonl(INADDR_ANY)),
 	str_addr("*"),
@@ -74,7 +74,7 @@ Config::Server::Server():
 
 void	Config::Server::set_defaults() {
 	if (listen_vect.empty())
-		listen_vect.push_back(Listen());
+		listen_vect.push_back(Connection());
 	if (index.empty())
 		index.push_back("index.html");
 }
@@ -82,7 +82,7 @@ void	Config::Server::set_defaults() {
 void	Config::Server::print() const {
 	std::cout << "Server names: "; print_vector(server_names);
 	for (size_t i = 0; i < listen_vect.size(); ++i) {
-		std::cout << "\eListening port: \e[35m" << listen_vect[i].port << "\e[0m" << std::endl;
+		std::cout << "Listening port: \e[35m" << listen_vect[i].port << "\e[0m" << std::endl;
 		std::cout << "Listening address: " << listen_vect[i].str_addr << std::endl;
 	}
 	for (size_t i = 0; i < locations.size(); i++)

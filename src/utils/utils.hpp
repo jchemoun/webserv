@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:27:23 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/12 11:41:16 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 16:42:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ namespace utils {
 			oss << streamable_obj;
 			return (oss.str());
 		}
+
+	void	epoll_ctl(int epfd, int operation, int fd, int events);
 }
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 10:23:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/14 13:18:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <signal.h> // handle <c-c>
 #include <stdexcept>
 #include <sys/epoll.h>
+#include "color.hpp"
 
 // Quit gracefully with <c-c>
 volatile sig_atomic_t should_run = true;
@@ -28,16 +29,12 @@ Webserv::Webserv(): epfd(-1), conf(), clients()
 void	Webserv::run()
 {
 	int	nfds;
-	bool color = false;
 
 	serv_init();
 	epoll_init();
 	while (should_run)
 	{
-		errno = 0;
-		nfds = epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT); //std::cout << nfds << '\n';
-		if (errno == EINVAL || errno == EFAULT || errno == EBADFD)
-			throw std::runtime_error(std::string("epoll error: ") + strerror(errno));
+		nfds = epoll_wait();
 		for (int i = 0; i < nfds; i++)
 		{
 			const int event = events[i].events;
@@ -55,10 +52,7 @@ void	Webserv::run()
 			else
 				std::cerr << "Unknown epoll event: " << event << std::endl;
 		}
-		if (nfds == 0) {
-			std::cout << (color ? "\e[34m": "\e[35m") <<  "waiting\n" << "\e[0m";
-			color = !color;
-			// keep waiting ? time out client ?
+		if (nfds == 0) { // keep waiting ? time out client ?
 		}
 	}
 }
@@ -91,20 +85,11 @@ bool	Webserv::handle_event_error()
 */
 bool	Webserv::handle_new_client(int serv_fd)
 {
-	int		client_fd;
-
-	if ((client_fd = accept(serv_fd, NULL, NULL)) < 0)
-	{
-		std::cerr << "error accept\n";
+	Client	client;
+	if (!client.accept_connection(serv_fd))
 		return (false);
-	}
-	epoll_event event = { };
-	event.events = EPOLLIN;
-	event.data.fd = client_fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, client_fd, &event) < 0)
-		throw std::runtime_error("epoll_ctl error");
-	clients[client_fd] = Client(find_serv_id(serv_fd));
-	std::cout << "connection worked\n";
+	epoll_add(client.connection.fd, EPOLLIN);
+	clients[client.connection.fd] = client;
 	return (true);
 }
 
@@ -120,10 +105,10 @@ bool	Webserv::handle_recv(int client_fd)
 	ssize_t	len;
 
 	len = recv(client_fd, buffer, BUFFER_SIZE, 0);            // TODO: check that it is working fine with small BUFFER_SIZE values
-	std::cout << "Incoming reception. client fd: " << client_fd << "\n";
+	std::cout << color::bold << "> Incoming reception of len " << len << color::reset << " on client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
-		std::cerr << "error recv\n";                          // TODO: better recv error handling
+		std::cerr << color::red << "error recv\n" << color::reset;                          // TODO: better recv error handling
 		return (false);
 	}
 	else if (len == 0)
@@ -139,11 +124,7 @@ bool	Webserv::handle_recv(int client_fd)
 		request.parse_request();
 		if (request.is_complete()) {
 			//if response needed set client to epollout
-			epoll_event event = { };
-			event.events = EPOLLOUT;
-			event.data.fd = client_fd;
-			if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
-				throw std::runtime_error("epoll_ctl error (handle_recv)");
+			epoll_mod(client_fd, EPOLLOUT);
 		}
 	}
 
@@ -156,8 +137,11 @@ bool	Webserv::handle_recv(int client_fd)
 */
 bool	Webserv::handle_send(int client_fd)
 {
-	// for now response is here, could be in client
-	Response	response(conf.servers[clients[client_fd].get_serv_id()], clients[client_fd].request);
+	Client			&client = clients[client_fd];
+	Config::Server	&serv   = client.resolve_server(server_map, default_server_map);
+	Response		response(serv, clients[client_fd].request);
+	// need to get right server to response, todo after merge of 2 class config
+	// need to create header, todo after looking at nginx response header && merge of class config
 
 	clients[client_fd].request.reset();
 	if (response.is_large_file)
@@ -182,11 +166,7 @@ bool	Webserv::handle_send(int client_fd)
 			return (false);
 		}
 	}
-	epoll_event event = { };
-	event.events = EPOLLIN;
-	event.data.fd = client_fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_MOD, client_fd, &event) < 0)
-		throw std::runtime_error("epoll_ctl error (handle_send)");
+	epoll_mod(client_fd, EPOLLIN);
 	return (true);
 }
 
@@ -198,18 +178,17 @@ bool	Webserv::epoll_init()
 {
 	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
 		throw std::runtime_error("epoll create error");
-	epoll_event event = { };
-	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
-	{
-		Config::Server const &serv = *cit;
-		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
-			event.data.fd = serv.listen_vect[i].fd;
-			event.events = EPOLLIN;
-			if (epoll_ctl(epfd, EPOLL_CTL_ADD, event.data.fd, &event) < 0)
-				throw std::runtime_error("epoll ctl error");
-		}
-	}
+	for (Connections::const_iterator cit = connections.begin(); cit != connections.end(); ++cit)
+		epoll_add(cit->second.fd, EPOLLIN);
 	return (true); // unused
+}
+
+Config::Connection	*Webserv::find_connection(Config::Connection &conn) {
+	for (Connections::iterator it = connections.begin(); it != connections.end(); ++it) {
+		if (it->second.port == conn.port && it->second.addr == conn.addr)
+			return (&it->second);
+	}
+	return (NULL);
 }
 
 /*
@@ -219,8 +198,19 @@ void	Webserv::serv_init()
 {
 	for (serv_vector::iterator it = conf.servers.begin(); it != conf.servers.end(); it++) {
 		Config::Server	&serv = *it;
-		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
-			socket_init(serv.listen_vect[i]);
+		for (size_t	i = 0; i < serv.listen_vect.size(); ++i) {
+			Config::Connection	&new_conn = serv.listen_vect[i];
+			Config::Connection	*existing_conn = find_connection(new_conn);
+			if (!existing_conn) {
+				socket_init(new_conn);
+				default_server_map[new_conn.fd] = &serv;
+			}
+			else
+				new_conn.fd = existing_conn->fd;
+			NameToServMap	&name_to_serv_map = server_map[new_conn.fd];
+			for (size_t	i = 0; i < serv.server_names.size(); ++i)
+				name_to_serv_map[serv.server_names.at(i)] = &serv;
+		}
 		serv.mime_types = &conf.types;
 	}
 }
@@ -228,7 +218,7 @@ void	Webserv::serv_init()
 /*
 ** @brief create server.listen_fd socket, set socket options, bind and listen
 */
-int		Webserv::socket_init(Config::Listen &sock)
+int		Webserv::socket_init(Config::Connection &sock)
 {
 	int					listen_fd;
 	int					optval = 1;
@@ -236,6 +226,7 @@ int		Webserv::socket_init(Config::Listen &sock)
 	if ((listen_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("failed socket creation");
 	sock.fd = listen_fd;
+	connections[listen_fd] = sock;
 	if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &optval, sizeof(optval)) < 0)
 		throw std::runtime_error("failed socket options");
 	sockaddr_in	address = {
@@ -258,7 +249,7 @@ int		Webserv::socket_init(Config::Listen &sock)
 void	Webserv::delete_client(int client_fd)
 {
 	clients.erase(client_fd);
-	epoll_ctl(epfd, EPOLL_CTL_DEL, client_fd, NULL);
+	epoll_del(client_fd);
 	close(client_fd);
 }
 
@@ -277,34 +268,26 @@ bool	Webserv::is_serv(int fd)
 	return (false);
 }
 
-/*
-** @brief returns the index (in the vector of servers)
-** matching the server listening on the `serv_fd` socket
-*/
-int		Webserv::find_serv_id(int serv_fd)
-{
-	for (size_t i = 0; i < conf.servers.size(); i++)
-	{
-		for (size_t	j = 0; j < conf.servers[i].listen_vect.size(); ++j)
-			if (conf.servers[i].listen_vect[j].fd == serv_fd)
-				return (static_cast<int>(i));
-	}
-	return (-1);
-}
+void	Webserv::epoll_add(int fd, int events) { utils::epoll_ctl(epfd, EPOLL_CTL_ADD, fd, events); }
+void	Webserv::epoll_mod(int fd, int events) { utils::epoll_ctl(epfd, EPOLL_CTL_MOD, fd, events); }
+void	Webserv::epoll_del(int fd)             { epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL); }
 
-// void	Webserv::close_serv()
-// {
-// }
+int		Webserv::epoll_wait() {
+	int	nfds;
+	if ((nfds = ::epoll_wait(epfd, events, MAX_EVENTS, TIMEOUT)) < 0 && errno != EINTR) // only error tolerated is if signal is caught
+		throw std::runtime_error(std::string("\nepoll error: ") + strerror(errno)); // EINVAL, EFAULT, EBADFD
+	else {
+		std::cout << (nfds == 0 ? "." : "\n") << std::flush;
+		return (nfds);
+	}
+
+}
 
 Webserv::~Webserv()
 {
-	for (serv_vector::const_iterator cit = conf.servers.begin(); cit != conf.servers.end(); cit++)
-	{
-		Config::Server const &serv = *cit;
-		for (size_t	i = 0; i < serv.listen_vect.size(); ++i)
-			if (serv.listen_vect[i].fd > 0)
-				close(serv.listen_vect[i].fd);
-	}
+	for (Connections::iterator it = connections.begin(); it != connections.end(); ++it)
+		if (it->second.fd > 0)
+			close(it->second.fd);
 	if (epfd != -1)
 		close(epfd);
 }

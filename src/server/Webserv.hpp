@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 10:09:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/13 23:13:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,13 @@ class Webserv
 {
 public:
 	typedef std::vector<Config::Server>	serv_vector;
-	typedef std::map<int, Client>		client_map; // maybe vector ? for now fd/client pair
+	typedef std::map<int, Client>		client_map;
+
+	typedef std::map<int, Config::Connection>			Connections;      // key: listen_fd
+	typedef std::map<std::string, Config::Server *>		NameToServMap;    // key: server_name
+	typedef std::map<int, NameToServMap>				ServerMap;        // first key: listen_fd, second: server_name
+	typedef std::map<int, Config::Server *>				DefaultServerMap; // key: listen_fd
+
 	Webserv();
 	~Webserv();
 	void	run();
@@ -54,11 +60,14 @@ private:
 	//serv
 	Config				conf;
 	client_map			clients;
+	Connections			connections;
+	ServerMap			server_map;
+	DefaultServerMap	default_server_map;
 
 	//init
 	bool	epoll_init();
 	void	serv_init();
-	int		socket_init(Config::Listen &sock);
+	int		socket_init(Config::Connection &sock);
 
 	//handle
 	bool	handle_event_error();
@@ -71,8 +80,14 @@ private:
 	bool	is_serv(int fd);
 	int		find_serv_id(int serv_fd);
 
-	//close/error
-	// void	close_serv(); // use destructor instead
+	//epoll utils
+	void	epoll_add(int fd, int events);
+	void	epoll_mod(int fd, int events);
+	void	epoll_del(int fd);
+	int		epoll_wait();
+
+	Config::Connection	*find_connection(Config::Connection &conn);
+
 };
 
 #endif
