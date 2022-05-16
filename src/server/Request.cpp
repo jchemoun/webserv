@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 14:20:00 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 14:39:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,19 +75,16 @@ void	Request::parse_request()
 	std::cout << color::bold << "\nOngoing raw request:\n" << color::reset << color::green << _raw_str << color::reset << "✋\n";
 
 	try {
-		if (!_complete_request_line) {
+		if (!_complete_request_line)
 			_parse_request_line();
-			if (is_invalid())
-				return ;
-		}
 		if (_complete_request_line && !_complete_header)
 			_parse_header();
 		if (_complete_header && !_complete_body)
 			_parse_body();
 	}
-	catch (std::runtime_error const &except) {
-		std::cerr << color::red << "Parsing request: " << except.what() << color::reset << "\n";
-		_status_code = 400;
+	catch (int status_code) {
+		std::cerr << color::red << "Parsing request error: " << status_code << color::reset << "\n";
+		_status_code = status_code;
 	}
 }
 
@@ -139,7 +136,7 @@ void	Request::_parse_request_uri() {
 ** Supported protocols: HTTP/1.0, HTTP/1.1
 */
 void	Request::_parse_protocol() {
-	if (_protocol != "HTTP/1.0" && _protocol != "HTTP/1.1")
+	if (_protocol != "HTTP/1.1")
 		_status_code = 505;
 }
 
@@ -187,7 +184,7 @@ void	Request::_parse_body() {
 	_body += body_part;
 	if (_content_length == 0) {
 		if (_raw_str[_index])
-			throw std::runtime_error("body size exceeds expected content length");
+			throw (400); //std::runtime_error("body size exceeds expected content length");
 		else {
 			_complete_body = true;
 			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
@@ -200,7 +197,7 @@ void	Request::_parse_content_length(std::string const &value) {
 		_content_length = Parser::_stoi(value, 0, _max_body_size);// TODO: better parsing for max_body_size
 	}
 	catch (std::exception	const &except){
-		throw std::runtime_error(std::string("Content-Length: ") + except.what());
+		throw (400); // std::runtime_error(std::string("Content-Length: ") + except.what());
 	}
 }
 /*
@@ -214,7 +211,7 @@ void	Request::_parse_content_length(std::string const &value) {
 void	Request::_eat(const char *s) {
 	size_t	size = std::strlen(s);
 	if (_raw_str.substr(_index, size) != s)
-		throw std::runtime_error("syntax error");
+		throw (400); // std::runtime_error("syntax error");
 	_index += size;
 }
 
@@ -224,7 +221,7 @@ void	Request::_eat_word(std::string &s, const char *delimiter, bool allow_empty)
 	while ((c = _raw_str[_index + count]) && !strchr(delimiter, c))
 		++count;
 	if (count == 0 && !allow_empty)
-		throw std::runtime_error("syntax error");;
+		throw (400); // std::runtime_error("syntax error");;
 	s = _raw_str.substr(_index, count);
 	_index += s.size();
 }
