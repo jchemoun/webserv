@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/16 14:45:44 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/16 15:19:10 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:27:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,7 @@
 
 namespace http {
 
-	typedef std::map<int, std::string>	StatusMap;
-
-	enum {
+	enum code {
 		// Info
 		Continue                = 100,
 		// Success
@@ -41,7 +39,9 @@ namespace http {
 		HTTPVersionNotSupported = 505
 	};
 
-	extern const StatusMap	_status_header;
+	typedef std::map<code, std::string>	StatusMap;
+
+	extern const StatusMap	status;
 }
 
 #endif

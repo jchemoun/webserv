@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 14:51:38 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:31:58 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ private:
 	std::string		_protocol;
 	std::string		_body;
 	Header			_header;
-	int				_status_code;
+	http::code		_status_code;
 	// decompose request_uri in uri and query_string
 	std::string		_uri;
 	std::string		_query_string;
@@ -56,7 +56,7 @@ public:
 	std::string const	&get_protocol() const;
 	std::string const	&get_body() const;
 	Header const		&get_header() const;
-	int					get_status_code() const;
+	http::code			get_status_code() const;
 
 	std::string const	&get_uri() const;
 	std::string const	&get_query_string() const;

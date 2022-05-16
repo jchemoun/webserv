@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 14:39:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:33:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 */
 
 Request::Request():
-	_status_code(200),
+	_status_code(http::Ok),
 	_max_body_size(4242), // TODO: parse _max_body_size in config
 	_content_length(0),
 	_complete_request_line(false),
@@ -42,7 +42,7 @@ std::string     const &Request::get_body()         const { return (_body);      
 Request::Header const &Request::get_header()       const { return (_header);       }
 std::string     const &Request::get_uri()          const { return (_uri);          }
 std::string     const &Request::get_query_string() const { return (_query_string); }
-int                    Request::get_status_code()  const { return (_status_code);  }
+http::code             Request::get_status_code()  const { return (_status_code);  }
 
 /*
 ** ============================== Public Utils ============================== **
@@ -56,7 +56,7 @@ bool	Request::is_complete() const { return (_complete_body || is_invalid()); }
 bool	Request::is_invalid()  const { return (_status_code >= 400); }
 
 void	Request::reset() {
-	_status_code = 200;
+	_status_code = http::Ok;
 	_complete_request_line = false;
 	_complete_header = false;
 	_complete_body = false;
@@ -82,7 +82,7 @@ void	Request::parse_request()
 		if (_complete_header && !_complete_body)
 			_parse_body();
 	}
-	catch (int status_code) {
+	catch (http::code status_code) {
 		std::cerr << color::red << "Parsing request error: " << status_code << color::reset << "\n";
 		_status_code = status_code;
 	}
@@ -137,7 +137,7 @@ void	Request::_parse_request_uri() {
 */
 void	Request::_parse_protocol() {
 	if (_protocol != "HTTP/1.1")
-		_status_code = 505;
+		_status_code = http::HTTPVersionNotSupported;
 }
 
 /*
@@ -184,7 +184,7 @@ void	Request::_parse_body() {
 	_body += body_part;
 	if (_content_length == 0) {
 		if (_raw_str[_index])
-			throw (400); //std::runtime_error("body size exceeds expected content length");
+			throw (http::BadRequest); //std::runtime_error("body size exceeds expected content length");
 		else {
 			_complete_body = true;
 			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
@@ -197,7 +197,7 @@ void	Request::_parse_content_length(std::string const &value) {
 		_content_length = Parser::_stoi(value, 0, _max_body_size);// TODO: better parsing for max_body_size
 	}
 	catch (std::exception	const &except){
-		throw (400); // std::runtime_error(std::string("Content-Length: ") + except.what());
+		throw (http::BadRequest); // std::runtime_error(std::string("Content-Length: ") + except.what());
 	}
 }
 /*
@@ -211,7 +211,7 @@ void	Request::_parse_content_length(std::string const &value) {
 void	Request::_eat(const char *s) {
 	size_t	size = std::strlen(s);
 	if (_raw_str.substr(_index, size) != s)
-		throw (400); // std::runtime_error("syntax error");
+		throw (http::BadRequest); // std::runtime_error("syntax error");
 	_index += size;
 }
 
@@ -221,7 +221,7 @@ void	Request::_eat_word(std::string &s, const char *delimiter, bool allow_empty)
 	while ((c = _raw_str[_index + count]) && !strchr(delimiter, c))
 		++count;
 	if (count == 0 && !allow_empty)
-		throw (400); // std::runtime_error("syntax error");;
+		throw (http::BadRequest); // std::runtime_error("syntax error");;
 	s = _raw_str.substr(_index, count);
 	_index += s.size();
 }

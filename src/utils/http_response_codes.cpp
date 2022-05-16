@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/16 14:54:16 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/16 15:19:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:25:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,4 +38,4 @@ static http::StatusMap		_init_status_header()
 	return (status);
 }
 
-http::StatusMap const	http::_status_header = _init_status_header();
+http::StatusMap const	http::status = _init_status_header();

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 15:09:07 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:31:34 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ Response::Response(Config::Server const &serv, Request const &req):
 		(this->*_methods.at(req.get_method()))();
 	else
 	{
-		_code = 405;
+		_code = http::MethodNotAllowed;
 		_read_error_page();
 	}
 	_set_header();
@@ -61,7 +61,7 @@ size_t	Response::_create_auto_index_page()
 
 	if (*(_full_location.rbegin()) != '/')
 	{
-		_code = 301;
+		_code = http::MovedPermanently;
 		_uri += '/';
 		_full_location += '/';
 		return (_read_error_page());
@@ -69,12 +69,12 @@ size_t	Response::_create_auto_index_page()
 	// probably error need check if exist && exec perm
 	if (file::has_read_perm(_full_location) == false)
 	{
-		_code = 403;
+		_code = http::Forbidden;
 		return (_read_error_page());
 	}
 	if ((dir = opendir(_full_location.c_str())) == NULL)
 	{
-		_code = 404;
+		_code = http::NotFound;
 		return (_read_error_page());
 	}
 	oss << "<html>\n<head><title>Index of " << _uri << "</title></head>\n<body>\n";
@@ -92,7 +92,7 @@ size_t	Response::_create_auto_index_page()
 			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_full_location + *(cit)) << '\t' << file::size(_full_location + *(cit)) << '\n';
 	}
 	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
-	_code = 200;
+	_code = http::Ok;
 	_body = oss.str();
 	_header_map["Content-Type"] = "text/html";
 	closedir(dir);
@@ -122,7 +122,7 @@ size_t	Response::_read_file()
 		else
 		{
 			std::cout << "WTF IS THIS\n";
-			_code = 403;
+			_code = http::Forbidden;
 			return (_read_error_page());
 		}
 		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
@@ -135,20 +135,20 @@ size_t	Response::_read_file()
 		{
 			//std::cout << "403\n";
 			//403
-			_code = 403;
+			_code = http::Forbidden;
 			return (_read_error_page());
 		}
 		file.open(_full_location.c_str(), std::ifstream::in);
 		if (file.is_open() == false)
 		{
 			// 404
-			_code = 404;
+			_code = http::NotFound;
 			return (_read_error_page());
 		}
 		if ((size_file = file::size(_uri)) + 200 >= BUFFER_SIZE)
 		{
 			is_large_file = true;
-			_code = 200;
+			_code = http::Ok;
 			return (0);
 		}
 		buf << file.rdbuf();
@@ -159,10 +159,10 @@ size_t	Response::_read_file()
 	{
 		//std::cout << "404\n";
 		// 404
-		_code = 404;
+		_code = http::NotFound;
 		return (_read_error_page());
 	}
-	_code = 200;
+	_code = http::Ok;
 	return (_body.length()); // not used
 }
 
@@ -223,23 +223,23 @@ void		Response::_deleteMethod()
 	//(void)full_location;
 	if (file::get_type(_full_location) == file::FT_UNKOWN)
 	{
-		_code = 404;
+		_code = http::NotFound;
 		_read_error_page();
 	}
 	else if (file::has_write_perm(_full_location) == false)
 	{
-		_code = 403;
+		_code = http::Forbidden;
 		_read_error_page();
 	}
 	else if (remove(_full_location.c_str()) != -1)
 	{
-		_code = 204; // or 200 and return something;
+		_code = http::NoContent; // or 200 and return something;
 		//body = "";
 	}
 	else
 	{
 		std::cerr << "error delete\n";
-		_code = 500;
+		_code = http::InternalServerError;
 		_read_error_page();
 	}
 }
@@ -249,9 +249,9 @@ std::string	Response::_build_error_page()
 	std::ostringstream	oss;
 
 	oss << "<html>\n<head><title>";
-	oss << _code << ' ' << http::_status_header.at(_code);
+	oss << _code << ' ' << http::status.at(_code);
 	oss << "</title></head>\n<body>\n<center><h1>";
-	oss << _code << ' ' << http::_status_header.at(_code);
+	oss << _code << ' ' << http::status.at(_code);
 	oss << "</h1></center>\n<hr><center>";
 	oss << "webserv/0.1"; // to replace with actual serv name
 	oss << "</center>\n</body>\n</html>";
@@ -292,7 +292,7 @@ void		Response::_set_header()
 
 	std::ostringstream oss;
 
-	oss << "HTTP/1.1 " << _code << " " << http::_status_header.at(_code) << "\r\n";
+	oss << "HTTP/1.1 " << _code << " " << http::status.at(_code) << "\r\n";
 	for (HeaderMap::const_iterator it = _header_map.begin(); it != _header_map.end(); ++it)
 		oss << it->first << ": " << it->second << "\r\n";
 
