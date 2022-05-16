@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/11 14:26:03 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/16 10:08:11 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,15 @@ class Request
 public:
 	typedef std::map<std::string, std::string>	Header;
 private:
-	// parsed elements
-	std::string		method;
-	std::string		location;
-	std::string		protocol;
-	std::string		body;
-	Header			header;
+	std::string		_method;
+	std::string		_request_uri;
+	std::string		_protocol;
+	std::string		_body;
+	Header			_header;
+	// decompose request_uri in uri and query_string
+	std::string		_uri;
+	std::string		_query_string;
+
 	// internal attributes
 	std::string		_raw_str;               // unparsed request
 	size_t			_max_body_size;
@@ -47,10 +50,13 @@ public:
 
 	// Getters
 	std::string const	&get_method() const;
-	std::string const	&get_location() const;
+	std::string const	&get_request_uri() const;
 	std::string const	&get_protocol() const;
 	std::string const	&get_body() const;
 	Header const		&get_header() const;
+
+	std::string const	&get_uri() const;
+	std::string const	&get_query_string() const;
 
 	void				parse_request();
 
@@ -62,6 +68,8 @@ public:
 
 private:
 	void	_parse_request_line();
+	void	_parse_request_uri();
+	void	_parse_protocol();
 	void	_parse_header();
 	void	_parse_body();
 	void	_parse_content_length(std::string const &value);

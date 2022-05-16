@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 14:53:00 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/16 09:25:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ Response::Response(Config::Server const &serv, Request const &req):
 	header(), body(), full_response(),
 	code(0),
 	_autoindex(serv.autoindex),
-	location(req.get_location()),
+	location(req.get_request_uri()),
 	full_location(file::join(serv.root, location)),
 	_serv(serv), _req(req),
 	is_large_file(false), size_file(),file()
