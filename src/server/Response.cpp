@@ -6,12 +6,13 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 15:31:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 19:08:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include "color.hpp"
+#include "utils.hpp"
 
 /*
 ** ============================= Public methods ============================= **
@@ -171,27 +172,25 @@ size_t		Response::_read_error_page()
 {
 	std::ofstream		file;
 	std::stringstream	buf;
-	std::string			error_page_path;
 
 	std::cout << "in error\n" << _code << "\n";
-	Config::ErrPageMap::const_iterator	error_page_it = _serv.error_pages.find(_code);
-	if (error_page_it == _serv.error_pages.end())
+	std::string const	*error_page = utils::get(_serv.error_pages, _code);
+	if (!error_page)
 		_body = _build_error_page();
 	else {
-		error_page_path = error_page_it->second;
-		std::cout << error_page_path << '\n';
-		if (file::get_type(error_page_path) == file::FT_DIR)
+		std::cout << *error_page << '\n';
+		if (file::get_type(*error_page) == file::FT_DIR)
 		{
 			_body = _build_error_page();
 			return (_body.length());
 		}
-		if (file::has_read_perm(error_page_path) == false)
+		if (file::has_read_perm(*error_page) == false)
 		{
 			// error but not supposed to happen;
 			_body = _build_error_page();
 			return (_body.length());
 		}
-		file.open(error_page_path.c_str(), std::ifstream::in);
+		file.open(error_page->c_str(), std::ifstream::in);
 		if (file.is_open() == false)
 		{
 			// error but not supposed to happen;
