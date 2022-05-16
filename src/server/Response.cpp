@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 19:08:02 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 21:37:21 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,15 +30,12 @@ Response::Response(Config::Server const &serv, Request const &req):
 	is_large_file(false), size_file(0)
 {
 	if (_req.is_invalid()) {
-		_read_error_page();
+		_read_error_page(_code);
 	}
 	else if (_methods.find(req.get_method()) != _methods.end())
 		(this->*_methods.at(req.get_method()))();
 	else
-	{
-		_code = http::MethodNotAllowed;
-		_read_error_page();
-	}
+		_read_error_page(http::MethodNotAllowed);
 	_set_header();
 	_set_full_response();
 }
@@ -52,7 +49,7 @@ size_t		Response::size()  const { return (_full_response.size());  }
 */
 
 
-size_t	Response::_create_auto_index_page()
+void	Response::_create_auto_index_page()
 {
 	std::ostringstream			oss;
 	std::ostringstream			oss_file;
@@ -62,22 +59,15 @@ size_t	Response::_create_auto_index_page()
 
 	if (*(_full_location.rbegin()) != '/')
 	{
-		_code = http::MovedPermanently;
 		_uri += '/';
 		_full_location += '/';
-		return (_read_error_page());
+		return (_read_error_page(http::MovedPermanently));
 	}
 	// probably error need check if exist && exec perm
 	if (file::has_read_perm(_full_location) == false)
-	{
-		_code = http::Forbidden;
-		return (_read_error_page());
-	}
+		return (_read_error_page(http::Forbidden));
 	if ((dir = opendir(_full_location.c_str())) == NULL)
-	{
-		_code = http::NotFound;
-		return (_read_error_page());
-	}
+		return (_read_error_page(http::NotFound));
 	oss << "<html>\n<head><title>Index of " << _uri << "</title></head>\n<body>\n";
 	oss << "<h1>Index of " << _uri << "</h1><hr><pre><a href=\"../\">../</a>\n";
 	// list of file, last modif, size
@@ -97,12 +87,10 @@ size_t	Response::_create_auto_index_page()
 	_body = oss.str();
 	_header_map["Content-Type"] = "text/html";
 	closedir(dir);
-	return (_body.length());
 }
 
-size_t	Response::_read_file()
+void	Response::_read_file()
 {
-	//std::ofstream		file;
 	std::stringstream	buf;
 	file::e_type		ft = file::get_type(_full_location);
 
@@ -123,86 +111,57 @@ size_t	Response::_read_file()
 		else
 		{
 			std::cout << "WTF IS THIS\n";
-			_code = http::Forbidden;
-			return (_read_error_page());
+			return (_read_error_page(http::Forbidden));
 		}
 		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 	}
 	else if (file::get_type(_full_location) == file::FT_FILE)
 	{
-		// read file
-		//std::cout << "123\n";
 		if (file::has_read_perm(_full_location) == false)
-		{
-			//std::cout << "403\n";
-			//403
-			_code = http::Forbidden;
-			return (_read_error_page());
-		}
+			return (_read_error_page(http::Forbidden));
 		file.open(_full_location.c_str(), std::ifstream::in);
 		if (file.is_open() == false)
-		{
-			// 404
-			_code = http::NotFound;
-			return (_read_error_page());
-		}
+			return (_read_error_page(http::NotFound));
 		if ((size_file = file::size(_uri)) + 200 >= BUFFER_SIZE)
 		{
 			is_large_file = true;
 			_code = http::Ok;
-			return (0);
+			return ;
 		}
 		buf << file.rdbuf();
 		file.close();
 		_body = buf.str();
 	}
 	else
-	{
-		//std::cout << "404\n";
-		// 404
-		_code = http::NotFound;
-		return (_read_error_page());
-	}
+		return (_read_error_page(http::NotFound));
 	_code = http::Ok;
-	return (_body.length()); // not used
 }
 
 // read file for error pages
-size_t		Response::_read_error_page()
+void		Response::_read_error_page(http::code error_code)
 {
 	std::ofstream		file;
 	std::stringstream	buf;
 
-	std::cout << "in error\n" << _code << "\n";
+	_code = error_code;
+	std::cout << "Current status: " << color::red << _code << color::reset << "\n";
 	std::string const	*error_page = utils::get(_serv.error_pages, _code);
-	if (!error_page)
-		_body = _build_error_page();
+	if (!error_page
+			|| (file::get_type(*error_page) == file::FT_DIR)
+			|| (file::has_read_perm(*error_page) == false))
+		_build_error_page();
 	else {
-		std::cout << *error_page << '\n';
-		if (file::get_type(*error_page) == file::FT_DIR)
-		{
-			_body = _build_error_page();
-			return (_body.length());
-		}
-		if (file::has_read_perm(*error_page) == false)
-		{
-			// error but not supposed to happen;
-			_body = _build_error_page();
-			return (_body.length());
-		}
 		file.open(error_page->c_str(), std::ifstream::in);
-		if (file.is_open() == false)
-		{
-			// error but not supposed to happen;
-			_body = _build_error_page();
-			return (_body.length());
+		if (file.is_open() == false) { // error but not supposed to happen;
+			_build_error_page();
 		}
-		buf << file.rdbuf();
-		file.close();
-		_body = buf.str();
-		std::cout << "body: " << color::yellow << _body << color::reset << "✋\n";
+		else {
+			buf << file.rdbuf();
+			file.close();
+			_body = buf.str();
+		}
 	}
-	return (_body.length()); // not used
+	std::cout << "body: " << color::yellow << _body << color::reset << "✋\n";
 }
 
 void		Response::_getMethod()
@@ -221,15 +180,9 @@ void		Response::_deleteMethod()
 {
 	//(void)full_location;
 	if (file::get_type(_full_location) == file::FT_UNKOWN)
-	{
-		_code = http::NotFound;
-		_read_error_page();
-	}
+		_read_error_page(http::NotFound);
 	else if (file::has_write_perm(_full_location) == false)
-	{
-		_code = http::Forbidden;
-		_read_error_page();
-	}
+		_read_error_page(http::Forbidden);
 	else if (remove(_full_location.c_str()) != -1)
 	{
 		_code = http::NoContent; // or 200 and return something;
@@ -238,12 +191,11 @@ void		Response::_deleteMethod()
 	else
 	{
 		std::cerr << "error delete\n";
-		_code = http::InternalServerError;
-		_read_error_page();
+		_read_error_page(http::InternalServerError);
 	}
 }
 
-std::string	Response::_build_error_page()
+void	Response::_build_error_page()
 {
 	std::ostringstream	oss;
 
@@ -256,8 +208,8 @@ std::string	Response::_build_error_page()
 	oss << "</center>\n</body>\n</html>";
 	oss << std::endl;
 
+	_body = oss.str();
 	_header_map["Content-Type"] = "text/html";
-	return (oss.str());
 }
 
 Response::MethodMap		Response::_init_method_map()

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 15:28:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 21:30:17 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,15 +66,15 @@ public:
 private:
 	static MethodMap	_init_method_map();
 
-	size_t		_create_auto_index_page();
-	size_t		_read_file();
-	size_t		_read_error_page();
+	void		_create_auto_index_page();
+	void		_read_file();
+	void		_read_error_page(http::code	error_code);
 
 	void		_getMethod();
 	void		_postMethod();
 	void		_deleteMethod();
 
-	std::string	_build_error_page();
+	void		_build_error_page();
 
 	void		_set_header_map();
 	void		_set_header();
