@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:19:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 10:25:58 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,9 @@ private:
 	std::string				_full_response;
 	int						_code;
 	bool					_autoindex;
-	std::string				_location;
+	std::string const		_request_uri;
+	std::string				_uri;
+	std::string				_query_string;
 	std::string				_full_location;
 	Config::Server const	&_serv;
 

@@ -23,3 +23,8 @@ curl localhost:8082
 curl -H "Host: hello" localhost:8080
 curl --resolve world:8080:127.0.0.1 http://world:8080
 curl --resolve server42:8080:127.0.0.1 http://server42:8080
+
+#Check with query_string
+curl -H "Host: site_one" 'localhost:8080?query=hello'
+curl -H "Host: site_two" 'localhost:8080?query=world'
+curl -H "Host: site_two" 'localhost:8080/site2.html?query=world'

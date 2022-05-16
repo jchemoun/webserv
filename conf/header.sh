@@ -17,12 +17,18 @@ check_header() {
   done
 }
 
-check_header / /42_logo.png /index.html # /folder # FIX: move permanently
+check_header / /42_logo.png /index.html '/?query=trololo' '/42_logo.png?a=b'
 
 # For error and autoindex, Content-Length will differ
 supported_headers="^HTTP|Content-Type|Connection"
 printf "\n\e[34mAutoindex and error page: Content-Length may differ\e[0m\n"
-check_header /folder/ /not_found.png
+check_header /folder/ /not_found.png /folder
+
+# ============================= Close connection ============================= #
+
+#TODO:
+# check_header '?query=trololo' /index.html
+# GET ?query=trololo is a bad request, / is missing, should close connection
 
 # ==================================== # ===================================== #
 

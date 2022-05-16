@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:22:34 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 10:26:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,10 @@ Response::Response(Config::Server const &serv, Request const &req):
 	_header(), _body(), _full_response(),
 	_code(0),
 	_autoindex(serv.autoindex),
-	_location(req.get_request_uri()),
-	_full_location(file::join(serv.root, _location)),
+	_request_uri(req.get_request_uri()),
+	_uri(req.get_uri()),
+	_query_string(req.get_query_string()),
+	_full_location(file::join(serv.root, _uri)),
 	_serv(serv), _req(req),
 	is_large_file(false), size_file(),file()
 {
@@ -61,7 +63,7 @@ size_t	Response::_create_auto_index_page()
 	if (*(_full_location.rbegin()) != '/')
 	{
 		_code = 301;
-		_location += '/';
+		_uri += '/';
 		_full_location += '/';
 		return (_read_error_page());
 	}
@@ -76,8 +78,8 @@ size_t	Response::_create_auto_index_page()
 		_code = 404;
 		return (_read_error_page());
 	}
-	oss << "<html>\n<head><title>Index of " << _location << "</title></head>\n<body>\n";
-	oss << "<h1>Index of " << _location << "</h1><hr><pre><a href=\"../\">../</a>\n";
+	oss << "<html>\n<head><title>Index of " << _uri << "</title></head>\n<body>\n";
+	oss << "<h1>Index of " << _uri << "</h1><hr><pre><a href=\"../\">../</a>\n";
 	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
 		if (ent->d_name[0] != '.') // need check hidden files
@@ -111,7 +113,7 @@ size_t	Response::_read_file()
 			std::string	const &index_candidate =_serv.index.at(i);
 			if (file::get_type(file::join(_full_location, index_candidate)) == file::FT_FILE) {
 				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
-				_location = index_candidate;
+				_uri = index_candidate;
 				_full_location = file::join(_full_location, index_candidate);
 				return (_read_file());
 			}
@@ -144,7 +146,7 @@ size_t	Response::_read_file()
 			_code = 404;
 			return (_read_error_page());
 		}
-		if ((size_file = file::size(_location)) + 200 >= BUFFER_SIZE)
+		if ((size_file = file::size(_uri)) + 200 >= BUFFER_SIZE)
 		{
 			is_large_file = true;
 			_code = 200;
@@ -302,10 +304,10 @@ void	Response::_set_header_map()
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
-		_header_map["Content-Type"] = file::get_mime(_location, *_serv.mime_types, _serv.default_type);
+		_header_map["Content-Type"] = file::get_mime(_uri, *_serv.mime_types, _serv.default_type);
 
 	if (_code == 301)
-		_header_map["location"] = _location.substr(_serv.root.length()); // todo fill host + location
+		_header_map["location"] = _uri.substr(_serv.root.length()); // todo fill host + location
 }
 
 void		Response::_set_header()
