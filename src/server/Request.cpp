@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/14 13:10:22 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 10:08:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,13 @@ Request::~Request() { }
 ** ================================ Getters ================================= **
 */
 
-std::string     const &Request::get_method()   const { return (method);   }
-std::string     const &Request::get_location() const { return (location); }
-std::string     const &Request::get_protocol() const { return (protocol); }
-std::string     const &Request::get_body()     const { return (body);     }
-Request::Header const &Request::get_header()   const { return (header);   }
+std::string     const &Request::get_method()       const { return (_method);       }
+std::string     const &Request::get_request_uri()  const { return (_request_uri);  }
+std::string     const &Request::get_protocol()     const { return (_protocol);     }
+std::string     const &Request::get_body()         const { return (_body);         }
+Request::Header const &Request::get_header()       const { return (_header);       }
+std::string     const &Request::get_uri()          const { return (_uri);          }
+std::string     const &Request::get_query_string() const { return (_query_string); }
 
 /*
 ** ============================== Public Utils ============================== **
@@ -57,8 +59,7 @@ void	Request::reset() {
 	_complete_body = false;
 	_invalid_request = false;
 	_raw_str.clear();
-	body.clear();
-	// _raw_str.erase(0, _index);  // what we should do if we implemented http pipeling (https://developer.mozilla.org/en-US/docs/Web/HTTP/Connection_management_in_HTTP_1.x#http_pipelining)
+	_body.clear();
 	_index = 0;
 	_content_length = 0;
 }
@@ -104,13 +105,35 @@ void	Request::_parse_request_line() {
 		_index = 0;
 		return ;
 	}
-	_eat_word(method);		std::cout << "> " << color::cyan << "method: " << color::magenta << method << "\n" << color::reset;
+	_eat_word(_method);			std::cout << "> " << color::cyan << "method: " << color::magenta << _method << "\n" << color::reset;
 	_eat_spaces();
-	_eat_word(location);	std::cout << "> " << color::cyan << "location: " << color::magenta << location << "\n" << color::reset;
+	_eat_word(_request_uri);	std::cout << "> " << color::cyan << "request uri: " << color::magenta << _request_uri << "\n" << color::reset;
+	_parse_request_uri();
 	_eat_spaces();
-	_eat_word(protocol);	std::cout << "> " << color::cyan << "protocol: " << color::magenta << protocol << "\n" << color::reset;
+	_eat_word(_protocol);		std::cout << "> " << color::cyan << "protocol: " << color::magenta << _protocol << "\n" << color::reset;
 	_eat_eol();
 	_complete_request_line = true;
+	std::cout << "\n> " << color::cyan << "Headers:\n" << color::reset;
+}
+
+/*
+** request_uri = uri[?query_string]
+*/
+void	Request::_parse_request_uri() {
+	_uri = _request_uri.substr(0, _request_uri.find('?'));
+	if (_uri != _request_uri)
+		_query_string = _request_uri.substr(_uri.size() + 1);
+	else
+		_query_string = "";
+	std::cout << "  > " << color::cyan << "uri: " << color::magenta << _uri << "\n" << color::reset;
+	std::cout << "  > " << color::cyan << "query_string: " << color::magenta << _query_string << "\n" << color::reset;
+}
+
+/*
+** Supported protocols: HTTP/1.0, HTTP/1.1
+*/
+void	_parse_protocol() {
+//TODO:
 }
 
 /*
@@ -146,7 +169,7 @@ void	Request::_eat_value() {
 	_eat_eol();
 	if (_tmp_key == "Content-Length")
 		_parse_content_length(value);
-	header[_tmp_key] = value;
+	_header[_tmp_key] = value;
 	std::cout << color::magenta << value << color::reset << "\n";
 }
 
@@ -154,13 +177,13 @@ void	Request::_parse_body() {
 	std::string body_part = _raw_str.substr(_index, _content_length);
 	_index += body_part.size();
 	_content_length -= body_part.size();
-	body += body_part;
+	_body += body_part;
 	if (_content_length == 0) {
 		if (_raw_str[_index])
 			throw std::runtime_error("body size exceeds expected content length");
 		else {
 			_complete_body = true;
-			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << body << color::reset << "✋\n";
+			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
 		}
 	}
 }
