@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/14 13:18:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 16:05:37 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,13 +83,13 @@ bool	Webserv::handle_event_error()
 ** initialize the client with that connection socket fd
 ** and track it in epoll (EPOLLIN mode)
 */
-bool	Webserv::handle_new_client(int serv_fd)
+bool	Webserv::handle_new_client(int listen_fd)
 {
-	Client	client;
-	if (!client.accept_connection(serv_fd))
+	Client	client(&connections.at(listen_fd));
+	if (!client.accept_connection())
 		return (false);
-	epoll_add(client.connection.fd, EPOLLIN);
-	clients[client.connection.fd] = client;
+	epoll_add(client.accept_info.fd, EPOLLIN);
+	clients[client.accept_info.fd] = client;
 	return (true);
 }
 

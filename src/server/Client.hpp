@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 23:21:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 16:45:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,15 +24,15 @@ class is useless for now
 
 class Client
 {
-	int					_listen_fd;
 public:
-	Config::Connection	connection;
-	Request				request;
+	Config::Connection			accept_info;
+	Config::Connection const	*listen_info;
+	Request						request;
 
-	Client();
+	Client(Config::Connection const *listen_info = NULL);
 	~Client();
 
-	bool	accept_connection(int listen_fd);
+	bool	accept_connection();
 	void	_print_connection_info();
 	void	close_connection();
 

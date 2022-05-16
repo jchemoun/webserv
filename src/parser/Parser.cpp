@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 17:41:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 16:34:52 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,8 +141,10 @@ void	Parser::_parse_listen(Config::Server &server) {
 const char	*Parser::_parse_address(Config::Connection &listen, const char *s) {
 	listen.str_addr = s;
 	listen.str_addr = listen.str_addr.substr(0, listen.str_addr.find(':'));
-	if (s[0] == '*')
+	if (s[0] == '*') {
 		listen.addr = htonl(INADDR_ANY);
+		listen.str_addr = "0.0.0.0";
+	}
 	else if (!std::strchr(s, '.'))
 		throw ParsingError("listen: address hostname not handled: ipv4 only");
 	else {

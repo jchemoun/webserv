@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 17:40:30 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 16:17:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ struct Config {
 		std::string	str_addr;
 		int			fd;
 		Connection();
+		Connection	&operator=(const sockaddr_in &sockaddr);
 	};
 
 	typedef	std::vector<Connection>	ListenVect;

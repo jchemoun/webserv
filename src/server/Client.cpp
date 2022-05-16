@@ -6,64 +6,52 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/14 12:39:08 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 16:42:08 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
-#include <netinet/in.h> // inet_ntop
 #include <unistd.h>
 #include <cstring> // bzero
 #include "color.hpp"
 
-Client::Client(): _listen_fd(-1)
+Client::Client(Config::Connection const *listen_info):
+	listen_info(listen_info)
 { }
 
 Client::~Client()
 { }
 
-static std::string	get_printable_address(sockaddr_in &sockaddress) {
-	char	addr[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &(sockaddress.sin_addr), addr, INET_ADDRSTRLEN);
-	return (addr);
-}
-
-bool	Client::accept_connection(int listen_fd) {
-	_listen_fd = listen_fd;
+bool	Client::accept_connection() {
 	sockaddr_in	sockaddress;
 	socklen_t	socklen = sizeof sockaddress;
-	if ((connection.fd = accept(listen_fd, (struct sockaddr *)&sockaddress, &socklen)) < 0) {
+	if ((accept_info.fd = accept(listen_info->fd, (struct sockaddr *)&sockaddress, &socklen)) < 0) {
 		std::cerr << "error accept\n";
 		return (false);
 	}
-	connection.addr     = ntohl(sockaddress.sin_addr.s_addr);
-	connection.port     = ntohs(sockaddress.sin_port); // this is not the server port, but the client port
-	connection.str_addr = get_printable_address(sockaddress);
+	accept_info = sockaddress;
 	_print_connection_info();
 	return (true);
 }
 
 void	Client::_print_connection_info() {
-	struct sockaddr_in sin;
-	socklen_t len = sizeof(sin);
-	if (getsockname(_listen_fd, (struct sockaddr *)&sin, &len) == 0)
-	std::cout << color::bold << color::green << "New connection accepted" << color::reset
-		<< " on " << get_printable_address(sin)
-		<< ":" << color::bold << color::green << ntohs(sin.sin_port) << color::reset
-		<< " by client: @" << connection.str_addr << ":" << connection.port
-		<< " (listen_fd: " << _listen_fd << ", connection_fd: " << connection.fd << ")\n";
+	std::cout
+		<< color::bold << color::green << "New connection accepted" << color::reset
+		<< " on " << listen_info->str_addr << ":" << color::bold << color::green << listen_info->port << color::reset
+		<< " by client: @" << accept_info.str_addr << ":" << accept_info.port
+		<< " (listen_fd: " << listen_info->fd << ", connection_fd: " << accept_info.fd << ")\n";
 }
 
 void	Client::close_connection() {
-	if (connection.fd > 0) {
-		close(connection.fd);
-		connection.fd = -1;
+	if (accept_info.fd > 0) {
+		close(accept_info.fd);
+		accept_info.fd = -1;
 	}
 }
 
 Config::Server	&Client::resolve_server(ServerMap &serverMap, DefaultServerMap &default_server_map) const
 {
-	NameToServMap	&name_to_serv_map = serverMap.at(_listen_fd);
+	NameToServMap	&name_to_serv_map = serverMap.at(listen_info->fd);
 	Request::Header::const_iterator	host_match = request.get_header().find("Host");
 	if (host_match != request.get_header().end()) { // else missing Host with multiple servers on same fd
 		std::string	server_name = host_match->second.substr(0, host_match->second.find(':'));
@@ -71,5 +59,5 @@ Config::Server	&Client::resolve_server(ServerMap &serverMap, DefaultServerMap &d
 		if (server_match != name_to_serv_map.end()) // else 'Host' not found
 			return (*server_match->second);
 	}
-	return (*default_server_map.at(_listen_fd));
+	return (*default_server_map.at(listen_info->fd));
 }
