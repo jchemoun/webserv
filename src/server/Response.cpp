@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 13:27:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:09:07 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,9 +249,9 @@ std::string	Response::_build_error_page()
 	std::ostringstream	oss;
 
 	oss << "<html>\n<head><title>";
-	oss << _code << ' ' << _status_header.at(_code);
+	oss << _code << ' ' << http::_status_header.at(_code);
 	oss << "</title></head>\n<body>\n<center><h1>";
-	oss << _code << ' ' << _status_header.at(_code);
+	oss << _code << ' ' << http::_status_header.at(_code);
 	oss << "</h1></center>\n<hr><center>";
 	oss << "webserv/0.1"; // to replace with actual serv name
 	oss << "</center>\n</body>\n</html>";
@@ -259,25 +259,6 @@ std::string	Response::_build_error_page()
 
 	_header_map["Content-Type"] = "text/html";
 	return (oss.str());
-}
-
-Response::StatusMap		Response::_init_status_header()
-{
-	StatusMap	status;
-	status[100] = "Continue";
-	status[200] = "OK";
-	status[201] = "Created";
-	status[204] = "No Content";
-	status[301] = "Moved Permanently";
-	status[308] = "Permanent Redirect";
-	status[400] = "Bad Request";
-	status[403] = "Forbidden";
-	status[404] = "Not Found";
-	status[405] = "Method Not Allowed";
-	status[413] = "Payload Too Large";
-	status[500] = "Internal Server Error";
-	status[505] = "HTTP Version Not Supported";
-	return (status);
 }
 
 Response::MethodMap		Response::_init_method_map()
@@ -290,7 +271,6 @@ Response::MethodMap		Response::_init_method_map()
 	return (methods);
 }
 
-const Response::StatusMap	Response::_status_header = Response::_init_status_header();
 const Response::MethodMap	Response::_methods       = Response::_init_method_map();
 
 void	Response::_set_header_map()
@@ -312,7 +292,7 @@ void		Response::_set_header()
 
 	std::ostringstream oss;
 
-	oss << "HTTP/1.1 " << _code << " " << _status_header.at(_code) << "\r\n";
+	oss << "HTTP/1.1 " << _code << " " << http::_status_header.at(_code) << "\r\n";
 	for (HeaderMap::const_iterator it = _header_map.begin(); it != _header_map.end(); ++it)
 		oss << it->first << ": " << it->second << "\r\n";
 

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:25:58 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 15:19:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,11 @@
 # include "utils.hpp"
 # include "file.hpp"
 # include "Webserv.hpp"
+# include "http_response_codes.hpp"
 
 class Response
 {
 public:
-	typedef std::map<int, std::string>					StatusMap;
 	typedef std::map<std::string, void (Response::*)()>	MethodMap;
 	typedef std::map<std::string, std::string>			HeaderMap;
 
@@ -49,7 +49,6 @@ private:
 	std::string				_full_location;
 	Config::Server const	&_serv;
 
-	static const StatusMap	_status_header;
 	static const MethodMap	_methods;
 	Request const			&_req;
 
@@ -65,7 +64,6 @@ public:
 	size_t			size() const;
 
 private:
-	static StatusMap	_init_status_header();
 	static MethodMap	_init_method_map();
 
 	size_t		_create_auto_index_page();

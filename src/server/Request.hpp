@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 14:17:22 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 14:51:38 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 # include <iostream>
 # include <map>
 # include <sstream>
+# include "http_response_codes.hpp"
 
 class Request
 {
