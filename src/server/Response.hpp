@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 14:15:48 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/16 10:19:45 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,46 +35,50 @@ public:
 	typedef std::map<int, std::string>					StatusMap;
 	typedef std::map<std::string, void (Response::*)()>	MethodMap;
 	typedef std::map<std::string, std::string>			HeaderMap;
+
 private:
-	HeaderMap				header_map;
-	std::string				header;
-	std::string				body;
-	std::string				full_response;
-	int						code;
+	HeaderMap				_header_map;
+	std::string				_header;
+	std::string				_body;
+	std::string				_full_response;
+	int						_code;
 	bool					_autoindex;
-	std::string				location;
-	std::string				full_location;
+	std::string				_location;
+	std::string				_full_location;
 	Config::Server const	&_serv;
 
-	static const StatusMap	status_header;
-	static const MethodMap	methods;
+	static const StatusMap	_status_header;
+	static const MethodMap	_methods;
 	Request const			&_req;
+
 public:
+	Response(Config::Server const &serv, Request const &req);
+	~Response();
+
 	bool			is_large_file;
 	long			size_file;
 	std::ifstream	file;
-	Response(Config::Server const &serv, Request const &req);
-	~Response();
-	const char *c_str() const;
-	size_t		size() const;
+
+	const char		*c_str() const;
+	size_t			size() const;
 
 private:
-	static StatusMap	init_status_header();
-	static MethodMap	init_method_map();
+	static StatusMap	_init_status_header();
+	static MethodMap	_init_method_map();
 
-	size_t		create_auto_index_page();
-	size_t		read_file();
-	size_t		read_error_page();
+	size_t		_create_auto_index_page();
+	size_t		_read_file();
+	size_t		_read_error_page();
 
-	void		getMethod();
-	void		postMethod();
-	void		deleteMethod();
+	void		_getMethod();
+	void		_postMethod();
+	void		_deleteMethod();
 
-	std::string	build_error_page();
+	std::string	_build_error_page();
 
-	void		set_header_map();
-	void		set_header();
-	void		set_full_response();
+	void		_set_header_map();
+	void		_set_header();
+	void		_set_full_response();
 };
 
 #endif
