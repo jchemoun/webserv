@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 13:13:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 13:27:37 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,10 +174,6 @@ size_t		Response::_read_error_page()
 	std::string			error_page_path;
 
 	std::cout << "in error\n" << _code << "\n";
-	//for (std::map<int, std::string>::const_iterator cit = _serv.error_pages.begin(); cit != _serv.error_pages.end(); cit++)
-	//{
-	//	std::cout << "FGH" << (*cit).second << '\n';
-	//}
 	Config::ErrPageMap::const_iterator	error_page_it = _serv.error_pages.find(_code);
 	if (error_page_it == _serv.error_pages.end())
 		_body = _build_error_page();
@@ -280,6 +276,7 @@ Response::StatusMap		Response::_init_status_header()
 	status[405] = "Method Not Allowed";
 	status[413] = "Payload Too Large";
 	status[500] = "Internal Server Error";
+	status[505] = "HTTP Version Not Supported";
 	return (status);
 }
 

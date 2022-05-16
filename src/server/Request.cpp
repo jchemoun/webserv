@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 13:13:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 14:20:00 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@
 
 Request::Request():
 	_status_code(200),
-	_max_body_size(4242), _content_length(0), // TODO: parse _max_body_size in config
+	_max_body_size(4242), // TODO: parse _max_body_size in config
+	_content_length(0),
 	_complete_request_line(false),
 	_complete_header(false),
 	_complete_body(false),
@@ -74,8 +75,11 @@ void	Request::parse_request()
 	std::cout << color::bold << "\nOngoing raw request:\n" << color::reset << color::green << _raw_str << color::reset << "✋\n";
 
 	try {
-		if (!_complete_request_line)
+		if (!_complete_request_line) {
 			_parse_request_line();
+			if (is_invalid())
+				return ;
+		}
 		if (_complete_request_line && !_complete_header)
 			_parse_header();
 		if (_complete_header && !_complete_body)
@@ -112,6 +116,7 @@ void	Request::_parse_request_line() {
 	_parse_request_uri();
 	_eat_spaces();
 	_eat_word(_protocol);		std::cout << "> " << color::cyan << "protocol: " << color::magenta << _protocol << "\n" << color::reset;
+	_parse_protocol();
 	_eat_eol();
 	_complete_request_line = true;
 	std::cout << "\n> " << color::cyan << "Headers:\n" << color::reset;
@@ -133,8 +138,9 @@ void	Request::_parse_request_uri() {
 /*
 ** Supported protocols: HTTP/1.0, HTTP/1.1
 */
-void	_parse_protocol() {
-//TODO:
+void	Request::_parse_protocol() {
+	if (_protocol != "HTTP/1.0" && _protocol != "HTTP/1.1")
+		_status_code = 505;
 }
 
 /*
