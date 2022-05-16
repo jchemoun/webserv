@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:08:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 13:13:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,11 @@
 */
 
 Request::Request():
+	_status_code(200),
 	_max_body_size(4242), _content_length(0), // TODO: parse _max_body_size in config
 	_complete_request_line(false),
 	_complete_header(false),
 	_complete_body(false),
-	_invalid_request(false),
 	_index(0)
 { }
 
@@ -41,6 +41,7 @@ std::string     const &Request::get_body()         const { return (_body);      
 Request::Header const &Request::get_header()       const { return (_header);       }
 std::string     const &Request::get_uri()          const { return (_uri);          }
 std::string     const &Request::get_query_string() const { return (_query_string); }
+int                    Request::get_status_code()  const { return (_status_code);  }
 
 /*
 ** ============================== Public Utils ============================== **
@@ -50,14 +51,14 @@ void	Request::append_unparsed_request(char *buffer, ssize_t len) {
 	_raw_str.append(buffer, len);
 }
 
-bool	Request::is_complete() const { return (_complete_body || _invalid_request); }
-bool	Request::is_invalid()  const { return (_invalid_request); }
+bool	Request::is_complete() const { return (_complete_body || is_invalid()); }
+bool	Request::is_invalid()  const { return (_status_code >= 400); }
 
 void	Request::reset() {
+	_status_code = 200;
 	_complete_request_line = false;
 	_complete_header = false;
 	_complete_body = false;
-	_invalid_request = false;
 	_raw_str.clear();
 	_body.clear();
 	_index = 0;
@@ -82,7 +83,7 @@ void	Request::parse_request()
 	}
 	catch (std::runtime_error const &except) {
 		std::cerr << color::red << "Parsing request: " << except.what() << color::reset << "\n";
-		_invalid_request = true;
+		_status_code = 400;
 	}
 }
 

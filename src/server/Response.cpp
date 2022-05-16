@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:26:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 13:13:33 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,17 +19,16 @@
 
 Response::Response(Config::Server const &serv, Request const &req):
 	_header(), _body(), _full_response(),
-	_code(0),
+	_code(req.get_status_code()),
 	_autoindex(serv.autoindex),
 	_request_uri(req.get_request_uri()),
 	_uri(req.get_uri()),
 	_query_string(req.get_query_string()),
 	_full_location(file::join(serv.root, _uri)),
 	_serv(serv), _req(req),
-	is_large_file(false), size_file(),file()
+	is_large_file(false), size_file(0)
 {
 	if (_req.is_invalid()) {
-		_code = 400;
 		_read_error_page();
 	}
 	else if (_methods.find(req.get_method()) != _methods.end())
