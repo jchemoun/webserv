@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 16:05:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 17:35:43 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ bool	Webserv::handle_recv(int client_fd)
 	std::cout << color::bold << "> Incoming reception of len " << len << color::reset << " on client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
-		std::cerr << color::red << "error recv\n" << color::reset;                          // TODO: better recv error handling
+		std::cerr << color::red << "error recv\n" << color::reset;               // TODO: better recv error handling
 		return (false);
 	}
 	else if (len == 0)
@@ -138,8 +138,8 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
-	Config::Server	&serv   = client.resolve_server(server_map, default_server_map);
-	Response		response(serv, clients[client_fd].request);
+	client.resolve_server(server_map, default_server_map);
+	Response		response(*client.current_server, client.request);
 	// need to get right server to response, todo after merge of 2 class config
 	// need to create header, todo after looking at nginx response header && merge of class config
 
