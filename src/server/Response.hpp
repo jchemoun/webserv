@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 12:31:16 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/17 15:01:01 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,11 +30,11 @@
 # include "file.hpp"
 # include "Webserv.hpp"
 # include "Cgi.hpp"
+# include "http_response_codes.hpp"
 
 class Response
 {
 public:
-	typedef std::map<int, std::string>					StatusMap;
 	typedef std::map<std::string, void (Response::*)()>	MethodMap;
 	typedef std::map<std::string, std::string>			HeaderMap;
 
@@ -43,7 +43,7 @@ private:
 	std::string				_header;
 	std::string				_body;
 	std::string				_full_response;
-	int						_code;
+	http::code				_code;
 	bool					_autoindex;
 	std::string const		_request_uri;
 	std::string				_uri;
@@ -51,12 +51,11 @@ private:
 	std::string				_full_location;
 	Config::Server const	&_serv;
 
-	static const StatusMap	_status_header;
 	static const MethodMap	_methods;
 	Request const			&_req;
 
 public:
-	Response(Config::Server const &serv, Request const &req);
+	Response(Request const &req);
 	~Response();
 
 	bool			is_large_file;
@@ -67,18 +66,17 @@ public:
 	size_t			size() const;
 
 private:
-	static StatusMap	_init_status_header();
 	static MethodMap	_init_method_map();
 
-	size_t		_create_auto_index_page();
-	size_t		_read_file();
-	size_t		_read_error_page();
+	void		_create_auto_index_page();
+	void		_read_file();
+	void		_read_error_page(http::code	error_code);
 
 	void		_getMethod();
 	void		_postMethod();
 	void		_deleteMethod();
 
-	std::string	_build_error_page();
+	void		_build_error_page();
 
 	void		_set_header_map();
 	void		_set_header();

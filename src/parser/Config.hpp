@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 17:40:30 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 20:08:10 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,11 +16,12 @@
 # include <string>
 # include <map>
 # include <arpa/inet.h>  // in_addr_t
+# include "../utils/http_response_codes.hpp"
 
 struct Config {
 
 	typedef std::map<std::string, std::string>	MimeMap;
-	typedef std::map<int, std::string>			ErrPageMap;
+	typedef std::map<http::code, std::string>	ErrPageMap;
 
 	struct 			Connection {
 		in_port_t	port;
@@ -28,6 +29,7 @@ struct Config {
 		std::string	str_addr;
 		int			fd;
 		Connection();
+		Connection	&operator=(const sockaddr_in &sockaddr);
 	};
 
 	typedef	std::vector<Connection>	ListenVect;
@@ -37,7 +39,7 @@ struct Config {
 		std::string					location_path;
 		std::string					root;
 		std::vector<std::string>	index;
-		std::map<int, std::string>	error_pages;
+		ErrPageMap					error_pages;
 		bool						autoindex;
 		void	print() const;
 	};

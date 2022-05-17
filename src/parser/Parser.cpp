@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 17:41:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 20:07:15 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,8 +141,10 @@ void	Parser::_parse_listen(Config::Server &server) {
 const char	*Parser::_parse_address(Config::Connection &listen, const char *s) {
 	listen.str_addr = s;
 	listen.str_addr = listen.str_addr.substr(0, listen.str_addr.find(':'));
-	if (s[0] == '*')
+	if (s[0] == '*') {
 		listen.addr = htonl(INADDR_ANY);
+		listen.str_addr = "0.0.0.0";
+	}
 	else if (!std::strchr(s, '.'))
 		throw ParsingError("listen: address hostname not handled: ipv4 only");
 	else {
@@ -238,9 +240,12 @@ void	Parser::_parse_error_page(Context &config) {
 		throw ParsingError("error_page: missing code");
 	if (_lexer.peek_next().get_type() != Token::type_word)
 		throw ParsingError("error_page: missing uri");
-	std::vector<int>	codes;
+	std::vector<http::code>	codes;
 	while (_lexer.peek_next().get_type() == Token::type_word) {
-		try { codes.push_back(_stoi(_current_token().get_value().c_str(), 0, 527)); }
+		try {
+			int	code = _stoi(_current_token().get_value().c_str(), 0, 527);
+			codes.push_back(static_cast<http::code>(code));
+		}
 		catch (std::exception &e) { throw ParsingError(std::string("error_page: code: ") + e.what());}
 		_lexer.next();
 	}

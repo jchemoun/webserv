@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:27:23 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/13 16:42:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 18:49:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <string>
 # include <sstream>
+# include <map>
 
 namespace utils {
 
@@ -26,6 +27,27 @@ namespace utils {
 		}
 
 	void	epoll_ctl(int epfd, int operation, int fd, int events);
+
+	/*
+	** @brief return a pointer to the value pointed by a key in a map
+	**        or NULL if not found
+	*/
+	template <class Key, class Value>
+		Value	*get(std::map<Key, Value> &m, Key const &key) {
+			typename std::map<Key, Value>::iterator it = m.find(key);
+			if (it == m.end())
+				return (NULL);
+			else
+				return (&it->second);
+		}
+	/*
+	** @brief return a pointer to the value pointed by a key in a CONST map
+	**        or NULL if not found
+	*/
+	template <class Key, class Value>
+		Value const	*get(std::map<Key, Value> const &m, Key const &key) {
+			return get(const_cast<std::map<Key, Value> &>(m), key);
+		}
 }
 
 #endif
