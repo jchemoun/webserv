@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 11:36:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 15:00:52 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,16 @@ void		Response::_read_error_page(http::code error_code)
 
 void		Response::_getMethod()
 {
-	_read_file();
+	std::cout << _full_location << '\n';
+	if (_full_location == "html/cgi")
+	{
+		std::cout << "Test cgi\n";
+		Cgi cgi(_req, _serv);
+		cgi.run();
+		cgi.parse_body();
+	}
+	//else
+		_read_file();
 	// cgi
 }
 
