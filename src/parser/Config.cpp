@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/14 12:35:32 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/16 16:44:45 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <iostream>
 #include <arpa/inet.h> // INADDR_ANY
+#include <netinet/in.h> // inet_ntop
 #include <limits>
 
 /*
@@ -50,12 +51,29 @@ void	Config::Location::print() const {
 	std::cout << "\e[0m";
 }
 
+/*
+** =============================== Connection =============================== **
+*/
+
 Config::Connection::Connection():
 	port(80),
 	addr(htonl(INADDR_ANY)),
-	str_addr("*"),
+	str_addr("0.0.0.0"),
 	fd(0)
 { }
+
+static std::string	get_printable_address(sockaddr_in  const &sockaddress) {
+	char	addr[INET_ADDRSTRLEN];
+	inet_ntop(AF_INET, &(sockaddress.sin_addr), addr, INET_ADDRSTRLEN);
+	return (addr);
+}
+
+Config::Connection	&Config::Connection::operator=(const sockaddr_in &sockaddress) {
+	addr     = ntohl(sockaddress.sin_addr.s_addr);
+	port     = ntohs(sockaddress.sin_port);
+	str_addr = get_printable_address(sockaddress);
+	return (*this);
+}
 
 /*
 ** ================================= Server ================================= **

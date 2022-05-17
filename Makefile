@@ -57,7 +57,7 @@ endif
 SRC_NAME = main.cpp \
 					 $(addprefix server/, Webserv.cpp Client.cpp Request.cpp Response.cpp) \
 					 $(addprefix parser/, Config.cpp Lexer.cpp Parser.cpp Token.cpp) \
-					 $(addprefix utils/, utils.cpp file.cpp) \
+					 $(addprefix utils/, utils.cpp file.cpp http_response_codes.cpp) \
 
 # Path
 SRC_PATH      =  ./src/

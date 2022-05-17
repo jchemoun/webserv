@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/14 13:18:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 11:35:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,13 +83,13 @@ bool	Webserv::handle_event_error()
 ** initialize the client with that connection socket fd
 ** and track it in epoll (EPOLLIN mode)
 */
-bool	Webserv::handle_new_client(int serv_fd)
+bool	Webserv::handle_new_client(int listen_fd)
 {
-	Client	client;
-	if (!client.accept_connection(serv_fd))
+	Client	client(&connections.at(listen_fd));
+	if (!client.accept_connection())
 		return (false);
-	epoll_add(client.connection.fd, EPOLLIN);
-	clients[client.connection.fd] = client;
+	epoll_add(client.accept_info.fd, EPOLLIN);
+	clients[client.accept_info.fd] = client;
 	return (true);
 }
 
@@ -108,7 +108,7 @@ bool	Webserv::handle_recv(int client_fd)
 	std::cout << color::bold << "> Incoming reception of len " << len << color::reset << " on client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
-		std::cerr << color::red << "error recv\n" << color::reset;                          // TODO: better recv error handling
+		std::cerr << color::red << "error recv\n" << color::reset;               // TODO: better recv error handling
 		return (false);
 	}
 	else if (len == 0)
@@ -121,7 +121,7 @@ bool	Webserv::handle_recv(int client_fd)
 	{
 		Request	&request = clients[client_fd].request;
 		request.append_unparsed_request(buffer, len);
-		request.parse_request();
+		request.parse_request(server_map, default_server_map);
 		if (request.is_complete()) {
 			//if response needed set client to epollout
 			epoll_mod(client_fd, EPOLLOUT);
@@ -138,8 +138,7 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
-	Config::Server	&serv   = client.resolve_server(server_map, default_server_map);
-	Response		response(serv, clients[client_fd].request);
+	Response		response(client.request);
 	// need to get right server to response, todo after merge of 2 class config
 	// need to create header, todo after looking at nginx response header && merge of class config
 

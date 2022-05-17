@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:08:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 12:47:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,20 @@
 #include "Parser.hpp"
 #include <cstring>
 #include <color.hpp>
+#include "utils.hpp"
 
 /*
 ** ======================== Constructor / Destructor ======================== **
 */
 
 Request::Request():
-	_max_body_size(4242), _content_length(0), // TODO: parse _max_body_size in config
+	_status_code(http::Ok),
+	_content_length(0),
 	_complete_request_line(false),
 	_complete_header(false),
 	_complete_body(false),
-	_invalid_request(false),
-	_index(0)
+	_index(0),
+	current_server(NULL)
 { }
 
 Request::~Request() { }
@@ -41,6 +43,7 @@ std::string     const &Request::get_body()         const { return (_body);      
 Request::Header const &Request::get_header()       const { return (_header);       }
 std::string     const &Request::get_uri()          const { return (_uri);          }
 std::string     const &Request::get_query_string() const { return (_query_string); }
+http::code             Request::get_status_code()  const { return (_status_code);  }
 
 /*
 ** ============================== Public Utils ============================== **
@@ -50,14 +53,14 @@ void	Request::append_unparsed_request(char *buffer, ssize_t len) {
 	_raw_str.append(buffer, len);
 }
 
-bool	Request::is_complete() const { return (_complete_body || _invalid_request); }
-bool	Request::is_invalid()  const { return (_invalid_request); }
+bool	Request::is_complete() const { return (_complete_body || is_invalid()); }
+bool	Request::is_invalid()  const { return (_status_code >= 400); }
 
 void	Request::reset() {
+	_status_code = http::Ok;
 	_complete_request_line = false;
 	_complete_header = false;
 	_complete_body = false;
-	_invalid_request = false;
 	_raw_str.clear();
 	_body.clear();
 	_index = 0;
@@ -65,25 +68,74 @@ void	Request::reset() {
 }
 
 /*
+** ============================= Resolve server ============================= **
+*/
+
+/*
+** @brief set the current server and the current server name according to the header Host
+**
+** Fallback to the default server in either cases:
+** - Host header not found
+** - Host header not matching with any server listening on the current listen fd
+*/
+void	Request::_resolve_server(ServerMap &serverMap, DefaultServerMap &default_server_map)
+{
+	std::string const	*host = utils::get(_header, std::string("Host"));
+
+	if (host)
+	{
+		std::string		server_name       = host->substr(0, host->find(':'));
+		NameToServMap	&name_to_serv_map = serverMap.at(listen_info->fd);
+		Config::Server	**server          = utils::get(name_to_serv_map, server_name);
+
+		if (server)
+		{
+			current_server      = *server;
+			current_server_name = server_name;
+
+			std::cout << "Found server name matching Host: "
+				<< color::bold << color::green << server_name << color::reset << "\n";
+			return ;
+		}
+	}
+	current_server      = default_server_map.at(listen_info->fd);
+	current_server_name = (current_server->server_names.empty() ? "" : current_server->server_names[0]);
+
+	std::cout << "No server found where name is matching Host. Fallback to default server "
+		<< color::bold << color::yellow << current_server_name << color::reset << "\n";
+}
+
+
+/*
 ** ================================ Parsing ================================= **
 */
 
-void	Request::parse_request()
+void	Request::parse_request(ServerMap &serverMap, DefaultServerMap &def_server_map)
 {
 	std::cout << color::bold << "\nOngoing raw request:\n" << color::reset << color::green << _raw_str << color::reset << "✋\n";
 
 	try {
 		if (!_complete_request_line)
 			_parse_request_line();
-		if (_complete_request_line && !_complete_header)
+		if (_complete_request_line && !_complete_header) {
 			_parse_header();
+			_resolve_server(serverMap, def_server_map);
+			_check_headers();
+		}
 		if (_complete_header && !_complete_body)
 			_parse_body();
 	}
-	catch (std::runtime_error const &except) {
-		std::cerr << color::red << "Parsing request: " << except.what() << color::reset << "\n";
-		_invalid_request = true;
+	catch (http::code status_code) {
+		std::cerr << color::red << "Parsing request error: " << status_code << color::reset << "\n";
+		_status_code = status_code;
+		if (!current_server)
+			_resolve_server(serverMap, def_server_map);
 	}
+}
+
+void	Request::_check_headers() {
+	if (_content_length > current_server->client_max_body_size)
+		throw (http::PayloadTooLarge);
 }
 
 /*
@@ -111,6 +163,7 @@ void	Request::_parse_request_line() {
 	_parse_request_uri();
 	_eat_spaces();
 	_eat_word(_protocol);		std::cout << "> " << color::cyan << "protocol: " << color::magenta << _protocol << "\n" << color::reset;
+	_parse_protocol();
 	_eat_eol();
 	_complete_request_line = true;
 	std::cout << "\n> " << color::cyan << "Headers:\n" << color::reset;
@@ -132,8 +185,9 @@ void	Request::_parse_request_uri() {
 /*
 ** Supported protocols: HTTP/1.0, HTTP/1.1
 */
-void	_parse_protocol() {
-//TODO:
+void	Request::_parse_protocol() {
+	if (_protocol != "HTTP/1.1")
+		_status_code = http::HTTPVersionNotSupported;
 }
 
 /*
@@ -180,7 +234,7 @@ void	Request::_parse_body() {
 	_body += body_part;
 	if (_content_length == 0) {
 		if (_raw_str[_index])
-			throw std::runtime_error("body size exceeds expected content length");
+			throw (http::BadRequest); //std::runtime_error("body size exceeds expected content length");
 		else {
 			_complete_body = true;
 			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
@@ -190,10 +244,10 @@ void	Request::_parse_body() {
 
 void	Request::_parse_content_length(std::string const &value) {
 	try {
-		_content_length = Parser::_stoi(value, 0, _max_body_size);// TODO: better parsing for max_body_size
+		_content_length = Parser::_stoi(value, 0, Config::Server::_overflow_body_size - 1);
 	}
 	catch (std::exception	const &except){
-		throw std::runtime_error(std::string("Content-Length: ") + except.what());
+		throw (http::BadRequest); // std::runtime_error(std::string("Content-Length: ") + except.what());
 	}
 }
 /*
@@ -207,7 +261,7 @@ void	Request::_parse_content_length(std::string const &value) {
 void	Request::_eat(const char *s) {
 	size_t	size = std::strlen(s);
 	if (_raw_str.substr(_index, size) != s)
-		throw std::runtime_error("syntax error");
+		throw (http::BadRequest); // std::runtime_error("syntax error");
 	_index += size;
 }
 
@@ -217,7 +271,7 @@ void	Request::_eat_word(std::string &s, const char *delimiter, bool allow_empty)
 	while ((c = _raw_str[_index + count]) && !strchr(delimiter, c))
 		++count;
 	if (count == 0 && !allow_empty)
-		throw std::runtime_error("syntax error");;
+		throw (http::BadRequest); // std::runtime_error("syntax error");;
 	s = _raw_str.substr(_index, count);
 	_index += s.size();
 }
