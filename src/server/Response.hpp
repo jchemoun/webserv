@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 21:30:17 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 11:35:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ private:
 	Request const			&_req;
 
 public:
-	Response(Config::Server const &serv, Request const &req);
+	Response(Request const &req);
 	~Response();
 
 	bool			is_large_file;

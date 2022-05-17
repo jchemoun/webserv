@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 09:23:08 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 11:36:33 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,17 @@
 ** ============================= Public methods ============================= **
 */
 
-Response::Response(Config::Server const &serv, Request const &req):
+Response::Response(Request const &req):
 	_header			(),
 	_body			(),
 	_full_response	(),
 	_code			(req.get_status_code()),
-	_autoindex		(serv.autoindex),
+	_autoindex		(req.current_server->autoindex),
 	_request_uri	(req.get_request_uri()),
 	_uri			(req.get_uri()),
 	_query_string	(req.get_query_string()),
-	_full_location	(file::join(serv.root, _uri)),
-	_serv			(serv),
+	_full_location	(file::join(req.current_server->root, _uri)),
+	_serv			(*req.current_server),
 	_req			(req),
 	is_large_file	(false),
 	size_file		(0)
@@ -134,7 +134,7 @@ void	Response::_read_file()
 		file.open(_full_location.c_str(), std::ifstream::in);
 		if (file.is_open() == false)
 			return (_read_error_page(http::NotFound));
-		if ((size_file = file::size(_uri)) + 200 >= BUFFER_SIZE)
+		if ((size_file = file::size(_full_location)) + 200 >= BUFFER_SIZE)
 		{
 			is_large_file = true;
 			_code = http::Ok;

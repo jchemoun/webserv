@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/16 14:54:16 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/16 15:25:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 11:49:21 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ static http::StatusMap		_init_status_header()
 	status[http::Forbidden]               = "Forbidden";
 	status[http::NotFound]                = "Not Found";
 	status[http::MethodNotAllowed]        = "Method Not Allowed";
-	status[http::PayloadTooLarge]         = "Payload Too Large";
+	status[http::PayloadTooLarge]         = "Request Entity Too Large";
 	// Server error
 	status[http::InternalServerError]     = "Internal Server Error";
 	status[http::HTTPVersionNotSupported] = "HTTP Version Not Supported";

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 15:33:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 12:47:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "Parser.hpp"
 #include <cstring>
 #include <color.hpp>
+#include "utils.hpp"
 
 /*
 ** ======================== Constructor / Destructor ======================== **
@@ -21,12 +22,12 @@
 
 Request::Request():
 	_status_code(http::Ok),
-	_max_body_size(4242), // TODO: parse _max_body_size in config
 	_content_length(0),
 	_complete_request_line(false),
 	_complete_header(false),
 	_complete_body(false),
-	_index(0)
+	_index(0),
+	current_server(NULL)
 { }
 
 Request::~Request() { }
@@ -67,25 +68,74 @@ void	Request::reset() {
 }
 
 /*
+** ============================= Resolve server ============================= **
+*/
+
+/*
+** @brief set the current server and the current server name according to the header Host
+**
+** Fallback to the default server in either cases:
+** - Host header not found
+** - Host header not matching with any server listening on the current listen fd
+*/
+void	Request::_resolve_server(ServerMap &serverMap, DefaultServerMap &default_server_map)
+{
+	std::string const	*host = utils::get(_header, std::string("Host"));
+
+	if (host)
+	{
+		std::string		server_name       = host->substr(0, host->find(':'));
+		NameToServMap	&name_to_serv_map = serverMap.at(listen_info->fd);
+		Config::Server	**server          = utils::get(name_to_serv_map, server_name);
+
+		if (server)
+		{
+			current_server      = *server;
+			current_server_name = server_name;
+
+			std::cout << "Found server name matching Host: "
+				<< color::bold << color::green << server_name << color::reset << "\n";
+			return ;
+		}
+	}
+	current_server      = default_server_map.at(listen_info->fd);
+	current_server_name = (current_server->server_names.empty() ? "" : current_server->server_names[0]);
+
+	std::cout << "No server found where name is matching Host. Fallback to default server "
+		<< color::bold << color::yellow << current_server_name << color::reset << "\n";
+}
+
+
+/*
 ** ================================ Parsing ================================= **
 */
 
-void	Request::parse_request()
+void	Request::parse_request(ServerMap &serverMap, DefaultServerMap &def_server_map)
 {
 	std::cout << color::bold << "\nOngoing raw request:\n" << color::reset << color::green << _raw_str << color::reset << "✋\n";
 
 	try {
 		if (!_complete_request_line)
 			_parse_request_line();
-		if (_complete_request_line && !_complete_header)
+		if (_complete_request_line && !_complete_header) {
 			_parse_header();
+			_resolve_server(serverMap, def_server_map);
+			_check_headers();
+		}
 		if (_complete_header && !_complete_body)
 			_parse_body();
 	}
 	catch (http::code status_code) {
 		std::cerr << color::red << "Parsing request error: " << status_code << color::reset << "\n";
 		_status_code = status_code;
+		if (!current_server)
+			_resolve_server(serverMap, def_server_map);
 	}
+}
+
+void	Request::_check_headers() {
+	if (_content_length > current_server->client_max_body_size)
+		throw (http::PayloadTooLarge);
 }
 
 /*
@@ -194,7 +244,7 @@ void	Request::_parse_body() {
 
 void	Request::_parse_content_length(std::string const &value) {
 	try {
-		_content_length = Parser::_stoi(value, 0, _max_body_size);// TODO: better parsing for max_body_size
+		_content_length = Parser::_stoi(value, 0, Config::Server::_overflow_body_size - 1);
 	}
 	catch (std::exception	const &except){
 		throw (http::BadRequest); // std::runtime_error(std::string("Content-Length: ") + except.what());

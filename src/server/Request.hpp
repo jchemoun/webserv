@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 15:31:58 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 12:33:50 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,15 @@
 # include <map>
 # include <sstream>
 # include "http_response_codes.hpp"
+# include "Config.hpp"
 
 class Request
 {
 public:
-	typedef std::map<std::string, std::string>	Header;
+	typedef std::map<std::string, Config::Server *>	NameToServMap;    // key: server_name
+	typedef std::map<int, NameToServMap>			ServerMap;        // first key: listen_fd, second: server_name
+	typedef std::map<int, Config::Server *>			DefaultServerMap; // key: listen_fd
+	typedef std::map<std::string, std::string>		Header;
 
 private:
 	std::string		_method;
@@ -38,7 +42,6 @@ private:
 
 	// internal attributes
 	std::string		_raw_str;               // unparsed request
-	size_t			_max_body_size;
 	size_t			_content_length;
 	bool			_complete_request_line;
 	bool			_complete_header;
@@ -49,6 +52,10 @@ private:
 public:
 	Request();
 	~Request();
+
+	Config::Connection const	*listen_info;
+	Config::Server const		*current_server;
+	std::string					current_server_name;
 
 	// Getters
 	std::string const	&get_method() const;
@@ -61,7 +68,7 @@ public:
 	std::string const	&get_uri() const;
 	std::string const	&get_query_string() const;
 
-	void				parse_request();
+	void				parse_request(ServerMap &serverMap, DefaultServerMap &def_server_map);
 
 	// Public Utils
 	void				append_unparsed_request(char *buffer, ssize_t len);
@@ -70,12 +77,14 @@ public:
 	void				reset();
 
 private:
+	void	_resolve_server(ServerMap &serverMap, DefaultServerMap &def_server_map);
 	void	_parse_request_line();
 	void	_parse_request_uri();
 	void	_parse_protocol();
 	void	_parse_header();
 	void	_parse_body();
 	void	_parse_content_length(std::string const &value);
+	void	_check_headers();
 	// Parsing utils
 	void	_eat(const char *s);
 	void	_eat_word(std::string &s);

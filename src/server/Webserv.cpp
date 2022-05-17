@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 17:35:43 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 11:35:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,7 +121,7 @@ bool	Webserv::handle_recv(int client_fd)
 	{
 		Request	&request = clients[client_fd].request;
 		request.append_unparsed_request(buffer, len);
-		request.parse_request();
+		request.parse_request(server_map, default_server_map);
 		if (request.is_complete()) {
 			//if response needed set client to epollout
 			epoll_mod(client_fd, EPOLLOUT);
@@ -138,8 +138,7 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
-	client.resolve_server(server_map, default_server_map);
-	Response		response(*client.current_server, client.request);
+	Response		response(client.request);
 	// need to get right server to response, todo after merge of 2 class config
 	// need to create header, todo after looking at nginx response header && merge of class config
 

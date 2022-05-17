@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 18:44:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 11:51:55 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 #include <unistd.h>
 #include <cstring> // bzero
 #include "color.hpp"
-#include "utils.hpp"
 
 Client::Client(Config::Connection const *listen_info):
-	listen_info(listen_info),
-	current_server(NULL)
-{ }
+	listen_info(listen_info)
+{
+	request.listen_info = listen_info;
+}
 
 Client::~Client()
 { }
@@ -49,38 +49,4 @@ void	Client::close_connection() {
 		close(accept_info.fd);
 		accept_info.fd = -1;
 	}
-}
-
-/*
-** @brief set the current server and the current server name according to the header Host
-**
-** Fallback to the default server in either cases:
-** - Host header not found
-** - Host header not matching with any server listening on the current listen fd
-*/
-void	Client::resolve_server(ServerMap &serverMap, DefaultServerMap &default_server_map)
-{
-	std::string const	*host = utils::get(request.get_header(), std::string("Host"));
-
-	if (host)
-	{
-		std::string		server_name       = host->substr(0, host->find(':'));
-		NameToServMap	&name_to_serv_map = serverMap.at(listen_info->fd);
-		Config::Server	**server          = utils::get(name_to_serv_map, server_name);
-
-		if (server)
-		{
-			current_server      = *server;
-			current_server_name = server_name;
-
-			std::cout << "Found server name matching Host: "
-				<< color::bold << color::green << server_name << color::reset << "\n";
-			return ;
-		}
-	}
-	current_server      = default_server_map.at(listen_info->fd);
-	current_server_name = (current_server->server_names.empty() ? "" : current_server->server_names[0]);
-
-	std::cout << "No server found where name is matching Host. Fallback to default server "
-		<< color::bold << color::yellow << current_server_name << color::reset << "\n";
 }
