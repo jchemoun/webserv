@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 21:37:21 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 07:52:23 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,11 @@ void	Response::_create_auto_index_page()
 		return (_read_error_page(http::Forbidden));
 	if ((dir = opendir(_full_location.c_str())) == NULL)
 		return (_read_error_page(http::NotFound));
-	oss << "<html>\n<head><title>Index of " << _uri << "</title></head>\n<body>\n";
-	oss << "<h1>Index of " << _uri << "</h1><hr><pre><a href=\"../\">../</a>\n";
+	oss <<
+		"<html>\r\n"
+		"<head><title>Index of " << _uri << "</title></head>\r\n"
+		"<body>\r\n"
+		"<h1>Index of " << _uri << "</h1><hr><pre><a href=\"../\">../</a>\r\n";
 	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
 		if (ent->d_name[0] != '.') // need check hidden files
@@ -78,11 +81,13 @@ void	Response::_create_auto_index_page()
 	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
 	{
 		if (file::get_type(_full_location + *(cit)) == file::FT_DIR)
-			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(_full_location + *(cit)) << "\t-\n";
+			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(_full_location + *(cit)) << "\t-\r\n";
 		else
-			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_full_location + *(cit)) << '\t' << file::size(_full_location + *(cit)) << '\n';
+			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_full_location + *(cit)) << '\t' << file::size(_full_location + *(cit)) << "\r\n";
 	}
-	oss << oss_file.str() << "</pre><hr></body>\n</html>" << std::endl;
+	oss << oss_file.str() <<
+		"</pre><hr></body>\r\n"
+		"</html>\r\n";
 	_code = http::Ok;
 	_body = oss.str();
 	_header_map["Content-Type"] = "text/html";
@@ -199,14 +204,14 @@ void	Response::_build_error_page()
 {
 	std::ostringstream	oss;
 
-	oss << "<html>\n<head><title>";
-	oss << _code << ' ' << http::status.at(_code);
-	oss << "</title></head>\n<body>\n<center><h1>";
-	oss << _code << ' ' << http::status.at(_code);
-	oss << "</h1></center>\n<hr><center>";
-	oss << "webserv/0.1"; // to replace with actual serv name
-	oss << "</center>\n</body>\n</html>";
-	oss << std::endl;
+	oss <<
+		"<html>\r\n"
+		"<head><title>" << _code << ' ' << http::status.at(_code) << "</title></head>\r\n"
+		"<body>\r\n"
+		"<center><h1>" << _code << ' ' << http::status.at(_code) << "</h1></center>\r\n"
+		"<hr><center>" "webserv/0.1" "</center>\r\n"
+		"</body>\r\n"
+		"</html>\r\n";
 
 	_body = oss.str();
 	_header_map["Content-Type"] = "text/html";
