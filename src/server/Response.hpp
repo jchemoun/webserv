@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/16 10:25:58 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 12:31:16 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,13 @@
 # include <sys/types.h>
 # include <unistd.h>
 # include <dirent.h>
+
 # include "Config.hpp"
 # include "Request.hpp"
 # include "utils.hpp"
 # include "file.hpp"
 # include "Webserv.hpp"
+# include "Cgi.hpp"
 
 class Response
 {

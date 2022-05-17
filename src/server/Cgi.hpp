@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/16 15:08:47 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/17 13:15:59 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,12 +29,14 @@ public:
 	typedef std::map<std::string, std::string>  env_map;
 	Cgi(/* args */);
 	Cgi(Request const &req, Config::Server const &serv);
-	int	run();
+	int			run();
+	std::string	parse_body();
 	~Cgi();
 private:
+	env_map			env;
+	std::string		_body;
 	char	**map_to_tab(env_map const &env);
 	void	delete_tab(char **tab);
-	env_map env;
 };
 
 #endif
