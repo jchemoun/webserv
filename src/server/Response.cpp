@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 08:41:49 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 09:08:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,23 +157,23 @@ void		Response::_read_error_page(http::code error_code)
 
 	_code = error_code;
 	std::cout << "Current status: " << color::red << _code << color::reset << "\n";
-	std::string const	*error_page = utils::get(_serv.error_pages, _code);
-	if (!error_page
-			|| (file::get_type(*error_page) == file::FT_DIR)
-			|| (file::has_read_perm(*error_page) == false))
-		_build_error_page();
-	else {
-		file.open(error_page->c_str(), std::ifstream::in);
-		if (file.is_open() == false) { // error but not supposed to happen;
-			_build_error_page();
-		}
-		else {
-			buf << file.rdbuf();
-			file.close();
-			_body = buf.str();
+
+	std::string const	*error_page_ptr = utils::get(_serv.error_pages, _code);
+	if (error_page_ptr)
+	{
+		std::string	error_page = file::join(_serv.root, *error_page_ptr);
+		if ((file::get_type(error_page) == file::FT_FILE) && file::has_read_perm(error_page)) // nginx actually search index if it is a folder
+		{
+			file.open(error_page.c_str(), std::ifstream::in);
+			if (file.is_open()) {
+				buf << file.rdbuf();
+				file.close();
+				_body = buf.str();
+				return ;
+			}
 		}
 	}
-	std::cout << "body: " << color::yellow << _body << color::reset << "✋\n";
+	_build_error_page();
 }
 
 void		Response::_getMethod()
