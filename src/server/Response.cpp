@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 09:08:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 09:23:08 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,7 @@ void		Response::_read_error_page(http::code error_code)
 				buf << file.rdbuf();
 				file.close();
 				_body = buf.str();
+				_header_map["Content-Type"] = file::get_mime(error_page, *_serv.mime_types, _serv.default_type);
 				return ;
 			}
 		}
