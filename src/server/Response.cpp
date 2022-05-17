@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 07:52:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 08:41:49 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,15 +19,19 @@
 */
 
 Response::Response(Config::Server const &serv, Request const &req):
-	_header(), _body(), _full_response(),
-	_code(req.get_status_code()),
-	_autoindex(serv.autoindex),
-	_request_uri(req.get_request_uri()),
-	_uri(req.get_uri()),
-	_query_string(req.get_query_string()),
-	_full_location(file::join(serv.root, _uri)),
-	_serv(serv), _req(req),
-	is_large_file(false), size_file(0)
+	_header			(),
+	_body			(),
+	_full_response	(),
+	_code			(req.get_status_code()),
+	_autoindex		(serv.autoindex),
+	_request_uri	(req.get_request_uri()),
+	_uri			(req.get_uri()),
+	_query_string	(req.get_query_string()),
+	_full_location	(file::join(serv.root, _uri)),
+	_serv			(serv),
+	_req			(req),
+	is_large_file	(false),
+	size_file		(0)
 {
 	if (_req.is_invalid()) {
 		_read_error_page(_code);
@@ -48,12 +52,14 @@ size_t		Response::size()  const { return (_full_response.size());  }
 ** ============================ Private Methods ============================= **
 */
 
-
+/*
+** @brief list every folder then file, except hidden ones
+*/
 void	Response::_create_auto_index_page()
 {
 	std::ostringstream			oss;
 	std::ostringstream			oss_file;
-	std::vector<std::string>	ff_vector;
+	std::vector<std::string>	entries;
 	DIR							*dir;
 	struct dirent				*ent;
 
@@ -73,17 +79,18 @@ void	Response::_create_auto_index_page()
 		"<head><title>Index of " << _uri << "</title></head>\r\n"
 		"<body>\r\n"
 		"<h1>Index of " << _uri << "</h1><hr><pre><a href=\"../\">../</a>\r\n";
-	// list of file, last modif, size
 	while ((ent = readdir(dir)) != NULL)
-		if (ent->d_name[0] != '.') // need check hidden files
-			ff_vector.push_back(ent->d_name);
-	std::sort(ff_vector.begin(), ff_vector.end());
-	for (std::vector<std::string>::const_iterator cit = ff_vector.begin(); cit != ff_vector.end(); cit++)
+		if (ent->d_name[0] != '.')
+			entries.push_back(ent->d_name);
+	std::sort(entries.begin(), entries.end());
+	for (std::vector<std::string>::const_iterator cit = entries.begin(); cit != entries.end(); cit++)
 	{
 		if (file::get_type(_full_location + *(cit)) == file::FT_DIR)
-			oss << "<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(_full_location + *(cit)) << "\t-\r\n";
+			oss <<
+				"<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(_full_location + *(cit)) << "\t-\r\n";
 		else
-			oss_file << "<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_full_location + *(cit)) << '\t' << file::size(_full_location + *(cit)) << "\r\n";
+			oss_file <<
+				"<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_full_location + *(cit)) << '\t' << file::size(_full_location + *(cit)) << "\r\n";
 	}
 	oss << oss_file.str() <<
 		"</pre><hr></body>\r\n"
