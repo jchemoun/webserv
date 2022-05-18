@@ -196,8 +196,41 @@ bool		Response::_is_a_cgi() const {
 
 void		Response::_postMethod()
 {
-	_read_file();
+	std::string		updir;
+	std::ofstream	new_file;
 	//cgi;
+
+	updir = file::join(_serv.root, "upload/");
+	if (_full_location.substr(0, updir.length()) == updir)
+	{
+		if (file::get_type(updir) != file::FT_DIR)
+			if (mkdir(updir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
+			{
+				_read_error_page(http::InternalServerError);
+				return ;
+			} //what happen if is file
+		if (file::get_type(_full_location) == file::FT_FILE || file::get_type(_full_location) == file::FT_DIR)
+		{
+			_read_error_page(http::Forbidden);
+			return ;
+		}
+		new_file.open(_full_location.c_str());
+		if (new_file.is_open() == false)
+		{
+			_read_error_page(http::InternalServerError);
+			return ;
+		} //check error
+		new_file.write(_req.get_body().c_str(), _req.get_body().length());
+		if (new_file.bad())
+		{
+			_read_error_page(http::InternalServerError);
+			return ;
+		} //check error
+		new_file.close();
+		_code = http::Created;
+		return ;
+	}
+	_read_file();
 }
 
 void		Response::_deleteMethod()

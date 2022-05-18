@@ -23,6 +23,7 @@
 # include <sys/types.h>
 # include <unistd.h>
 # include <dirent.h>
+# include <dirent.h>
 
 # include "Config.hpp"
 # include "Request.hpp"

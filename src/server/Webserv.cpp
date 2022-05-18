@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 11:35:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/17 15:25:31 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,12 @@ bool	Webserv::handle_recv(int client_fd)
 	char	buffer[BUFFER_SIZE] = {0};
 	ssize_t	len;
 
-	len = recv(client_fd, buffer, BUFFER_SIZE, 0);            // TODO: check that it is working fine with small BUFFER_SIZE values
+	len = recv(client_fd, buffer, BUFFER_SIZE, 0);
+	if (len == -1)
+	{
+		delete_client(client_fd);
+		return (false);
+	}
 	std::cout << color::bold << "> Incoming reception of len " << len << color::reset << " on client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
@@ -147,21 +152,33 @@ bool	Webserv::handle_send(int client_fd)
 	{
 		// todo boucle while read/send
 		std::cout << response.size_file / BUFFER_SIZE << "\n";
-		send(client_fd, response.c_str(), response.size(), 0);
+		if (send(client_fd, response.c_str(), response.size(), 0) == -1)
+		{
+			delete_client(client_fd);
+			return (false);
+		}
 		char	buf[BUFFER_SIZE] = {0};
 		for (long i = response.size_file / BUFFER_SIZE; i > 0; i--)
 		{
 			response.file.read((char*)&buf, BUFFER_SIZE);
-			send(client_fd, buf, BUFFER_SIZE, 0);
+			if ((send(client_fd, buf, BUFFER_SIZE, 0)) == -1)
+			{
+				delete_client(client_fd);
+				return (false);
+			}
 		}
 		response.file.read((char*)&buf, response.size_file % BUFFER_SIZE);
-		send(client_fd, buf, response.size_file % BUFFER_SIZE, 0);
+		if ((send(client_fd, buf, response.size_file % BUFFER_SIZE, 0)) == -1)
+		{
+			delete_client(client_fd);
+			return (false);
+		}
 	}
 	else // TODO: what to do in case of send error
 	{
 		if (send(client_fd, response.c_str(), response.size(), 0) < 0)
 		{
-			std::cerr << "error send\n";
+			delete_client(client_fd);
 			return (false);
 		}
 	}
