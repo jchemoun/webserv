@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/18 08:33:14 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/18 18:34:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 19:26:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ const std::string ENV[] = {
 
 int main () {
 	std::cout
-		<< "Content-type:text/html\r\n\r\n"
+		<< "Content-Type:text/html\r\n\r\n"
 		<< "<html>\n"
 		<< "<head>\n"
 		<< "<title>CGI Environment Variables</title>\n"

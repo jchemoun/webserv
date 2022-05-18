@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 19:15:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 19:27:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,6 +186,9 @@ void		Response::_getMethod()
 		cgi.run();
 		cgi.parse_body();
 		std::swap(cgi._body, _body);
+		for (Cgi::Header::const_iterator cit = cgi._header.begin(); cit != cgi._header.end(); ++cit) {
+			_header_map[cit->first] = cit->second;
+		}
 	}
 	else
 		_read_file();
