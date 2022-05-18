@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 12:33:50 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 19:10:28 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ public:
 	typedef std::map<int, NameToServMap>			ServerMap;        // first key: listen_fd, second: server_name
 	typedef std::map<int, Config::Server *>			DefaultServerMap; // key: listen_fd
 	typedef std::map<std::string, std::string>		Header;
+	friend class Cgi;
 
 private:
 	std::string		_method;
@@ -69,6 +70,7 @@ public:
 	std::string const	&get_query_string() const;
 
 	void				parse_request(ServerMap &serverMap, DefaultServerMap &def_server_map);
+	void				parse_cgi(std::string &output);
 
 	// Public Utils
 	void				append_unparsed_request(char *buffer, ssize_t len);

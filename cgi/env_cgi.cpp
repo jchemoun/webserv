@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/18 08:33:14 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/18 08:46:57 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 18:34:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ const std::string ENV[] = {
 	"SERVER_PROTOCOL",
 	"SERVER_SIGNATURE",
 	"SERVER_SOFTWARE"
-};   
+};
 
 int main () {
 	std::cout
@@ -50,22 +50,22 @@ int main () {
 		<< "<body>\n"
 		<< "<table border = \"0\" cellspacing = \"2\">";
 
-   for (size_t i = 0; i < sizeof ENV / sizeof ENV[0]; ++i) {
-      std::cout << "<tr><td>" << ENV[i] << "</td><td>";
-      
-      // attempt to retrieve value of environment variable
-      const char *value = getenv(ENV[i].c_str());  
-      if (value) {
-         std::cout << value;                                 
-      } else {
-         std::cout << "Environment variable does not exist.";
-      }
-      std::cout << "</td></tr>\n";
-   }
-   
-   std::cout << "</table><\n";
-   std::cout << "</body>\n";
-   std::cout << "</html>\n";
-   
-   return (0);
+	for (size_t i = 0; i < sizeof ENV / sizeof ENV[0]; ++i) {
+		std::cout << "<tr><td>" << ENV[i] << "</td><td>";
+
+		// attempt to retrieve value of environment variable
+		const char *value = getenv(ENV[i].c_str());
+		if (value) {
+			std::cout << value;
+		} else {
+			std::cout << "-";
+		}
+		std::cout << "</td></tr>\n";
+	}
+
+	std::cout << "</table><\n";
+	std::cout << "</body>\n";
+	std::cout << "</html>\n";
+
+	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/17 13:15:59 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/18 19:13:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,18 +25,20 @@ class Cgi
 {
 public:
 	typedef std::map<std::string, std::string>  env_map;
+	typedef std::map<std::string, std::string>	Header;
 
 private:
 	static const	size_t	_buffer_size;
 	env_map			_env;
-	std::string		_body;
 
 public:
+	std::string		_body;
+	Header			_header;
 	Cgi(Request const &req, Config::Server const &serv);
 	~Cgi();
 
 	int			run();
-	std::string	parse_body();
+	void		parse_body();
 
 private:
 	Cgi();

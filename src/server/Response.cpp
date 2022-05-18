@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 10:28:31 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 19:15:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,8 @@ void		Response::_getMethod()
 		std::cout << "Test cgi\n";
 		Cgi cgi(_req, _serv);
 		cgi.run();
-		_body = cgi.parse_body();
+		cgi.parse_body();
+		std::swap(cgi._body, _body);
 	}
 	else
 		_read_file();
@@ -235,7 +236,6 @@ void		Response::_postMethod()
 
 void		Response::_deleteMethod()
 {
-	//(void)full_location;
 	if (file::get_type(_full_location) == file::FT_UNKOWN)
 		_read_error_page(http::NotFound);
 	else if (file::has_write_perm(_full_location) == false)

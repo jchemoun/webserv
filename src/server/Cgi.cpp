@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/18 15:09:48 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 19:17:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,10 +122,12 @@ int		Cgi::run()
 	return (http::Ok);
 }
 
-std::string	Cgi::parse_body()
+void	Cgi::parse_body()
 {
-	std::cout << "BODY CGI " << _body << '\n';
-	return (_body);
+	Request req;
+	req.parse_cgi(_body);
+	std::swap(req._body, _body);
+	std::swap(req._header, _header);
 }
 
 Cgi::~Cgi()
