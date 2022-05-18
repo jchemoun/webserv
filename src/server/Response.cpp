@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 15:00:52 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/18 13:46:03 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,8 +194,27 @@ void		Response::_getMethod()
 
 void		Response::_postMethod()
 {
-	_read_file();
+	std::string		updir;
+	std::ofstream	new_file;
 	//cgi;
+
+	updir = (_serv.root +(*(--_serv.root.end()) == '/' ? "" : "/") +"upload/");
+	if (_full_location.substr(0, updir.length()) == updir)
+	{
+		if (file::get_type(updir) != file::FT_DIR)
+			mkdir(updir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		if (file::get_type(_full_location) == file::FT_FILE || file::get_type(_full_location) == file::FT_DIR)
+		{
+			_read_error_page(http::Forbidden);
+			return ;
+		}
+		new_file.open(_full_location.c_str());
+		new_file.write(_req.get_body().c_str(), _req.get_body().length());
+		new_file.close();
+		_code = http::Created;
+		return ;
+	}
+	_read_file();
 }
 
 void		Response::_deleteMethod()
