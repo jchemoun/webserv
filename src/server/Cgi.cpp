@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
+#include "http_response_codes.hpp"
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -96,16 +97,13 @@ void	Cgi::delete_tab(char **tab)
 int		Cgi::run()
 {
 	int			pipefd[2];
-	int			inout[2];
 	char		**tab;
 	char		buf[BUFFER_SIZE + 1];
 	ssize_t		len;
 	pid_t		cpid;
 
-	inout[0] = dup(0);
-	inout[1] = dup(1);
 	if (pipe(pipefd) == -1)
-		return (500);
+		return (http::InternalServerError);
 	tab = map_to_tab(env);
 	cpid = fork();
 	if (cpid == -1)
@@ -113,7 +111,7 @@ int		Cgi::run()
 		delete_tab(tab);
 		close(pipefd[0]);
 		close(pipefd[1]);
-		return (500);
+		return (http::InternalServerError);
 	}
 	else if (cpid == 0)
 	{
@@ -137,14 +135,11 @@ int		Cgi::run()
 			_body += buf;
 		}
 		if (len == -1)
-			return (500);
+			return (http::InternalServerError);
 	}
-	
-	dup2(inout[0], 0);
-	dup2(inout[1], 1);
 	// maybe close inout
 	delete_tab(tab);
-	return (200);
+	return (http::Ok);
 }
 
 std::string	Cgi::parse_body()

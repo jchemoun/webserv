@@ -188,7 +188,6 @@ void		Response::_getMethod()
 	}
 	else
 		_read_file();
-	// cgi
 }
 
 bool		Response::_is_a_cgi() const {
