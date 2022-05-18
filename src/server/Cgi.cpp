@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/18 12:28:48 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 15:09:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,25 +101,24 @@ int		Cgi::run()
 		close(pipefd[1]);
 		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
 		execve(av[0], const_cast<char * const*>(av), tab);
-		std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
-		exit(1); // exit codes should be <= 255
+		std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
+		write(pipefd[1], error.c_str(), error.size());
+		exit(EXIT_FAILURE);                            // exit codes should be <= 255
 	}
 	else
 	{
 		close(pipefd[1]);
-		dup2(pipefd[0], 0);
-		close(pipefd[0]);
 		wait(&cpid);
-		while ((len = read(0, &buf, _buffer_size - 1)) > 0)
+		while ((len = read(pipefd[0], &buf, _buffer_size - 1)) > 0)
 		{
 			buf[len] = '\0';
 			_body += buf;
 		}
-		if (len == -1)
-			return (http::InternalServerError);
 	}
-	// maybe close inout
+	close(pipefd[0]);
 	delete_tab(tab);
+	if (len == -1)
+		return (http::InternalServerError);
 	return (http::Ok);
 }
 
