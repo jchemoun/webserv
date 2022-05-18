@@ -13,28 +13,33 @@
 #ifndef CGI_HPP
 # define CGI_HPP
 
+#include <cstddef>
 # include <map>
 # include <string>
 # include <string.h>
-# include <unistd.h>
-# include <sys/wait.h>
 
 # include "Request.hpp"
 # include "Config.hpp"
-# include "Webserv.hpp"
 
 class Cgi
 {
 public:
 	typedef std::map<std::string, std::string>  env_map;
-	Cgi(/* args */);
+
+private:
+	static const	size_t	_buffer_size;
+	env_map			_env;
+	std::string		_body;
+
+public:
 	Cgi(Request const &req, Config::Server const &serv);
+	~Cgi();
+
 	int			run();
 	std::string	parse_body();
-	~Cgi();
+
 private:
-	env_map			env;
-	std::string		_body;
+	Cgi();
 	char	**map_to_tab(env_map const &env);
 	void	delete_tab(char **tab);
 };

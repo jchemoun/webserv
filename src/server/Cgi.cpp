@@ -6,62 +6,43 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/17 13:25:48 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/18 12:28:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
 #include "http_response_codes.hpp"
+#include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <vector>
+#include <unistd.h>
+#include <cstdlib> // exit
+#include <sys/wait.h>
+#include "file.hpp"
+#include "errno.h"
 
-Cgi::Cgi(/* args */): env()
-{
-	env["CONTENT_LENGTH"] = ""; //			body_size
-	env["CONTENT_TYPE"] = ""; //			mime type of body
-	env["GATEWAY_INTERFACE"] = "CGI/1.1"; //always this
-	env["PATH_INFO"] = ""; //				request path
-	env["QUERY_STRING"] = ""; //			things after '?' in url
-	env["REMOTE_ADDR"] = ""; //				ip of the client
-	env["REQUEST_METHODE"] = "";//			get or post
-	env["SCRIPT_NAME"] = "";//				don't know for sure, probably just the path to cgi
-	env["SERVER_NAME"] = "";//				name of the server receiving the request
-	env["SERVER_PORT"] = "";//				request's port number
-	env["SERVER_PROTOCOL"] = "HTTP/1.1";//	always this
-	env["SERVER_SOFTWARE"] = "Webserv";//	always this
-	env["REQUEST_URI"] = "";//				full request
-	env["REDIRECT_STATUS"] = "200";//		always this
-	env["SCRIPT_FILENAME"] = "";//			full path to cgi
-}
+const size_t	Cgi::_buffer_size = 4242;
 
-Cgi::Cgi(Request const &req, Config::Server const &serv): env()
+Cgi::Cgi(Request const &req, Config::Server const &serv)
 {
-	env["CONTENT_LENGTH"] = req.get_body().size();//				body_size
-	env["CONTENT_TYPE"] = file::get_mime(req.get_request_uri(), *serv.mime_types, serv.default_type);//	mime type of body
-	env["GATEWAY_INTERFACE"] = "CGI/1.1";//							always this
-	env["PATH_INFO"] = file::join(serv.root, req.get_uri());//								request path
-	env["QUERY_STRING"] = req.get_query_string();//					things after '?' in url
-	env["REMOTE_ADDR"] = ""/*TODO*/; //								ip of the client or the server idk
-	env["REQUEST_METHODE"] = req.get_method();//					get or post
-	env["SCRIPT_NAME"] = ""/*TODO*/;//								don't know for sure, probably just the path to cgi
-	env["SERVER_NAME"] = ""/*TODO*/;//								name of the server receiving the request
-	env["SERVER_PORT"] = ""/*TODO*/;//								request's port number
-	env["SERVER_PROTOCOL"] = "HTTP/1.1";//							always this
-	env["SERVER_SOFTWARE"] = "Webserv";//							always this
-	env["REQUEST_URI"] = req.get_request_uri();//						full request
-	env["REDIRECT_STATUS"] = "200";//								always this
-	env["SCRIPT_FILENAME"] = ""/*TODO*/;//							full path to cgi
+	_env["CONTENT_LENGTH"]    = req.get_body().size();                                                      // body_size
+	_env["CONTENT_TYPE"]      = file::get_mime(req.get_request_uri(), *serv.mime_types, serv.default_type); // mime type of body
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";                                                                  // always this
+	_env["PATH_INFO"]         = file::join(serv.root, req.get_uri());                                       // request path
+	_env["QUERY_STRING"]      = req.get_query_string();                                                     // things after '?' in url
+	_env["REMOTE_ADDR"]       = ""/*TODO*/;                                                                 // ip of the client or the server idk
+	_env["REQUEST_METHOD"]    = req.get_method();                                                           // get or post
+	_env["SCRIPT_NAME"]       = ""/*TODO*/;                                                                 // don't know for sure, probably just the path to cgi
+	_env["SERVER_NAME"]       = ""/*TODO*/;                                                                 // name of the server receiving the request
+	_env["SERVER_PORT"]       = ""/*TODO*/;                                                                 // request's port number
+	_env["SERVER_PROTOCOL"]   = "HTTP/1.1";                                                                 // always this
+	_env["SERVER_SOFTWARE"]   = "Webserv";                                                                  // always this
+	_env["REQUEST_URI"]       = req.get_request_uri();                                                      // full request
+	_env["REDIRECT_STATUS"]   = "200";                                                                      // always this
+	_env["SCRIPT_FILENAME"]   = ""/*TODO*/;                                                                 // full path to cgi
 	(void)serv;
 }
-
-/*
-TODO:	func map to char** for execve //TOTEST
-		func for prep_pipe -> see minishell
-		func exec cgi -> see minishell
-		look what the cgi is returning
-		func parse return cgi if needed
-*/
 
 char	**Cgi::map_to_tab(env_map const &env)
 {
@@ -98,13 +79,13 @@ int		Cgi::run()
 {
 	int			pipefd[2];
 	char		**tab;
-	char		buf[BUFFER_SIZE + 1];
+	char		buf[_buffer_size];
 	ssize_t		len;
 	pid_t		cpid;
 
 	if (pipe(pipefd) == -1)
 		return (http::InternalServerError);
-	tab = map_to_tab(env);
+	tab = map_to_tab(_env);
 	cpid = fork();
 	if (cpid == -1)
 	{
@@ -118,7 +99,7 @@ int		Cgi::run()
 		close(pipefd[0]);
 		dup2(pipefd[1], 1);
 		close(pipefd[1]);
-		const char *const av[] = {env["PATH_INFO"].c_str(), NULL};
+		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
 		execve(av[0], const_cast<char * const*>(av), tab);
 		std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
 		exit(1); // exit codes should be <= 255
@@ -129,7 +110,7 @@ int		Cgi::run()
 		dup2(pipefd[0], 0);
 		close(pipefd[0]);
 		wait(&cpid);
-		while ((len = read(0, &buf, BUFFER_SIZE - 1)) > 0)
+		while ((len = read(0, &buf, _buffer_size - 1)) > 0)
 		{
 			buf[len] = '\0';
 			_body += buf;
