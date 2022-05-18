@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 15:00:52 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/18 10:28:31 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,17 +179,20 @@ void		Response::_read_error_page(http::code error_code)
 
 void		Response::_getMethod()
 {
-	std::cout << _full_location << '\n';
-	if (_full_location == "html/cgi")
+	if (_is_a_cgi())
 	{
 		std::cout << "Test cgi\n";
 		Cgi cgi(_req, _serv);
 		cgi.run();
-		cgi.parse_body();
+		_body = cgi.parse_body();
 	}
-	//else
+	else
 		_read_file();
 	// cgi
+}
+
+bool		Response::_is_a_cgi() const {
+	return (_full_location == "html/cgi/env_cgi");
 }
 
 void		Response::_postMethod()
@@ -269,6 +272,7 @@ void		Response::_set_header()
 	for (HeaderMap::const_iterator it = _header_map.begin(); it != _header_map.end(); ++it)
 		oss << it->first << ": " << it->second << "\r\n";
 
+	// if (!_is_a_cgi())
 	oss << "\r\n";
 	_header = oss.str();
 }

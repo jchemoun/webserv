@@ -102,7 +102,7 @@ _IGREY              =   $'\033[47m
 
 #  ================================= Rules ==================================  #
 
-all: $(NAME)
+all: $(NAME) make_cgi
 
 $(NAME): $(OBJ)
 	@echo "\n$(NAME) : $(GEN)"
@@ -118,6 +118,9 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE_FILES)
 	@echo "$(_END)$(_GREEN)[OK]\t$(_UNDER)$(_YELLOW)\t"	\
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
+make_cgi:
+	@make -C cgi
+
 clean:
 	@rm -rf $(OBJ_PATH)
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(OBJ_PATH) \\n "$(_END)"
@@ -125,6 +128,7 @@ clean:
 fclean: clean
 	@rm -f $(NAME)
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
+	@make -C cgi fclean
 
 re: fclean all
 

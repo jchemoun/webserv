@@ -11,6 +11,9 @@
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
+#include <cstdio>
+#include <cstring>
+#include <vector>
 
 Cgi::Cgi(/* args */): env()
 {
@@ -36,7 +39,7 @@ Cgi::Cgi(Request const &req, Config::Server const &serv): env()
 	env["CONTENT_LENGTH"] = req.get_body().size();//				body_size
 	env["CONTENT_TYPE"] = file::get_mime(req.get_request_uri(), *serv.mime_types, serv.default_type);//	mime type of body
 	env["GATEWAY_INTERFACE"] = "CGI/1.1";//							always this
-	env["PATH_INFO"] = req.get_uri();//								request path
+	env["PATH_INFO"] = file::join(serv.root, req.get_uri());//								request path
 	env["QUERY_STRING"] = req.get_query_string();//					things after '?' in url
 	env["REMOTE_ADDR"] = ""/*TODO*/; //								ip of the client or the server idk
 	env["REQUEST_METHODE"] = req.get_method();//					get or post
@@ -117,14 +120,10 @@ int		Cgi::run()
 		close(pipefd[0]);
 		dup2(pipefd[1], 1);
 		close(pipefd[1]);
-		// execcgi
-		char **test;
-		test = new char*[2];
-		test[0] = new char[14];
-		test[0] = strcpy(test[0], "/usr/bin/env");
-		test[1] = NULL;
-		execve("/usr/bin/env", test, tab);
-		exit(500); //if return something went wrong
+		const char *const av[] = {env["PATH_INFO"].c_str(), NULL};
+		execve(av[0], const_cast<char * const*>(av), tab);
+		std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
+		exit(1); // exit codes should be <= 255
 	}
 	else
 	{
@@ -151,7 +150,7 @@ int		Cgi::run()
 std::string	Cgi::parse_body()
 {
 	std::cout << "BODY CGI " << _body << '\n';
-	return ("");
+	return (_body);
 }
 
 Cgi::~Cgi()

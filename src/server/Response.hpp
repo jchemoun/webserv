@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 15:01:01 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/18 10:28:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ private:
 	void		_set_header_map();
 	void		_set_header();
 	void		_set_full_response();
+	bool		_is_a_cgi() const;
 };
 
 #endif
