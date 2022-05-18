@@ -66,6 +66,12 @@ make build_image
 - [index of all directives](http://nginx.org/en/docs/dirindex.html)
 - [how is a request processed (listen, address, server_name, host...)](http://nginx.org/en/docs/http/request_processing.html)
 
+### CGI
+
+ - [htmlhelp](https://www.htmlhelp.com/faq/cgifaq.2.html)
+ - [tutorialspoint](https://www.tutorialspoint.com/cplusplus/cpp_web_programming.htm)
+
+
 ### More
 
 - [Notion](https://webserv42.notion.site/webserv42/Webserv-cbb6ab4136ba4b4c8cb4f98109d5fc1f)
