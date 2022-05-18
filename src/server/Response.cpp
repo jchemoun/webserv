@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 14:19:15 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/18 14:25:04 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,7 +198,7 @@ void		Response::_postMethod()
 	std::ofstream	new_file;
 	//cgi;
 
-	updir = (_serv.root +(*(--_serv.root.end()) == '/' ? "" : "/") +"upload/"); //file::join
+	updir = file::join(_serv.root, "upload/");
 	if (_full_location.substr(0, updir.length()) == updir)
 	{
 		if (file::get_type(updir) != file::FT_DIR)
