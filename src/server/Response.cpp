@@ -191,7 +191,7 @@ void		Response::_getMethod()
 }
 
 bool		Response::_is_a_cgi() const {
-	return (_full_location == "html/cgi/env_cgi");
+	return (_full_location.find("/cgi/") != std::string::npos);
 }
 
 void		Response::_postMethod()

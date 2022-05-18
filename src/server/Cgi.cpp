@@ -129,9 +129,9 @@ int		Cgi::run()
 		dup2(pipefd[0], 0);
 		close(pipefd[0]);
 		wait(&cpid);
-		while ((len = read(0, &buf, BUFFER_SIZE)) > 0)
+		while ((len = read(0, &buf, BUFFER_SIZE - 1)) > 0)
 		{
-			buf[BUFFER_SIZE] = '\0';
+			buf[len] = '\0';
 			_body += buf;
 		}
 		if (len == -1)
