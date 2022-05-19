@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 08:35:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 09:10:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include "file.hpp"
 #include "errno.h"
+#include "http_response_codes.hpp"
 
 const size_t	Cgi::_buffer_size = 4242;
 
@@ -59,33 +60,30 @@ Cgi::~Cgi() {
 ** ============================ Public functions ============================ **
 */
 
-int		Cgi::run()
+void	Cgi::run()
 {
-	if (_execute() == EXIT_SUCCESS) {
-		_parse_body();
-		return (EXIT_SUCCESS);
-	}
-	return (EXIT_FAILURE);
+	_execute();
+	_parse_body();
 }
 
 /*
 ** =========================== Private functions ============================ **
 */
 
-int		Cgi::_execute() {
+void	Cgi::_execute() {
 	int			pipefd[2];
 	char		buf[_buffer_size];
 	ssize_t		len;
 	pid_t		cpid;
 
 	if (pipe(pipefd) == -1)
-		return (EXIT_FAILURE);
+		throw (http::InternalServerError);
 	cpid = fork();
 	if (cpid == -1)
 	{
 		close(pipefd[0]);
 		close(pipefd[1]);
-		return (EXIT_FAILURE);
+		throw (http::InternalServerError);
 	}
 	else if (cpid == 0)
 	{
@@ -94,14 +92,16 @@ int		Cgi::_execute() {
 		close(pipefd[1]);
 		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
 		execve(av[0], const_cast<char * const*>(av), _env_tab);
-		std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
-		write(pipefd[1], error.c_str(), error.size());
+		// std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
+		// write(pipefd[1], error.c_str(), error.size());
 		exit(EXIT_FAILURE);                            // exit codes should be <= 255
+		// TODO: quit properly
 	}
 	else
 	{
 		close(pipefd[1]);
 		wait(&cpid);
+		// TODO: throw if child failed
 		while ((len = read(pipefd[0], &buf, _buffer_size - 1)) > 0)
 		{
 			buf[len] = '\0';
@@ -110,8 +110,7 @@ int		Cgi::_execute() {
 	}
 	close(pipefd[0]);
 	if (len == -1)
-		return (EXIT_FAILURE);
-	return (EXIT_SUCCESS);
+		throw (http::InternalServerError);
 }
 
 void	Cgi::_parse_body()

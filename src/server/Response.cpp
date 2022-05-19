@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 07:18:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 09:09:30 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,17 +179,17 @@ void		Response::_read_error_page(http::code error_code)
 
 void		Response::_getMethod()
 {
-	if (_is_a_cgi())
-	{
-		Cgi cgi(_req, _serv);
-		if (cgi.run() == EXIT_SUCCESS) {
+	if (_is_a_cgi()) {
+		try {
+			Cgi cgi(_req, _serv);
+			cgi.run();
 			std::swap(cgi._body, _body);
 			for (Cgi::Header::const_iterator cit = cgi._header.begin(); cit != cgi._header.end(); ++cit) {
 				_header_map[cit->first] = cit->second;
 			}
+		} catch (http::code error_code) { // InternalServerError
+			_read_error_page(error_code);
 		}
-		else
-			_code = http::InternalServerError;
 	}
 	else
 		_read_file();

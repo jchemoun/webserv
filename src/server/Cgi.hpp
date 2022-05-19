@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 08:27:07 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 08:59:49 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,15 @@ private:
 public:
 	std::string		_body;
 	Header			_header;
+
 	Cgi(Request const &req, Config::Server const &serv);
 	~Cgi();
 
-	int			run();
+	void		run();
 
 private:
 	Cgi();
-	int			_execute();
+	void		_execute();
 	void		_parse_body();
 
 	// generic utils
