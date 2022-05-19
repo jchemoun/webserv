@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 10:28:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 10:06:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,8 @@ private:
 	void		_getMethod();
 	void		_postMethod();
 	void		_deleteMethod();
+
+	void		_run_cgi();
 
 	void		_build_error_page();
 
