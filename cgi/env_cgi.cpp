@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/18 08:33:14 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/18 19:26:02 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 18:16:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,22 +48,19 @@ int main () {
 		<< "<title>CGI Environment Variables</title>\n"
 		<< "</head>\n"
 		<< "<body>\n"
-		<< "<table border = \"0\" cellspacing = \"2\">";
+		<< "<table border=\"1px solid black\">";
 
 	for (size_t i = 0; i < sizeof ENV / sizeof ENV[0]; ++i) {
-		std::cout << "<tr><td>" << ENV[i] << "</td><td>";
+		
+		const char *value = getenv(ENV[i].c_str()); // attempt to retrieve value of environment variable
 
-		// attempt to retrieve value of environment variable
-		const char *value = getenv(ENV[i].c_str());
-		if (value) {
-			std::cout << value;
-		} else {
-			std::cout << "-";
-		}
-		std::cout << "</td></tr>\n";
+		std::cout
+			<< "<tr><td>" << ENV[i] << "</td><td>"
+			<< (value ? value : "-")
+			<< "</td></tr>\n";
 	}
 
-	std::cout << "</table><\n";
+	std::cout << "</table>\n";
 	std::cout << "</body>\n";
 	std::cout << "</html>\n";
 

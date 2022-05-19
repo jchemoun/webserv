@@ -38,7 +38,7 @@ public:
 	Header			header;
 	std::string		body;
 
-	Cgi(Request const &req);
+	Cgi(Request const &req, Config::Connection const &client_info);
 	~Cgi();
 
 	void		run();

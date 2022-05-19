@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:55:57 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/19 12:50:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 18:19:17 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ namespace file {
 	e_type		get_type(std::string const &path);
 	bool		has_read_perm(std::string const &path);
 	bool		has_write_perm(std::string const &path);
+	bool		has_exec_perm(std::string const &path);
 	std::string	time_last_change(std::string const &file);
 	long		size(std::string const &file);
 	std::string get_extension(std::string const &path);

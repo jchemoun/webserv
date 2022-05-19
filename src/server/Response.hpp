@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 10:06:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 17:42:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,23 +40,24 @@ public:
 	typedef std::map<std::string, std::string>			HeaderMap;
 
 private:
-	HeaderMap				_header_map;
-	std::string				_header;
-	std::string				_body;
-	std::string				_full_response;
-	http::code				_code;
-	bool					_autoindex;
-	std::string const		_request_uri;
-	std::string				_uri;
-	std::string				_query_string;
-	std::string				_full_location;
-	Config::Server const	&_serv;
+	HeaderMap					_header_map;
+	std::string					_header;
+	std::string					_body;
+	std::string					_full_response;
+	http::code					_code;
+	bool						_autoindex;
+	std::string const			_request_uri;
+	std::string					_uri;
+	std::string					_query_string;
+	std::string					_full_location;
+	Config::Server const		&_serv;
+	Config::Connection const	&_client_info;
 
-	static const MethodMap	_methods;
-	Request const			&_req;
+	static const MethodMap		_methods;
+	Request const				&_req;
 
 public:
-	Response(Request const &req);
+	Response(Request const &req, Config::Connection const &client_info);
 	~Response();
 
 	bool			is_large_file;

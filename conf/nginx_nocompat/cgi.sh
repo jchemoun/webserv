@@ -13,3 +13,5 @@ curl -i localhost:8080/cgi/env_cgi | grep 'Content-Type: text/html' # should be 
 # Check errors
 curl -i localhost:8080/cgi/fail_cgi.sh | grep 'HTTP/1.1 500' # cgi script exists and is executable but fails
 curl -i localhost:8080/cgi/fail_cgi.sh | grep '<title>500' # idem but body check
+curl -i localhost:8080/cgi/fdsagsafdgf | grep 'HTTP/1.1 404' # cgi script exists and is executable but fails
+curl -i localhost:8080/cgi/not_executable_file | grep 'HTTP/1.1 403' # cgi script exists and is executable but fails

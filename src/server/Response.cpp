@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 12:58:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 17:43:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 ** ============================= Public methods ============================= **
 */
 
-Response::Response(Request const &req):
+Response::Response(Request const &req, Config::Connection const &client_info):
 	_header			(),
 	_body			(),
 	_full_response	(),
@@ -29,6 +29,7 @@ Response::Response(Request const &req):
 	_query_string	(req.get_query_string()),
 	_full_location	(file::join(req.current_server->root, _uri)),
 	_serv			(*req.current_server),
+	_client_info	(client_info),
 	_req			(req),
 	is_large_file	(false),
 	size_file		(0)
@@ -179,7 +180,7 @@ void		Response::_read_error_page(http::code error_code)
 
 void		Response::_run_cgi() {
 	try {
-		Cgi	cgi(_req);
+		Cgi	cgi(_req, _client_info);
 		cgi.run();
 		std::swap(cgi.body, _body);
 		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {

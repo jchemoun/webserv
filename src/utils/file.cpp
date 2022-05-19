@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:59:54 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/19 12:51:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 18:19:52 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,17 @@ bool	file::has_write_perm(std::string const &path) {
 	if (stat(path.c_str(), &s) == 0)
 	{
 		if (s.st_mode & S_IWOTH)
+			return (true);
+	}
+	return (false);
+}
+
+bool	file::has_exec_perm(std::string const &path) {
+	struct stat	s;
+
+	if (stat(path.c_str(), &s) == 0)
+	{
+		if (s.st_mode & S_IXOTH)
 			return (true);
 	}
 	return (false);

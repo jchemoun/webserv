@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 13:02:21 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 17:42:22 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,7 @@ bool	Webserv::handle_recv(int client_fd)
 bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
-	Response		response(client.request);
+	Response		response(client.request, client.accept_info);
 	// need to get right server to response, todo after merge of 2 class config
 	// need to create header, todo after looking at nginx response header && merge of class config
 
