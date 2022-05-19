@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 09:38:56 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 10:37:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,6 @@ private:
 	env_map				_env;
 	char				**_env_tab;
 	int					_pipefd[2];
-	// int					&_pipe_in;
-	// int					&_pipe_out;
 
 public:
 	std::string		_body;
@@ -52,6 +50,7 @@ private:
 	// generic utils
 	static char	**_map_to_tab(env_map const &env);
 	static void	_delete_tab(char **tab);
+	static void	_close_pipe(int &fd);
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 09:42:24 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 10:41:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,9 @@ const size_t	Cgi::_buffer_size = 4242;
 
 Cgi::Cgi(Request const &req, Config::Server const &serv):
 	_env_tab(NULL)
-	// _pipe_in(_pipefd[0]),
-	// _pipe_out(_pipefd[1])
 {
-	// _pipe_in = -1;
-	// _pipe_out = -1;
+	_pipefd[0] = -1;
+	_pipefd[1] = -1;
 
 	_env["CONTENT_LENGTH"]    = req.get_body().size();                                                      // body_size
 	_env["CONTENT_TYPE"]      = file::get_mime(req.get_request_uri(), *serv.mime_types, serv.default_type); // mime type of body
@@ -55,16 +53,15 @@ Cgi::Cgi(Request const &req, Config::Server const &serv):
 																											//
 	_env_tab = _map_to_tab(_env);
 
-
 	(void)serv;
 }
 
 Cgi::~Cgi() {
 	_delete_tab(_env_tab);
-	// if (_pipe_in > 0)
-	// 	close(_pipe_in);
-	// if (_pipe_out > 0)
-	// 	close(_pipe_out);
+	if (_pipefd[0] > 0)
+		close(_pipefd[0]);
+	if (_pipefd[1] > 0)
+		close(_pipefd[1]);
 }
 
 /*
@@ -91,16 +88,12 @@ void	Cgi::_execute() {
 
 	cpid = fork();
 	if (cpid == -1)
-	{
-		close(_pipefd[0]);
-		close(_pipefd[1]);
 		throw (http::InternalServerError);
-	}
 	else if (cpid == 0)
 	{
-		close(_pipefd[0]);
+		_close_pipe(_pipefd[0]);
 		dup2(_pipefd[1], 1);
-		close(_pipefd[1]);
+		_close_pipe(_pipefd[1]);
 		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
 		execve(av[0], const_cast<char * const*>(av), _env_tab);
 		// std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
@@ -110,14 +103,12 @@ void	Cgi::_execute() {
 	}
 	else
 	{
-		close(_pipefd[1]);
+		_close_pipe(_pipefd[1]);
 		int	wait_status;
 		if (waitpid(cpid, &wait_status, 0) == -1) {
-			close(_pipefd[0]);
 			throw http::InternalServerError;
 		}
 		if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status) != EXIT_SUCCESS) {
-			close(_pipefd[0]);
 			throw http::InternalServerError;
 		}
 		// TODO: loop if !WIFEXITED
@@ -126,8 +117,8 @@ void	Cgi::_execute() {
 			buf[len] = '\0';
 			_body += buf;
 		}
+		_close_pipe(_pipefd[0]);
 	}
-	close(_pipefd[0]);
 	if (len == -1)
 		throw (http::InternalServerError);
 }
@@ -174,3 +165,5 @@ void	Cgi::_delete_tab(char **tab)
 	}
 	delete[] tab;
 }
+
+void	Cgi::_close_pipe(int &fd) { close (fd); fd = -1; }

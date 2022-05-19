@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 10:07:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 10:14:10 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,7 +311,6 @@ void		Response::_set_header()
 	for (HeaderMap::const_iterator it = _header_map.begin(); it != _header_map.end(); ++it)
 		oss << it->first << ": " << it->second << "\r\n";
 
-	// if (!_is_a_cgi())
 	oss << "\r\n";
 	_header = oss.str();
 }
