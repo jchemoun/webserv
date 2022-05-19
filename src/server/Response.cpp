@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 12:58:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 15:17:30 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,6 @@ void	Response::_create_auto_index_page()
 		_full_location += '/';
 		return (_read_error_page(http::MovedPermanently));
 	}
-	// probably error need check if exist && exec perm
 	if (file::has_read_perm(_full_location) == false)
 		return (_read_error_page(http::Forbidden));
 	if ((dir = opendir(_full_location.c_str())) == NULL)
@@ -125,7 +124,6 @@ void	Response::_read_file()
 			std::cout << "WTF IS THIS\n";
 			return (_read_error_page(http::Forbidden));
 		}
-		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 	}
 	else if (file::get_type(_full_location) == file::FT_FILE)
 	{
@@ -162,7 +160,7 @@ void		Response::_read_error_page(http::code error_code)
 	if (error_page_ptr)
 	{
 		std::string	error_page = file::join(_serv.root, *error_page_ptr);
-		if ((file::get_type(error_page) == file::FT_FILE) && file::has_read_perm(error_page)) // nginx actually search index if it is a folder
+		if ((file::get_type(error_page) == file::FT_FILE) && file::has_read_perm(error_page)) // nginx actually search index if it is a folder -> not handle && will not
 		{
 			file.open(error_page.c_str(), std::ifstream::in);
 			if (file.is_open()) {
@@ -248,10 +246,7 @@ void		Response::_deleteMethod()
 	else if (file::has_write_perm(_full_location) == false)
 		_read_error_page(http::Forbidden);
 	else if (remove(_full_location.c_str()) != -1)
-	{
-		_code = http::NoContent; // or 200 and return something;
-		//body = "";
-	}
+		_code = http::NoContent;
 	else
 	{
 		std::cerr << "error delete\n";
@@ -291,14 +286,14 @@ const Response::MethodMap	Response::_methods = Response::_init_method_map();
 void	Response::_set_header_map()
 {
 	_header_map["Server"]         = "wevserv/0.1 (ubuntu)";
-	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));//utils::to_str(is_large_file ? file::size(location) : body.size());
+	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
 		_header_map["Content-Type"] = _serv.get_mime(_uri);
 
 	if (_code == 301)
-		_header_map["location"] = _uri.substr(_serv.root.length()); // todo fill host + location
+		_header_map["location"] = _uri.substr(_serv.root.length()); // TODO fill host + location
 }
 
 void		Response::_set_header()

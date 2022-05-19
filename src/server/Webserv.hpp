@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/13 23:13:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 15:17:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ private:
 	int		socket_init(Config::Connection &sock);
 
 	//handle
-	bool	handle_event_error();
+	bool	handle_event_error(int client_fd);
 	bool	handle_new_client(int serv_fd);
 	bool	handle_recv(int client_fd);
 	bool	handle_send(int client_fd);

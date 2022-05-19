@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 13:02:21 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 15:18:14 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ void	Webserv::run()
 			else if (event & EPOLLOUT)
 				handle_send(event_fd);
 			else if (event & EPOLLERR || event & EPOLLHUP)
-				handle_event_error();
+				handle_event_error(event_fd);
 			else
 				std::cerr << "Unknown epoll event: " << event << std::endl;
 		}
@@ -72,9 +72,15 @@ void	Webserv::get_config(int ac, const char **av) {
 	}
 }
 
-bool	Webserv::handle_event_error()
+bool	Webserv::handle_event_error(int event_fd)
 {
 	std::cout << "epoll event error (EPOLLERR or EPOLLHUP)\n"; // TODO: better error handling
+	if (is_serv(event_fd))
+	{
+		//restart serv or throw
+		return (true);
+	}
+	delete_client(event_fd);
 	return (true);
 }
 
@@ -113,12 +119,12 @@ bool	Webserv::handle_recv(int client_fd)
 	std::cout << color::bold << "> Incoming reception of len " << len << color::reset << " on client fd: " << client_fd << "\n";
 	if (len == -1)
 	{
-		std::cerr << color::red << "error recv\n" << color::reset;               // TODO: better recv error handling
+		std::cerr << color::red << "error recv\n" << color::reset;
+		delete_client(client_fd);
 		return (false);
 	}
 	else if (len == 0)
 	{
-		//connection close don't know what to do exactly;
 		delete_client(client_fd);
 		return (true);
 	}
@@ -128,7 +134,6 @@ bool	Webserv::handle_recv(int client_fd)
 		request.append_unparsed_request(buffer, len);
 		request.parse_request(server_map, default_server_map);
 		if (request.is_complete()) {
-			//if response needed set client to epollout
 			epoll_mod(client_fd, EPOLLOUT);
 		}
 	}
@@ -144,8 +149,6 @@ bool	Webserv::handle_send(int client_fd)
 {
 	Client			&client = clients[client_fd];
 	Response		response(client.request);
-	// need to get right server to response, todo after merge of 2 class config
-	// need to create header, todo after looking at nginx response header && merge of class config
 
 	clients[client_fd].request.reset();
 	if (response.is_large_file)
@@ -174,7 +177,7 @@ bool	Webserv::handle_send(int client_fd)
 			return (false);
 		}
 	}
-	else // TODO: what to do in case of send error
+	else
 	{
 		if (send(client_fd, response.c_str(), response.size(), 0) < 0)
 		{
@@ -192,7 +195,7 @@ bool	Webserv::handle_send(int client_fd)
 */
 bool	Webserv::epoll_init()
 {
-	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0) // to fix max fd can be more probably not
+	if ((epfd = epoll_create(conf.servers.size() + 1)) < 0)
 		throw std::runtime_error("epoll create error");
 	for (Connections::const_iterator cit = connections.begin(); cit != connections.end(); ++cit)
 		epoll_add(cit->second.fd, EPOLLIN);
