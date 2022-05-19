@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/18 19:17:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 07:19:19 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ Cgi::Cgi(Request const &req, Config::Server const &serv)
 	(void)serv;
 }
 
-char	**Cgi::map_to_tab(env_map const &env)
+char	**Cgi::_map_to_tab(env_map const &env)
 {
 	char	**ret;
 	size_t	i;
@@ -62,7 +62,7 @@ char	**Cgi::map_to_tab(env_map const &env)
 	return (ret);
 }
 
-void	Cgi::delete_tab(char **tab)
+void	Cgi::_delete_tab(char **tab)
 {
 	size_t i;
 
@@ -75,8 +75,7 @@ void	Cgi::delete_tab(char **tab)
 	delete[] tab;
 }
 
-int		Cgi::run()
-{
+int		Cgi::_execute() {
 	int			pipefd[2];
 	char		**tab;
 	char		buf[_buffer_size];
@@ -84,15 +83,15 @@ int		Cgi::run()
 	pid_t		cpid;
 
 	if (pipe(pipefd) == -1)
-		return (http::InternalServerError);
-	tab = map_to_tab(_env);
+		return (EXIT_FAILURE);
+	tab = _map_to_tab(_env);
 	cpid = fork();
 	if (cpid == -1)
 	{
-		delete_tab(tab);
+		_delete_tab(tab);
 		close(pipefd[0]);
 		close(pipefd[1]);
-		return (http::InternalServerError);
+		return (EXIT_FAILURE);
 	}
 	else if (cpid == 0)
 	{
@@ -116,13 +115,22 @@ int		Cgi::run()
 		}
 	}
 	close(pipefd[0]);
-	delete_tab(tab);
+	_delete_tab(tab);
 	if (len == -1)
-		return (http::InternalServerError);
-	return (http::Ok);
+		return (EXIT_FAILURE);
+	return (EXIT_SUCCESS);
 }
 
-void	Cgi::parse_body()
+int		Cgi::run()
+{
+	if (_execute() == EXIT_SUCCESS) {
+		_parse_body();
+		return (EXIT_SUCCESS);
+	}
+	return (EXIT_FAILURE);
+}
+
+void	Cgi::_parse_body()
 {
 	Request req;
 	req.parse_cgi(_body);
