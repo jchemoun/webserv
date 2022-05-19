@@ -6,14 +6,14 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 10:37:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 11:27:35 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CGI_HPP
 # define CGI_HPP
 
-#include <cstddef>
+# include <cstddef>
 # include <map>
 # include <string>
 # include <string.h>
@@ -32,10 +32,11 @@ private:
 	env_map				_env;
 	char				**_env_tab;
 	int					_pipefd[2];
+	std::string			_output;
 
 public:
-	std::string		_body;
-	Header			_header;
+	Header			header;
+	std::string		body;
 
 	Cgi(Request const &req, Config::Server const &serv);
 	~Cgi();
@@ -45,7 +46,9 @@ public:
 private:
 	Cgi();
 	void		_execute();
-	void		_parse_body();
+	void		_child_execute();
+	void		_parent_wait_and_read_pipe(int child_pid);
+	void		_parse_output();
 
 	// generic utils
 	static char	**_map_to_tab(env_map const &env);

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 10:41:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 11:27:35 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include "file.hpp"
 #include "errno.h"
 #include "http_response_codes.hpp"
+#include "color.hpp"
 
 const size_t	Cgi::_buffer_size = 4242;
 
@@ -71,64 +72,74 @@ Cgi::~Cgi() {
 void	Cgi::run()
 {
 	_execute();
-	_parse_body();
+	_parse_output();
 }
 
 /*
 ** =========================== Private functions ============================ **
 */
 
-void	Cgi::_execute() {
-	char		buf[_buffer_size];
-	ssize_t		len;
+void	Cgi::_execute()
+{
 	pid_t		cpid;
 
 	if (pipe(_pipefd) == -1)
 		throw (http::InternalServerError);
 
-	cpid = fork();
-	if (cpid == -1)
+	if ((cpid = fork()) == -1)
 		throw (http::InternalServerError);
+
 	else if (cpid == 0)
-	{
-		_close_pipe(_pipefd[0]);
-		dup2(_pipefd[1], 1);
-		_close_pipe(_pipefd[1]);
-		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
-		execve(av[0], const_cast<char * const*>(av), _env_tab);
-		// std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
-		// write(pipefd[1], error.c_str(), error.size());
-		exit(EXIT_FAILURE);                            // exit codes should be <= 255
-		// TODO: quit properly
-	}
+		_child_execute();
 	else
-	{
-		_close_pipe(_pipefd[1]);
-		int	wait_status;
-		if (waitpid(cpid, &wait_status, 0) == -1) {
-			throw http::InternalServerError;
-		}
-		if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status) != EXIT_SUCCESS) {
-			throw http::InternalServerError;
-		}
-		// TODO: loop if !WIFEXITED
-		while ((len = read(_pipefd[0], &buf, _buffer_size - 1)) > 0)
-		{
-			buf[len] = '\0';
-			_body += buf;
-		}
-		_close_pipe(_pipefd[0]);
+		_parent_wait_and_read_pipe(cpid);
+}
+
+void	Cgi::_child_execute()
+{
+	_close_pipe(_pipefd[0]);
+	dup2(_pipefd[1], STDOUT_FILENO);
+	_close_pipe(_pipefd[1]);
+
+	const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
+	execve(av[0], const_cast<char * const*>(av), _env_tab);
+
+	std::cerr << color::red << "execve FAIL:" << std::strerror(errno) << color::reset << std::endl;
+	exit(EXIT_FAILURE);
+
+	// TODO: quit properly?
+}
+
+void	Cgi::_parent_wait_and_read_pipe(int child_pid)
+{
+	char		buf[_buffer_size];
+	ssize_t		len;
+	int			wait_status;
+
+	_close_pipe(_pipefd[1]);
+	if (waitpid(child_pid, &wait_status, 0) == -1) {
+		throw http::InternalServerError;
 	}
+	if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status) != EXIT_SUCCESS) {
+		throw http::InternalServerError;
+	}
+	// TODO: loop if !WIFEXITED
+	while ((len = read(_pipefd[0], &buf, _buffer_size - 1)) > 0)
+	{
+		buf[len] = '\0';
+		_output += buf;
+	}
+	_close_pipe(_pipefd[0]);
 	if (len == -1)
 		throw (http::InternalServerError);
 }
 
-void	Cgi::_parse_body()
+void	Cgi::_parse_output()
 {
 	Request req;
-	req.parse_cgi(_body);
-	std::swap(req._body, _body);
-	std::swap(req._header, _header);
+	req.parse_cgi(_output);
+	std::swap(req._body, body);
+	std::swap(req._header, header);
 }
 
 /*

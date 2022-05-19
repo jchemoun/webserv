@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 10:14:10 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 11:31:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,10 +179,10 @@ void		Response::_read_error_page(http::code error_code)
 
 void		Response::_run_cgi() {
 	try {
-		Cgi cgi(_req, _serv);
+		Cgi	cgi(_req, _serv);
 		cgi.run();
-		std::swap(cgi._body, _body);
-		for (Cgi::Header::const_iterator cit = cgi._header.begin(); cit != cgi._header.end(); ++cit) {
+		std::swap(cgi.body, _body);
+		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {
 			_header_map[cit->first] = cit->second;
 		}
 	} catch (http::code error_code) { // InternalServerError
@@ -286,7 +286,7 @@ Response::MethodMap		Response::_init_method_map()
 	return (methods);
 }
 
-const Response::MethodMap	Response::_methods       = Response::_init_method_map();
+const Response::MethodMap	Response::_methods = Response::_init_method_map();
 
 void	Response::_set_header_map()
 {
