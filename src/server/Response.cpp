@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 14:25:04 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/19 12:58:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,7 @@ void		Response::_read_error_page(http::code error_code)
 				buf << file.rdbuf();
 				file.close();
 				_body = buf.str();
-				_header_map["Content-Type"] = file::get_mime(error_page, *_serv.mime_types, _serv.default_type);
+				_header_map["Content-Type"] = _serv.get_mime(error_page);
 				return ;
 			}
 		}
@@ -177,19 +177,29 @@ void		Response::_read_error_page(http::code error_code)
 	_build_error_page();
 }
 
+void		Response::_run_cgi() {
+	try {
+		Cgi	cgi(_req);
+		cgi.run();
+		std::swap(cgi.body, _body);
+		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {
+			_header_map[cit->first] = cit->second;
+		}
+	} catch (http::code error_code) { // InternalServerError
+		_read_error_page(error_code);
+	}
+}
+
 void		Response::_getMethod()
 {
-	std::cout << _full_location << '\n';
-	if (_full_location == "html/cgi")
-	{
-		std::cout << "Test cgi\n";
-		Cgi cgi(_req, _serv);
-		cgi.run();
-		cgi.parse_body();
-	}
-	//else
+	if (_is_a_cgi())
+		_run_cgi();
+	else
 		_read_file();
-	// cgi
+}
+
+bool		Response::_is_a_cgi() const {
+	return (_full_location.find("/cgi/") != std::string::npos);
 }
 
 void		Response::_postMethod()
@@ -233,7 +243,6 @@ void		Response::_postMethod()
 
 void		Response::_deleteMethod()
 {
-	//(void)full_location;
 	if (file::get_type(_full_location) == file::FT_UNKOWN)
 		_read_error_page(http::NotFound);
 	else if (file::has_write_perm(_full_location) == false)
@@ -277,7 +286,7 @@ Response::MethodMap		Response::_init_method_map()
 	return (methods);
 }
 
-const Response::MethodMap	Response::_methods       = Response::_init_method_map();
+const Response::MethodMap	Response::_methods = Response::_init_method_map();
 
 void	Response::_set_header_map()
 {
@@ -286,7 +295,7 @@ void	Response::_set_header_map()
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
-		_header_map["Content-Type"] = file::get_mime(_uri, *_serv.mime_types, _serv.default_type);
+		_header_map["Content-Type"] = _serv.get_mime(_uri);
 
 	if (_code == 301)
 		_header_map["location"] = _uri.substr(_serv.root.length()); // todo fill host + location

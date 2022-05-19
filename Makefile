@@ -102,7 +102,7 @@ _IGREY              =   $'\033[47m
 
 #  ================================= Rules ==================================  #
 
-all: $(NAME)
+all: $(NAME) make_cgi
 
 $(NAME): $(OBJ)
 	@echo "\n$(NAME) : $(GEN)"
@@ -118,6 +118,9 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE_FILES)
 	@echo "$(_END)$(_GREEN)[OK]\t$(_UNDER)$(_YELLOW)\t"	\
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
+make_cgi:
+	@make -C cgi
+
 clean:
 	@rm -rf $(OBJ_PATH)
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(OBJ_PATH) \\n "$(_END)"
@@ -125,6 +128,7 @@ clean:
 fclean: clean
 	@rm -f $(NAME)
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
+	@make -C cgi fclean
 
 re: fclean all
 
@@ -170,7 +174,7 @@ attach:
 nginx:
 	$(DOCKER_RUN_INTERACTIVE) nginx $(CONF)
 
-test:
+test: compile
 	@if [ -z "$(CONF)" ]; then \
 		for file in conf/*.conf; do \
 		make --silent test_one CONF=$$file; \
@@ -180,9 +184,16 @@ test:
 		done; \
 		else \
 		make test_one CONF=$(CONF); \
+		exit $?; \
 		fi
+	@for file in conf/nginx_nocompat/*.conf; do \
+		make --silent test_nocompat CONF=$$file; \
+		if [ -d failed_tests ]; then \
+		exit 1; \
+		fi; \
+		done
 
-test_one: compile
+test_one:
 	@mkdir -p failed_tests
 	@rm -f failed_tests/nginx_test failed_tests/nginx_test_stderr failed_tests/webserv_test failed_tests/webserv_test_stderr;
 	@printf "\e[33m✓ Running $(CONF) on nginx...\e[0m\n";
@@ -199,5 +210,16 @@ test_one: compile
 		exit 1; \
 		fi
 	@rm -r failed_tests;
+
+test_nocompat:
+	@printf "\e[33m✓ Running $(CONF) \e[35mnocompat\e[33m test on webserv...\e[0m\n";
+	@$(DOCKER_RUN) test nocompat $(CONF); \
+		if [ $$? -eq 0 ]; then \
+		printf "\e[34m✓ $(CONF) tests passed\e[0m\n"; \
+		else \
+		printf "💥 \e[1;38;5;202m$(CONF) tests failed\e[0m\n"; \
+		cat failed_tests/nocompat_test; \
+		exit 1; \
+		fi
 
 .PHONY: all clean fclean re

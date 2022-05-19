@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 12:47:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/18 19:04:11 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,19 @@ void	Request::parse_request(ServerMap &serverMap, DefaultServerMap &def_server_m
 		_status_code = status_code;
 		if (!current_server)
 			_resolve_server(serverMap, def_server_map);
+	}
+}
+
+void	Request::parse_cgi(std::string &output) {
+	std::swap(_raw_str, output);
+	// _raw_str = output;
+	std::cout << "Parse cgi: \n" << _raw_str;
+	try {
+		_parse_header();
+		_body = _raw_str.substr(_index);
+	} catch (http::code status_code) {
+		std::cerr << color::red << "Parsing request error: " << status_code << color::reset << "\n";
+		_status_code = status_code;
 	}
 }
 

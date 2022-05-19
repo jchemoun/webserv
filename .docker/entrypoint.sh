@@ -22,7 +22,7 @@ fi
 # set -x
 wait_server_up() {
   # while ! nc -z localhost 80; do
-    sleep 0.1
+    sleep 0.3
   # done
 }
 run_on_nginx() {
@@ -45,6 +45,21 @@ run_on_webserv() {
   wait_server_up
   bash "$tests" > $out 2> ${out}_stderr
   kill $pid
+}
+run_nocompat() {
+  conf="$1"
+  tests="${conf:r}.sh"
+  out="failed_tests/nocompat_test"; mkdir -p failed_tests; rm -f $out$ {out}_webserv
+  if [ ! -f "$conf" ]; then printf "\e[1;31m$conf file not found\e[0m\n"; exit 1; fi
+  ./webserv "$conf" &> ${out}_webserv &
+  pid=$!
+  wait_server_up
+  bash "$tests" &> $out
+  [ $? = 0 ] && success=true || success=false
+  kill $pid
+  [ $success = false ] && exit 1
+  rm -f $out ${out}_webserv
+  rm -r failed_tests
 }
 
 # ================================== Rules =================================== #
@@ -107,6 +122,10 @@ elif [ "$1" = "test" ] && [ "$2" = "nginx" ] && [ $# -eq 3 ]; then
 elif [ "$1" = "test" ] && [ "$2" = "webserv" ] && [ $# -eq 3 ]; then
   make --silent
   run_on_webserv $3
+
+elif [ "$1" = "test" ] && [ "$2" = "nocompat" ] && [ $# -eq 3 ]; then
+  make --silent
+  run_nocompat $3
 
 else
   printf "\e[1;31mUnknown instruction:\e[0m $1 $2 $3...\n"
