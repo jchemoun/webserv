@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 07:19:19 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 08:27:07 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,9 @@ public:
 	typedef std::map<std::string, std::string>	Header;
 
 private:
-	static const	size_t	_buffer_size;
-	env_map			_env;
+	static const size_t	_buffer_size;
+	env_map				_env;
+	char				**_env_tab;
 
 public:
 	std::string		_body;
@@ -43,8 +44,10 @@ private:
 	Cgi();
 	int			_execute();
 	void		_parse_body();
-	char		**_map_to_tab(env_map const &env);
-	void		_delete_tab(char **tab);
+
+	// generic utils
+	static char	**_map_to_tab(env_map const &env);
+	static void	_delete_tab(char **tab);
 };
 
 #endif

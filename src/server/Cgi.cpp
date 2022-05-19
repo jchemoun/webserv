@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 07:19:19 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 08:35:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,10 @@
 #include "errno.h"
 
 const size_t	Cgi::_buffer_size = 4242;
+
+/*
+** ======================== Constructor / Destructor ======================== **
+*/
 
 Cgi::Cgi(Request const &req, Config::Server const &serv)
 {
@@ -41,8 +45,86 @@ Cgi::Cgi(Request const &req, Config::Server const &serv)
 	_env["REQUEST_URI"]       = req.get_request_uri();                                                      // full request
 	_env["REDIRECT_STATUS"]   = "200";                                                                      // always this
 	_env["SCRIPT_FILENAME"]   = ""/*TODO*/;                                                                 // full path to cgi
+																											//
+	_env_tab = _map_to_tab(_env);
+
 	(void)serv;
 }
+
+Cgi::~Cgi() {
+	_delete_tab(_env_tab);
+}
+
+/*
+** ============================ Public functions ============================ **
+*/
+
+int		Cgi::run()
+{
+	if (_execute() == EXIT_SUCCESS) {
+		_parse_body();
+		return (EXIT_SUCCESS);
+	}
+	return (EXIT_FAILURE);
+}
+
+/*
+** =========================== Private functions ============================ **
+*/
+
+int		Cgi::_execute() {
+	int			pipefd[2];
+	char		buf[_buffer_size];
+	ssize_t		len;
+	pid_t		cpid;
+
+	if (pipe(pipefd) == -1)
+		return (EXIT_FAILURE);
+	cpid = fork();
+	if (cpid == -1)
+	{
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return (EXIT_FAILURE);
+	}
+	else if (cpid == 0)
+	{
+		close(pipefd[0]);
+		dup2(pipefd[1], 1);
+		close(pipefd[1]);
+		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
+		execve(av[0], const_cast<char * const*>(av), _env_tab);
+		std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
+		write(pipefd[1], error.c_str(), error.size());
+		exit(EXIT_FAILURE);                            // exit codes should be <= 255
+	}
+	else
+	{
+		close(pipefd[1]);
+		wait(&cpid);
+		while ((len = read(pipefd[0], &buf, _buffer_size - 1)) > 0)
+		{
+			buf[len] = '\0';
+			_body += buf;
+		}
+	}
+	close(pipefd[0]);
+	if (len == -1)
+		return (EXIT_FAILURE);
+	return (EXIT_SUCCESS);
+}
+
+void	Cgi::_parse_body()
+{
+	Request req;
+	req.parse_cgi(_body);
+	std::swap(req._body, _body);
+	std::swap(req._header, _header);
+}
+
+/*
+** ============================= Generic utils ============================== **
+*/
 
 char	**Cgi::_map_to_tab(env_map const &env)
 {
@@ -53,7 +135,7 @@ char	**Cgi::_map_to_tab(env_map const &env)
 	i = 0;
 	for (env_map::const_iterator cit = env.begin(); cit != env.end(); cit++)
 	{
-		std::string	str = (*cit).first + '=' + (*cit).second;
+		std::string	str = cit->first + '=' + cit->second;
 		ret[i] = new char[str.length() + 1];
 		ret[i] = strcpy(ret[i], str.c_str());
 		i++;
@@ -73,71 +155,4 @@ void	Cgi::_delete_tab(char **tab)
 		i++;
 	}
 	delete[] tab;
-}
-
-int		Cgi::_execute() {
-	int			pipefd[2];
-	char		**tab;
-	char		buf[_buffer_size];
-	ssize_t		len;
-	pid_t		cpid;
-
-	if (pipe(pipefd) == -1)
-		return (EXIT_FAILURE);
-	tab = _map_to_tab(_env);
-	cpid = fork();
-	if (cpid == -1)
-	{
-		_delete_tab(tab);
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return (EXIT_FAILURE);
-	}
-	else if (cpid == 0)
-	{
-		close(pipefd[0]);
-		dup2(pipefd[1], 1);
-		close(pipefd[1]);
-		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
-		execve(av[0], const_cast<char * const*>(av), tab);
-		std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
-		write(pipefd[1], error.c_str(), error.size());
-		exit(EXIT_FAILURE);                            // exit codes should be <= 255
-	}
-	else
-	{
-		close(pipefd[1]);
-		wait(&cpid);
-		while ((len = read(pipefd[0], &buf, _buffer_size - 1)) > 0)
-		{
-			buf[len] = '\0';
-			_body += buf;
-		}
-	}
-	close(pipefd[0]);
-	_delete_tab(tab);
-	if (len == -1)
-		return (EXIT_FAILURE);
-	return (EXIT_SUCCESS);
-}
-
-int		Cgi::run()
-{
-	if (_execute() == EXIT_SUCCESS) {
-		_parse_body();
-		return (EXIT_SUCCESS);
-	}
-	return (EXIT_FAILURE);
-}
-
-void	Cgi::_parse_body()
-{
-	Request req;
-	req.parse_cgi(_body);
-	std::swap(req._body, _body);
-	std::swap(req._header, _header);
-}
-
-Cgi::~Cgi()
-{
 }
