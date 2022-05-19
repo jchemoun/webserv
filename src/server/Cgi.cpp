@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 09:10:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 09:42:24 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,14 @@ const size_t	Cgi::_buffer_size = 4242;
 ** ======================== Constructor / Destructor ======================== **
 */
 
-Cgi::Cgi(Request const &req, Config::Server const &serv)
+Cgi::Cgi(Request const &req, Config::Server const &serv):
+	_env_tab(NULL)
+	// _pipe_in(_pipefd[0]),
+	// _pipe_out(_pipefd[1])
 {
+	// _pipe_in = -1;
+	// _pipe_out = -1;
+
 	_env["CONTENT_LENGTH"]    = req.get_body().size();                                                      // body_size
 	_env["CONTENT_TYPE"]      = file::get_mime(req.get_request_uri(), *serv.mime_types, serv.default_type); // mime type of body
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";                                                                  // always this
@@ -49,11 +55,16 @@ Cgi::Cgi(Request const &req, Config::Server const &serv)
 																											//
 	_env_tab = _map_to_tab(_env);
 
+
 	(void)serv;
 }
 
 Cgi::~Cgi() {
 	_delete_tab(_env_tab);
+	// if (_pipe_in > 0)
+	// 	close(_pipe_in);
+	// if (_pipe_out > 0)
+	// 	close(_pipe_out);
 }
 
 /*
@@ -71,25 +82,25 @@ void	Cgi::run()
 */
 
 void	Cgi::_execute() {
-	int			pipefd[2];
 	char		buf[_buffer_size];
 	ssize_t		len;
 	pid_t		cpid;
 
-	if (pipe(pipefd) == -1)
+	if (pipe(_pipefd) == -1)
 		throw (http::InternalServerError);
+
 	cpid = fork();
 	if (cpid == -1)
 	{
-		close(pipefd[0]);
-		close(pipefd[1]);
+		close(_pipefd[0]);
+		close(_pipefd[1]);
 		throw (http::InternalServerError);
 	}
 	else if (cpid == 0)
 	{
-		close(pipefd[0]);
-		dup2(pipefd[1], 1);
-		close(pipefd[1]);
+		close(_pipefd[0]);
+		dup2(_pipefd[1], 1);
+		close(_pipefd[1]);
 		const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
 		execve(av[0], const_cast<char * const*>(av), _env_tab);
 		// std::string	error = "Status: 500\r\n\r\n";     // std::cout << "execve FAIL:" << std::strerror(errno) << std::endl;
@@ -99,16 +110,24 @@ void	Cgi::_execute() {
 	}
 	else
 	{
-		close(pipefd[1]);
-		wait(&cpid);
-		// TODO: throw if child failed
-		while ((len = read(pipefd[0], &buf, _buffer_size - 1)) > 0)
+		close(_pipefd[1]);
+		int	wait_status;
+		if (waitpid(cpid, &wait_status, 0) == -1) {
+			close(_pipefd[0]);
+			throw http::InternalServerError;
+		}
+		if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status) != EXIT_SUCCESS) {
+			close(_pipefd[0]);
+			throw http::InternalServerError;
+		}
+		// TODO: loop if !WIFEXITED
+		while ((len = read(_pipefd[0], &buf, _buffer_size - 1)) > 0)
 		{
 			buf[len] = '\0';
 			_body += buf;
 		}
 	}
-	close(pipefd[0]);
+	close(_pipefd[0]);
 	if (len == -1)
 		throw (http::InternalServerError);
 }
