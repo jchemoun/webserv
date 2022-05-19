@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:55:57 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/12 15:27:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 12:50:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define FILE_HPP
 
 # include <string>
-# include "Config.hpp"
 
 namespace file {
 
@@ -27,8 +26,6 @@ namespace file {
 	long		size(std::string const &file);
 	std::string get_extension(std::string const &path);
 	std::string	join(std::string const &head, std::string const &tail);
-	std::string	get_mime(std::string const &file,
-			Config::MimeMap const &mime_map, std::string const &default_mime);
 
 }
 

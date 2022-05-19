@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 11:31:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 12:58:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,7 +169,7 @@ void		Response::_read_error_page(http::code error_code)
 				buf << file.rdbuf();
 				file.close();
 				_body = buf.str();
-				_header_map["Content-Type"] = file::get_mime(error_page, *_serv.mime_types, _serv.default_type);
+				_header_map["Content-Type"] = _serv.get_mime(error_page);
 				return ;
 			}
 		}
@@ -179,7 +179,7 @@ void		Response::_read_error_page(http::code error_code)
 
 void		Response::_run_cgi() {
 	try {
-		Cgi	cgi(_req, _serv);
+		Cgi	cgi(_req);
 		cgi.run();
 		std::swap(cgi.body, _body);
 		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {
@@ -295,7 +295,7 @@ void	Response::_set_header_map()
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
-		_header_map["Content-Type"] = file::get_mime(_uri, *_serv.mime_types, _serv.default_type);
+		_header_map["Content-Type"] = _serv.get_mime(_uri);
 
 	if (_code == 301)
 		_header_map["location"] = _uri.substr(_serv.root.length()); // todo fill host + location

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/16 20:08:10 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 13:01:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,10 @@ struct Config {
 	};
 
 	struct	Server {
-		typedef size_t	body_size;
+		typedef size_t				body_size;
 
 		Server();
+
 		std::vector<std::string>	server_names;
 		ListenVect					listen_vect;
 		std::vector<Location>		locations;
@@ -55,12 +56,14 @@ struct Config {
 		std::string					root;
 		ErrPageMap					error_pages;
 		bool						autoindex;
-		std::string					default_type;
+		std::string					default_mime;
 		body_size					client_max_body_size;
 		static body_size const		_overflow_body_size;
-		const MimeMap				*mime_types;
-		void	print() const;
-		void	set_defaults();
+		const MimeMap				*mime_map;
+
+		void		print() const;
+		void		set_defaults();
+		std::string get_mime(std::string const &filename) const;
 	};
 
 	std::vector<Server>	servers;

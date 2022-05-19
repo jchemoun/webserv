@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/16 16:44:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 13:05:37 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <arpa/inet.h> // INADDR_ANY
 #include <netinet/in.h> // inet_ntop
 #include <limits>
+#include "../utils/file.hpp"
 
 /*
 ** ================================= Utils ================================== **
@@ -85,9 +86,9 @@ Config::Server::Server():
 	listen_vect(),
 	root("html"),
 	autoindex(false),
-	default_type("text/plain"),
+	default_mime("text/plain"),
 	client_max_body_size(1024 * 1024), // 1MB
-	mime_types(NULL)
+	mime_map(NULL)
 { }
 
 void	Config::Server::set_defaults() {
@@ -108,9 +109,20 @@ void	Config::Server::print() const {
 	std::cout << "Indexes: "; print_vector(index);
 	std::cout << "Root: " << root << std::endl;
 	std::cout << "Autoindex: " << std::boolalpha << autoindex << std::endl;
-	std::cout << "Default type: " << default_type << std::endl;
+	std::cout << "Default mime-type: " << default_mime << std::endl;
 	std::cout << "Max client body size: " << client_max_body_size << std::endl;
 	print_map(error_pages, "Error page ");
+}
+
+std::string	Config::Server::get_mime(std::string const &filename) const{
+	std::string	extension = file::get_extension(filename);
+	std::string mime_type = default_mime;
+	if (!extension.empty()) {
+		Config::MimeMap::const_iterator	it = mime_map->find(extension);
+		if (it != mime_map->end())
+			mime_type = it->second;
+	}
+	return (mime_type);
 }
 
 /*

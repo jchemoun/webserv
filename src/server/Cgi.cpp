@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 11:27:35 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 13:05:14 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,31 +30,31 @@ const size_t	Cgi::_buffer_size = 4242;
 ** ======================== Constructor / Destructor ======================== **
 */
 
-Cgi::Cgi(Request const &req, Config::Server const &serv):
+Cgi::Cgi(Request const &req):
 	_env_tab(NULL)
 {
 	_pipefd[0] = -1;
 	_pipefd[1] = -1;
 
-	_env["CONTENT_LENGTH"]    = req.get_body().size();                                                      // body_size
-	_env["CONTENT_TYPE"]      = file::get_mime(req.get_request_uri(), *serv.mime_types, serv.default_type); // mime type of body
-	_env["GATEWAY_INTERFACE"] = "CGI/1.1";                                                                  // always this
-	_env["PATH_INFO"]         = file::join(serv.root, req.get_uri());                                       // request path
-	_env["QUERY_STRING"]      = req.get_query_string();                                                     // things after '?' in url
-	_env["REMOTE_ADDR"]       = ""/*TODO*/;                                                                 // ip of the client or the server idk
-	_env["REQUEST_METHOD"]    = req.get_method();                                                           // get or post
-	_env["SCRIPT_NAME"]       = ""/*TODO*/;                                                                 // don't know for sure, probably just the path to cgi
-	_env["SERVER_NAME"]       = ""/*TODO*/;                                                                 // name of the server receiving the request
-	_env["SERVER_PORT"]       = ""/*TODO*/;                                                                 // request's port number
-	_env["SERVER_PROTOCOL"]   = "HTTP/1.1";                                                                 // always this
-	_env["SERVER_SOFTWARE"]   = "Webserv";                                                                  // always this
-	_env["REQUEST_URI"]       = req.get_request_uri();                                                      // full request
-	_env["REDIRECT_STATUS"]   = "200";                                                                      // always this
-	_env["SCRIPT_FILENAME"]   = ""/*TODO*/;                                                                 // full path to cgi
-																											//
-	_env_tab = _map_to_tab(_env);
+	Config::Server const &serv = *req.current_server;
 
-	(void)serv;
+	_env["CONTENT_LENGTH"]    = req.get_body().size();                // body_size
+	_env["CONTENT_TYPE"]      = serv.get_mime(req.get_uri());         // mime type of body
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";                            // always this
+	_env["PATH_INFO"]         = file::join(serv.root, req.get_uri()); // request path
+	_env["QUERY_STRING"]      = req.get_query_string();               // things after '?' in url
+	_env["REMOTE_ADDR"]       = ""/*TODO*/;                           // ip of the client or the server idk
+	_env["REQUEST_METHOD"]    = req.get_method();                     // get or post
+	_env["SCRIPT_NAME"]       = ""/*TODO*/;                           // don't know for sure, probably just the path to cgi
+	_env["SERVER_NAME"]       = req.current_server_name;              // name of the server receiving the request
+	_env["SERVER_PORT"]       = req.listen_info->port;                // request's port number
+	_env["SERVER_PROTOCOL"]   = req.get_protocol();                   // always this
+	_env["SERVER_SOFTWARE"]   = "Webserv";                            // always this
+	_env["REQUEST_URI"]       = req.get_request_uri();                // full request
+	_env["REDIRECT_STATUS"]   = "200";                                // always this
+	_env["SCRIPT_FILENAME"]   = ""/*TODO*/;                           // full path to cgi
+
+	_env_tab = _map_to_tab(_env);
 }
 
 Cgi::~Cgi() {

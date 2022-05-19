@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 11:27:35 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/19 12:42:45 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ public:
 	Header			header;
 	std::string		body;
 
-	Cgi(Request const &req, Config::Server const &serv);
+	Cgi(Request const &req);
 	~Cgi();
 
 	void		run();

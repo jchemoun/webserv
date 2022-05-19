@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 15:25:31 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/19 13:02:21 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,7 +227,7 @@ void	Webserv::serv_init()
 			for (size_t	i = 0; i < serv.server_names.size(); ++i)
 				name_to_serv_map[serv.server_names.at(i)] = &serv;
 		}
-		serv.mime_types = &conf.types;
+		serv.mime_map = &conf.types;
 	}
 }
 
