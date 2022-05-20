@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/12 11:27:23 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/16 18:49:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 10:27:58 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 # include <string>
 # include <sstream>
 # include <map>
+# include "http_response_codes.hpp"
+# include "color.hpp"
 
 namespace utils {
 

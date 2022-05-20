@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 12:42:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 10:43:01 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,15 +45,17 @@ public:
 
 private:
 	Cgi();
+	void		_set_env(Request const &req, Config::Connection const &client_info);
 	void		_execute();
 	void		_child_execute();
 	void		_parent_wait_and_read_pipe(int child_pid);
 	void		_parse_output();
 
-	// generic utils
-	static char	**_map_to_tab(env_map const &env);
-	static void	_delete_tab(char **tab);
-	static void	_close_pipe(int &fd);
+	// static utils
+	static char			**_map_to_tab(env_map const &env);
+	static void			_delete_tab(char **tab);
+	static void			_close_pipe(int &fd);
+	static std::string	_header_key_to_cgi_format(std::string const &key);
 };
 
 #endif

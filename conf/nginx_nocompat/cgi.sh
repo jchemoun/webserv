@@ -4,6 +4,7 @@ set -xeo pipefail
 # Check body
 curl localhost:8080/cgi/env_cgi | grep '<tr><td>GATEWAY_INTERFACE</td><td>CGI/1.1</td></tr>'
 curl localhost:8080/cgi/env_cgi.sh | grep "GATEWAY_INTERFACE='CGI/1.1"
+curl localhost:8080/cgi/env_cgi.sh | grep "HTTP_USER_AGENT='curl" # check that client request's variable are correctly passed on
 
 # Check header
 curl -i localhost:8080/cgi/env_cgi.sh | grep 'Content-Type: text/plain' # should be there (webserv header format)

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 18:24:18 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 10:45:56 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,8 @@
 #include <sys/wait.h>
 #include "file.hpp"
 #include "errno.h"
-#include "http_response_codes.hpp"
-#include "color.hpp"
 #include "utils.hpp"
+#include <algorithm> // std::transform
 
 const size_t	Cgi::_buffer_size = 4242;
 
@@ -31,37 +30,16 @@ const size_t	Cgi::_buffer_size = 4242;
 ** ======================== Constructor / Destructor ======================== **
 */
 
+/*
+** https://fr.wikipedia.org/wiki/Variables_d'environnement_CGI
+*/
+
 Cgi::Cgi(Request const &req, Config::Connection const &client_info):
 	_env_tab(NULL)
 {
 	_pipefd[0] = -1;
 	_pipefd[1] = -1;
-
-	Config::Server const &serv = *req.current_server;
-
-	_env["CONTENT_LENGTH"]    = req.get_body().size();                // body_size
-	_env["CONTENT_TYPE"]      = serv.get_mime(req.get_uri());         // mime type of body
-	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["PATH_INFO"]         = file::join(serv.root, req.get_uri()); // request path
-	_env["QUERY_STRING"]      = req.get_query_string();               // things after '?' in url
-	_env["REMOTE_ADDR"]       = client_info.str_addr;                 // ip, client side
-	_env["REMOTE_PORT"]       = utils::to_str(client_info.port);      // port, client side
-	_env["REQUEST_METHOD"]    = req.get_method();
-	_env["SCRIPT_NAME"]       = ""/*TODO*/;
-	_env["SERVER_NAME"]       = req.current_server_name;              // name of the server receiving the request
-	_env["SERVER_ADDR"]       = req.listen_info->str_addr;
-	_env["SERVER_PORT"]       = utils::to_str(req.listen_info->port);
-	_env["SERVER_PROTOCOL"]   = req.get_protocol();
-	_env["SERVER_SOFTWARE"]   = "Webserv";
-	_env["REQUEST_URI"]       = req.get_request_uri();                // full request
-	_env["REDIRECT_STATUS"]   = "200";                                // always this
-	_env["SCRIPT_FILENAME"]   = ""/*TODO*/;                           // full path to cgi
-
-	const char	*s;
-	_env["PATH"]              = ( (s = getenv("PATH") ) ? s : "");
-	std::string const	*str;
-	_env["HTTP_HOST"]         = ( (str = utils::get(req._header, std::string("Host")) ) ? *str : "" );
-
+	_set_env(req, client_info);
 	_env_tab = _map_to_tab(_env);
 }
 
@@ -86,6 +64,47 @@ void	Cgi::run()
 /*
 ** =========================== Private functions ============================ **
 */
+
+void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
+	Config::Server const &serv = *req.current_server;
+
+	// Server specific
+	_env["SERVER_SOFTWARE"]   = "Webserv";
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_env["SERVER_NAME"]       = req.current_server_name;              // host name of the server
+
+	// Request specific
+	_env["SERVER_PROTOCOL"] = req.get_protocol();
+	_env["SERVER_PORT"]     = utils::to_str(req.listen_info->port);
+	_env["REQUEST_METHOD"]  = req.get_method();
+	_env["PATH_INFO"]       = file::join(serv.root, req.get_uri()); // FIX: path suffix, if appended to URL after program name and a slash.
+	_env["PATH_TRANSLATED"] = file::join(serv.root, req.get_uri()); // FIX: corresponding full path as supposed by server, if PATH_INFO is present
+	_env["SCRIPT_NAME"]     = "";                                   // FIX: relative path of the program (like /cgi-bin/script.cgi)
+	_env["SCRIPT_FILENAME"] = "";                                   // scirpt.cgi NOTE: Rarely used
+	_env["QUERY_STRING"]    = req.get_query_string();               // things after '?' in url
+	/*_env["REMOTE_HOST"]   = "";*/                                 // host name of the client, unset if server did not perform such lookup.
+	_env["REMOTE_ADDR"]     = client_info.str_addr;                 // ip, client side
+	/*_env["AUTH_TYPE"]     = "";*/                                 // identification type, if applicable
+	/*_env["REMOTE_USER"]   = "";*/                                 // used for certain AUTH_TYPEs.
+	/*_env["REMOTE_IDENT"]  = "";*/                                 // used for certain AUTH_TYPEs.
+	_env["CONTENT_TYPE"]    = serv.get_mime(req.get_uri());         // mime type of body
+	_env["CONTENT_LENGTH"]  = req.get_body().size();                // body_size
+
+	_env["REMOTE_PORT"]     = utils::to_str(client_info.port);      // port, client side
+	_env["SERVER_ADDR"]     = req.listen_info->str_addr;
+	_env["REQUEST_URI"]     = req.get_request_uri();
+	// _env["REDIRECT_STATUS"]   = "200";
+
+	// Client specific
+	// Toutes les variables qui sont envoyées par le client sont aussi passées au script CGI,
+	// après que le serveur a rajouté le préfixe « HTTP_ ».
+	for (Header::const_iterator cit = req._header.begin(); cit != req._header.end(); ++cit)
+		_env[_header_key_to_cgi_format(cit->first)] = cit->second;
+
+	// More...
+	const char	*s;
+	_env["PATH"]              = ( (s = getenv("PATH") ) ? s : "");
+}
 
 void	Cgi::_execute()
 {
@@ -192,3 +211,14 @@ void	Cgi::_delete_tab(char **tab)
 }
 
 void	Cgi::_close_pipe(int &fd) { close (fd); fd = -1; }
+
+static int	_cgi_char_toupper(int c) { if (c == '-') return ('_'); else return (::toupper(c)); }
+/*
+** @example would transform 'Accept-Language' into 'HTTP_ACCEPT_LANGUAGE'
+*/
+std::string Cgi::_header_key_to_cgi_format(std::string const &key) {
+	static const std::string	prefix = "HTTP_";
+	std::string	new_key(prefix + key);
+	std::transform(new_key.begin(), new_key.end(), new_key.begin(), _cgi_char_toupper);
+	return (new_key);
+}
