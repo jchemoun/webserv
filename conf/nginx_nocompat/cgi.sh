@@ -17,3 +17,12 @@ curl -i localhost:8080/cgi-bin/fail.sh.cgi | grep 'HTTP/1.1 500' # cgi script ex
 curl -i localhost:8080/cgi-bin/fail.sh.cgi | grep '<title>500' # idem but body check
 curl -i localhost:8080/cgi-bin/fdsagsafdgf.cgi | grep 'HTTP/1.1 404' # cgi script exists and is executable but fails
 curl -i localhost:8080/cgi-bin/not_executable_file.cgi | grep 'HTTP/1.1 403' # cgi script exists and is executable but fails
+
+# 42 tester
+# if [ ! -f html/cgi-bin/ubuntu_cgi_tester.cgi ]; then
+#   curl -o html/cgi-bin/ubuntu_cgi_tester.cgi https://projects.intra.42.fr/uploads/document/document/8373/ubuntu_cgi_tester # does not work...
+#   sudo chmod +x html/cgi-bin/ubuntu_cgi_tester.cgi
+# fi
+curl -i -X GET localhost:8080/cgi-bin/ubuntu_cgi_tester.cgi | grep 200 # empty but good
+curl -i -X GET localhost:8080/cgi-bin/ubuntu_cgi_tester.cgi | grep charset # charset=utf-8 in header
+curl -X GET localhost:8080/cgi-bin/ubuntu_cgi_tester.cgi -d "hello" | grep 'HELLO'
