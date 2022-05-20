@@ -128,7 +128,7 @@ clean:
 fclean: clean
 	@rm -f $(NAME)
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
-	@make -C cgi fclean
+	@make -C src-cgi-bin fclean
 
 re: fclean all
 

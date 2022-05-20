@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/20 10:43:01 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 15:17:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ private:
 	static const size_t	_buffer_size;
 	env_map				_env;
 	char				**_env_tab;
-	int					_pipefd[2];
+	int					_pipe_from_cgi[2];
+	int					_pipe_to_cgi[2];
+	std::string const	&_req_body;
 	std::string			_output;
 
 public:
