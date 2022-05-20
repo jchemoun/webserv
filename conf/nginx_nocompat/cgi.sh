@@ -3,6 +3,7 @@ set -xeo pipefail
 # curl error
 # Check body
 curl localhost:8080/cgi-bin/env_cpp.cgi | grep '<tr><td>GATEWAY_INTERFACE</td><td>CGI/1.1</td></tr>'
+curl localhost:8080/cgi-bin/env_cpp.cgi/hello?world | grep '<tr><td>QUERY_STRING</td><td>world</td></tr>'
 curl localhost:8080/cgi-bin/env.sh.cgi | grep "GATEWAY_INTERFACE='CGI/1.1"
 curl localhost:8080/cgi-bin/env.sh.cgi | grep "HTTP_USER_AGENT='curl" # check that client request's variable are correctly passed on
 

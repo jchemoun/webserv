@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/20 10:57:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 11:55:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,22 +66,28 @@ void	Cgi::run()
 */
 
 void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
-	Config::Server const &serv = *req.current_server;
+	Config::Server const	&serv = *req.current_server;
+	std::string const 		&uri  = req.get_uri();
+
+	bool		has_path_info = (uri.find(".cgi/") != std::string::npos);
+	std::string	script_name   = (has_path_info ? uri.substr(0, uri.find(".cgi/") + 4) : uri);
 
 	// Server specific
 	_env["SERVER_SOFTWARE"]   = "Webserv";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["SERVER_NAME"]       = req.current_server_name;              // host name of the server
+	_env["DOCUMENT_ROOT"]     = serv.root;
 
 	// Request specific
 	_env["SERVER_PROTOCOL"]         = req.get_protocol();
 	_env["SERVER_PORT"]             = utils::to_str(req.listen_info->port);
 	_env["REQUEST_METHOD"]          = req.get_method();
-	_env["PATH_INFO"]               = file::join(serv.root, req.get_uri());     // FIX: path suffix, if appended to URL after program name and a slash.
-	if (!_env["PATH_INFO"].empty())
+	if (has_path_info) {
+		_env["PATH_INFO"]           = uri.substr(script_name.size());           // path in the request after the cgi's name
 		_env["PATH_TRANSLATED"]     = file::join(serv.root, _env["PATH_INFO"]); // corresponding full path as supposed by server, if PATH_INFO is present
-	_env["SCRIPT_NAME"]             = "";                                       // FIX: relative path of the program (like /cgi-bin/script.cgi)
-	_env["SCRIPT_FILENAME"]         = "";                                       // scirpt.cgi NOTE: Rarely used
+	}
+	_env["SCRIPT_NAME"]             = script_name;                              // relative path of the program (like /cgi-bin/script.cgi)
+	_env["SCRIPT_FILENAME"]         = file::join(serv.root, script_name);       // Chemin d'accès complet au script CGI (FULL PATH)
 	_env["QUERY_STRING"]            = req.get_query_string();                   // things after '?' in url
 	/*_env["REMOTE_HOST"]           = "";*/                                     // host name of the client, unset if server did not perform such lookup.
 	_env["REMOTE_ADDR"]             = client_info.str_addr;                     // ip, client side
@@ -110,7 +116,7 @@ void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
 void	Cgi::_execute()
 {
 	pid_t		cpid;
-	std::string const &cgi_full_path = _env["PATH_INFO"];
+	std::string const &cgi_full_path = _env["SCRIPT_FILENAME"];
 
 	if (file::get_type(cgi_full_path) == file::FT_UNKOWN)
 		throw (http::NotFound);
@@ -135,8 +141,8 @@ void	Cgi::_child_execute()
 	dup2(_pipefd[1], STDOUT_FILENO);
 	_close_pipe(_pipefd[1]);
 
-	const char *const av[] = {_env["PATH_INFO"].c_str(), NULL};
-	execve(av[0], const_cast<char * const*>(av), _env_tab);
+	const char *const av[] = {_env["SCRIPT_FILENAME"].c_str(), NULL};
+	execve(_env["SCRIPT_FILENAME"].c_str(), const_cast<char * const*>(av), _env_tab);
 
 	std::cerr << color::red << "execve FAIL:" << std::strerror(errno) << color::reset << std::endl;
 	exit(EXIT_FAILURE);

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/18 08:33:14 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/19 18:16:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 11:54:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 #include <stdlib.h>
 
 const std::string ENV[] = {
-	"COMSPEC",
-	"DOCUMENT_ROOT",
 	"GATEWAY_INTERFACE",
 	"HTTP_ACCEPT",
 	"HTTP_ACCEPT_ENCODING",
@@ -25,6 +23,7 @@ const std::string ENV[] = {
 	"HTTP_USER_AGENT",
 	"PATH",
 	"QUERY_STRING",
+	"PATH_INFO",
 	"REMOTE_ADDR",
 	"REMOTE_PORT",
 	"REQUEST_METHOD",
@@ -32,11 +31,9 @@ const std::string ENV[] = {
 	"SCRIPT_FILENAME",
 	"SCRIPT_NAME",
 	"SERVER_ADDR",
-	"SERVER_ADMIN",
 	"SERVER_NAME",
 	"SERVER_PORT",
 	"SERVER_PROTOCOL",
-	"SERVER_SIGNATURE",
 	"SERVER_SOFTWARE"
 };
 

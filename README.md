@@ -72,6 +72,7 @@ make build_image
  - [tutorialspoint](https://www.tutorialspoint.com/cplusplus/cpp_web_programming.htm)
  - [wikipedia-en](https://en.wikipedia.org/wiki/Common_Gateway_Interface)
  - [wikipedia-fr: cgi variables](https://fr.wikipedia.org/wiki/Variables_d'environnement_CGI)
+ - [unsw.edu.au](https://web.maths.unsw.edu.au/~lafaye/CCM/cgi/cgienv.htm)
  - [IBM](https://www.ibm.com/docs/pt-br/netcoolomnibus/8.1?topic=SSSHTQ_8.1.0/com.ibm.netcool_OMNIbus.doc_8.1.0/webtop/wip/reference/web_cust_envvariablesincgiscripts.html)
  - [condor.depaul.edu](https://condor.depaul.edu/elliott/shared/draft-cgi.html#4.14)
 
