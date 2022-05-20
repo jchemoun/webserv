@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 17:43:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 17:43:11 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,10 @@ void		Response::_run_cgi() {
 		cgi.run();
 		std::swap(cgi.body, _body);
 		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {
-			_header_map[cit->first] = cit->second;
+			if (cit->first == "Status")
+				_cgi_status = cit->second;
+			else
+				_header_map[cit->first] = cit->second;
 		}
 	} catch (http::code error_code) { // InternalServerError
 		_read_error_page(error_code);
@@ -308,7 +311,15 @@ void		Response::_set_header()
 
 	std::ostringstream oss;
 
-	oss << "HTTP/1.1 " << _code << " " << http::status.at(_code) << "\r\n";
+	// Request line
+	oss << _req.get_protocol() << " ";
+	if (!_cgi_status.empty())
+		oss << _cgi_status;
+	else
+		oss << _code << " " << http::status.at(_code);
+	oss << "\r\n";
+
+	// Headers
 	for (HeaderMap::const_iterator it = _header_map.begin(); it != _header_map.end(); ++it)
 		oss << it->first << ": " << it->second << "\r\n";
 

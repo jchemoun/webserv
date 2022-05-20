@@ -11,6 +11,8 @@ curl localhost:8080/cgi-bin/env.sh.cgi | grep "HTTP_USER_AGENT='curl" # check th
 curl -i localhost:8080/cgi-bin/env.sh.cgi | grep 'Content-Type: text/plain' # should be there (webserv header format)
 curl -i localhost:8080/cgi-bin/env_cpp.cgi | grep 'Content-Type: text/html' # should be there (webserv header format)
 ! curl -i localhost:8080/cgi-bin/env_cpp.cgi | grep 'Content-Type:text/html' # should not (cgi format)
+curl -i -X GET http://localhost:8080/cgi-bin/weird_status.sh.cgi -d "hello" | grep 'HTTP/1.1 444 Some weird status' # check the code and message are retrieved from cgi
+! curl -i -X GET http://localhost:8080/cgi-bin/weird_status.sh.cgi -d "hello" | grep 'Status' # check the Status Header is removed
 
 # Check errors
 curl -i localhost:8080/cgi-bin/fail.sh.cgi | grep 'HTTP/1.1 500' # cgi script exists and is executable but fails

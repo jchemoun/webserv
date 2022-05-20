@@ -52,6 +52,7 @@ private:
 	std::string					_full_location;
 	Config::Server const		&_serv;
 	Config::Connection const	&_client_info;
+	std::string					_cgi_status;
 
 	static const MethodMap		_methods;
 	Request const				&_req;
