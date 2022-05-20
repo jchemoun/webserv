@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/20 10:45:56 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 10:57:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,25 +74,26 @@ void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
 	_env["SERVER_NAME"]       = req.current_server_name;              // host name of the server
 
 	// Request specific
-	_env["SERVER_PROTOCOL"] = req.get_protocol();
-	_env["SERVER_PORT"]     = utils::to_str(req.listen_info->port);
-	_env["REQUEST_METHOD"]  = req.get_method();
-	_env["PATH_INFO"]       = file::join(serv.root, req.get_uri()); // FIX: path suffix, if appended to URL after program name and a slash.
-	_env["PATH_TRANSLATED"] = file::join(serv.root, req.get_uri()); // FIX: corresponding full path as supposed by server, if PATH_INFO is present
-	_env["SCRIPT_NAME"]     = "";                                   // FIX: relative path of the program (like /cgi-bin/script.cgi)
-	_env["SCRIPT_FILENAME"] = "";                                   // scirpt.cgi NOTE: Rarely used
-	_env["QUERY_STRING"]    = req.get_query_string();               // things after '?' in url
-	/*_env["REMOTE_HOST"]   = "";*/                                 // host name of the client, unset if server did not perform such lookup.
-	_env["REMOTE_ADDR"]     = client_info.str_addr;                 // ip, client side
-	/*_env["AUTH_TYPE"]     = "";*/                                 // identification type, if applicable
-	/*_env["REMOTE_USER"]   = "";*/                                 // used for certain AUTH_TYPEs.
-	/*_env["REMOTE_IDENT"]  = "";*/                                 // used for certain AUTH_TYPEs.
-	_env["CONTENT_TYPE"]    = serv.get_mime(req.get_uri());         // mime type of body
-	_env["CONTENT_LENGTH"]  = req.get_body().size();                // body_size
+	_env["SERVER_PROTOCOL"]         = req.get_protocol();
+	_env["SERVER_PORT"]             = utils::to_str(req.listen_info->port);
+	_env["REQUEST_METHOD"]          = req.get_method();
+	_env["PATH_INFO"]               = file::join(serv.root, req.get_uri());     // FIX: path suffix, if appended to URL after program name and a slash.
+	if (!_env["PATH_INFO"].empty())
+		_env["PATH_TRANSLATED"]     = file::join(serv.root, _env["PATH_INFO"]); // corresponding full path as supposed by server, if PATH_INFO is present
+	_env["SCRIPT_NAME"]             = "";                                       // FIX: relative path of the program (like /cgi-bin/script.cgi)
+	_env["SCRIPT_FILENAME"]         = "";                                       // scirpt.cgi NOTE: Rarely used
+	_env["QUERY_STRING"]            = req.get_query_string();                   // things after '?' in url
+	/*_env["REMOTE_HOST"]           = "";*/                                     // host name of the client, unset if server did not perform such lookup.
+	_env["REMOTE_ADDR"]             = client_info.str_addr;                     // ip, client side
+	/*_env["AUTH_TYPE"]             = "";*/                                     // identification type, if applicable
+	/*_env["REMOTE_USER"]           = "";*/                                     // used for certain AUTH_TYPEs.
+	/*_env["REMOTE_IDENT"]          = "";*/                                     // used for certain AUTH_TYPEs.
+	_env["CONTENT_TYPE"]            = serv.get_mime(req.get_uri());             // mime type of body
+	_env["CONTENT_LENGTH"]          = req.get_body().size();                    // body_size
 
-	_env["REMOTE_PORT"]     = utils::to_str(client_info.port);      // port, client side
-	_env["SERVER_ADDR"]     = req.listen_info->str_addr;
-	_env["REQUEST_URI"]     = req.get_request_uri();
+	_env["REMOTE_PORT"]             = utils::to_str(client_info.port);          // port, client side
+	_env["SERVER_ADDR"]             = req.listen_info->str_addr;
+	_env["REQUEST_URI"]             = req.get_request_uri();
 	// _env["REDIRECT_STATUS"]   = "200";
 
 	// Client specific
