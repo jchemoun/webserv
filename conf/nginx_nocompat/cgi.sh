@@ -28,3 +28,6 @@ curl -i localhost:8080/cgi-bin/not_executable_file.cgi | grep 'HTTP/1.1 403' # c
 curl -i -X GET localhost:8080/cgi-bin/ubuntu_cgi_tester.cgi | grep 200 # empty but good
 curl -i -X GET localhost:8080/cgi-bin/ubuntu_cgi_tester.cgi | grep charset # charset=utf-8 in header
 curl -X GET localhost:8080/cgi-bin/ubuntu_cgi_tester.cgi -d "hello" | grep 'HELLO'
+
+# Siege availability stress tests
+siege -b http://localhost:8080 -t 3S | grep availability | grep 100 # target 100% availability
