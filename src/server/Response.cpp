@@ -312,7 +312,7 @@ void		Response::_set_header()
 	std::ostringstream oss;
 
 	// Request line
-	oss << _req.get_protocol() << " ";
+	oss << "HTTP/1.1 ";
 	if (!_cgi_status.empty())
 		oss << _cgi_status;
 	else
