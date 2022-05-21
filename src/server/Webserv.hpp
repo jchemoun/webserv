@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 15:17:48 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/21 13:41:10 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,10 @@
 # include "Parser.hpp"
 # include "Client.hpp"
 # include "Response.hpp"
+# include "Include.hpp"
 
 // define temporaire ? valeur un peu random
-# define MAX_CLIENTS	64
-# define TIMEOUT		256
-# define MAX_EVENTS		1024
-# define BUFFER_SIZE	65536 // was 4096
+ // was 4096
 
 class Webserv
 {
@@ -74,6 +72,7 @@ private:
 	bool	handle_new_client(int serv_fd);
 	bool	handle_recv(int client_fd);
 	bool	handle_send(int client_fd);
+	bool	handle_big_send(int client_fd);
 
 	//utils
 	void	delete_client(int client_fd);

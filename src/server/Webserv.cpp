@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 15:18:14 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/21 13:43:22 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,50 +141,80 @@ bool	Webserv::handle_recv(int client_fd)
 	return (true);
 }
 
+bool	Webserv::handle_big_send(int client_fd)
+{
+	char	buf[BUFFER_SIZE] = {0};
+
+	if (clients[client_fd].response->is_large_file == 1)
+	{
+		if (send(client_fd, clients[client_fd].response->c_str(), clients[client_fd].response->size(), 0) == -1)
+		{
+			delete_client(client_fd);
+			delete clients[client_fd].response;
+			clients[client_fd].response = NULL;
+			return (false);
+		}
+	}
+	clients[client_fd].response->is_large_file = 2;
+	if (clients[client_fd].response->size_file > BUFFER_SIZE)
+	{
+		clients[client_fd].response->file.read((char*)&buf, BUFFER_SIZE);
+		if ((send(client_fd, buf, BUFFER_SIZE, 0)) == -1)
+		{
+			delete_client(client_fd);
+			delete clients[client_fd].response;
+			clients[client_fd].response = NULL;
+			return (false);
+		}
+		clients[client_fd].response->size_file -= BUFFER_SIZE;
+	}
+	else
+	{
+		clients[client_fd].response->file.read((char*)&buf, clients[client_fd].response->size_file);
+		if ((send(client_fd, buf, clients[client_fd].response->size_file, 0)) == -1)
+		{
+			delete_client(client_fd);
+			delete clients[client_fd].response;
+			clients[client_fd].response = NULL;
+			return (false);
+		}
+		clients[client_fd].response->size_file = 0;
+		delete clients[client_fd].response;
+		clients[client_fd].response = NULL;
+		epoll_mod(client_fd, EPOLLIN);
+	}
+	return (true);
+}
+
 /*
 ** @brief set and send the response to the client
 ** Finally reset the client_fd epoll mode to EPOLLIN
 */
 bool	Webserv::handle_send(int client_fd)
 {
-	Client			&client = clients[client_fd];
-	Response		response(client.request);
+	//Client			&client = clients[client_fd];
+
+	if (clients[client_fd].response == NULL)
+		clients[client_fd].response = new Response(clients[client_fd].request);
 
 	clients[client_fd].request.reset();
-	if (response.is_large_file)
+	if (clients[client_fd].response->is_large_file)
 	{
 		// todo boucle while read/send
-		std::cout << response.size_file / BUFFER_SIZE << "\n";
-		if (send(client_fd, response.c_str(), response.size(), 0) == -1)
-		{
-			delete_client(client_fd);
-			return (false);
-		}
-		char	buf[BUFFER_SIZE] = {0};
-		for (long i = response.size_file / BUFFER_SIZE; i > 0; i--)
-		{
-			response.file.read((char*)&buf, BUFFER_SIZE);
-			if ((send(client_fd, buf, BUFFER_SIZE, 0)) == -1)
-			{
-				delete_client(client_fd);
-				return (false);
-			}
-		}
-		response.file.read((char*)&buf, response.size_file % BUFFER_SIZE);
-		if ((send(client_fd, buf, response.size_file % BUFFER_SIZE, 0)) == -1)
-		{
-			delete_client(client_fd);
-			return (false);
-		}
+		return (handle_big_send(client_fd));
 	}
 	else
 	{
-		if (send(client_fd, response.c_str(), response.size(), 0) < 0)
+		if (send(client_fd, clients[client_fd].response->c_str(), clients[client_fd].response->size(), 0) < 0)
 		{
 			delete_client(client_fd);
+			delete clients[client_fd].response;
+			clients[client_fd].response = NULL;
 			return (false);
 		}
 	}
+	delete clients[client_fd].response;
+	clients[client_fd].response = NULL;
 	epoll_mod(client_fd, EPOLLIN);
 	return (true);
 }

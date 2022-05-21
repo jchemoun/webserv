@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:18:20 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 11:21:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/21 12:58:57 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include "Request.hpp"
 # include "Config.hpp"
+# include "Response.hpp"
 
 /*
 get time for session if bonus
@@ -28,6 +29,7 @@ public:
 	Config::Connection			accept_info;
 	Config::Connection const	*listen_info;
 	Request						request;
+	Response					*response;
 
 	Client(Config::Connection const *listen_info = NULL);
 	~Client();

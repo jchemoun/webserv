@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/26 12:19:18 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/17 11:51:55 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/21 12:58:29 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "color.hpp"
 
 Client::Client(Config::Connection const *listen_info):
-	listen_info(listen_info)
+	listen_info(listen_info), response(NULL)
 {
 	request.listen_info = listen_info;
 }

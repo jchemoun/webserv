@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 15:17:30 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/21 13:29:26 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ Response::Response(Request const &req):
 	_full_location	(file::join(req.current_server->root, _uri)),
 	_serv			(*req.current_server),
 	_req			(req),
-	is_large_file	(false),
+	is_large_file	(0),
 	size_file		(0)
 {
 	if (_req.is_invalid()) {
@@ -134,7 +134,7 @@ void	Response::_read_file()
 			return (_read_error_page(http::NotFound));
 		if ((size_file = file::size(_full_location)) + 200 >= BUFFER_SIZE)
 		{
-			is_large_file = true;
+			is_large_file = 1;
 			_code = http::Ok;
 			return ;
 		}
