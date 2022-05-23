@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/19 12:42:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/20 15:17:06 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,29 +31,33 @@ private:
 	static const size_t	_buffer_size;
 	env_map				_env;
 	char				**_env_tab;
-	int					_pipefd[2];
+	int					_pipe_from_cgi[2];
+	int					_pipe_to_cgi[2];
+	std::string const	&_req_body;
 	std::string			_output;
 
 public:
 	Header			header;
 	std::string		body;
 
-	Cgi(Request const &req);
+	Cgi(Request const &req, Config::Connection const &client_info);
 	~Cgi();
 
 	void		run();
 
 private:
 	Cgi();
+	void		_set_env(Request const &req, Config::Connection const &client_info);
 	void		_execute();
 	void		_child_execute();
 	void		_parent_wait_and_read_pipe(int child_pid);
 	void		_parse_output();
 
-	// generic utils
-	static char	**_map_to_tab(env_map const &env);
-	static void	_delete_tab(char **tab);
-	static void	_close_pipe(int &fd);
+	// static utils
+	static char			**_map_to_tab(env_map const &env);
+	static void			_delete_tab(char **tab);
+	static void			_close_pipe(int &fd);
+	static std::string	_header_key_to_cgi_format(std::string const &key);
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/21 13:41:24 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/23 13:43:17 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,25 +38,37 @@ class Response
 public:
 	typedef std::map<std::string, void (Response::*)()>	MethodMap;
 	typedef std::map<std::string, std::string>			HeaderMap;
+	struct Uri {
+		std::string						path;
+		std::string						full_path;
+		std::string const				*root;
+		std::vector<std::string> const	*indexes;
+		Config::ErrPageMap const		*error_pages;
+		Uri(const std::string &path, Config::Server const &serv);
+		void resolve(Config::Server const &serv);
+	private:
+		Uri();
+	};
 
 private:
-	HeaderMap				_header_map;
-	std::string				_header;
-	std::string				_body;
-	std::string				_full_response;
-	http::code				_code;
-	bool					_autoindex;
-	std::string const		_request_uri;
-	std::string				_uri;
-	std::string				_query_string;
-	std::string				_full_location;
-	Config::Server const	&_serv;
+	HeaderMap					_header_map;
+	std::string					_header;
+	std::string					_body;
+	std::string					_full_response;
+	http::code					_code;
+	bool						_autoindex;
+	std::string const			_request_uri;
+	std::string					_query_string;
+	Config::Server const		&_serv;
+	Uri							_uri;
+	Config::Connection const	&_client_info;
+	std::string					_cgi_status;
 
-	static const MethodMap	_methods;
-	Request const			&_req;
+	static const MethodMap		_methods;
+	Request const				&_req;
 
 public:
-	Response(Request const &req);
+	Response(Request const &req, Config::Connection const &client_info);
 	~Response();
 
 	int			is_large_file;

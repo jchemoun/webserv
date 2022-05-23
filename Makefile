@@ -119,7 +119,7 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE_FILES)
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
 make_cgi:
-	@make -C cgi
+	@make -C src-cgi-bin
 
 clean:
 	@rm -rf $(OBJ_PATH)
@@ -128,7 +128,7 @@ clean:
 fclean: clean
 	@rm -f $(NAME)
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(NAME) \\n\\t\\t"$(_END)"
-	@make -C cgi fclean
+	@make -C src-cgi-bin fclean
 
 re: fclean all
 

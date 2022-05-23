@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/21 13:43:22 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/23 13:46:58 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,7 @@ bool	Webserv::handle_send(int client_fd)
 	//Client			&client = clients[client_fd];
 
 	if (clients[client_fd].response == NULL)
-		clients[client_fd].response = new Response(clients[client_fd].request);
+		clients[client_fd].response = new Response(clients[client_fd].request, clients[client_fd].accept_info);
 
 	clients[client_fd].request.reset();
 	if (clients[client_fd].response->is_large_file)
