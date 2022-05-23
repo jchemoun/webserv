@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 13:44:48 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/23 15:25:36 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,10 +150,7 @@ void	Response::_read_file()
 		if (_autoindex)
 			return (_create_auto_index_page());
 		else
-		{
-			std::cout << "WTF IS THIS\n";
 			return (_read_error_page(http::Forbidden));
-		}
 	}
 	else if (file::get_type(_uri.full_path) == file::FT_FILE)
 	{
@@ -235,40 +232,8 @@ bool		Response::_is_a_cgi() const {
 
 void		Response::_postMethod()
 {
-	std::string		updir;
-	std::ofstream	new_file;
 	//cgi;
 
-	updir = file::join(*_uri.root, "upload/");
-	if (_uri.full_path.substr(0, updir.length()) == updir)
-	{
-		if (file::get_type(updir) != file::FT_DIR)
-			if (mkdir(updir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
-			{
-				_read_error_page(http::InternalServerError);
-				return ;
-			} //what happen if is file
-		if (file::get_type(_uri.full_path) == file::FT_FILE || file::get_type(_uri.full_path) == file::FT_DIR)
-		{
-			_read_error_page(http::Forbidden);
-			return ;
-		}
-		new_file.open(_uri.full_path.c_str());
-		if (new_file.is_open() == false)
-		{
-			_read_error_page(http::InternalServerError);
-			return ;
-		} //check error
-		new_file.write(_req.get_body().c_str(), _req.get_body().length());
-		if (new_file.bad())
-		{
-			_read_error_page(http::InternalServerError);
-			return ;
-		} //check error
-		new_file.close();
-		_code = http::Created;
-		return ;
-	}
 	_read_file();
 }
 
@@ -279,15 +244,69 @@ void		Response::_deleteMethod()
 	else if (file::has_write_perm(_uri.full_path) == false)
 		_read_error_page(http::Forbidden);
 	else if (remove(_uri.full_path.c_str()) != -1)
-	{
-		_code = http::NoContent; // or 200 and return something;
-		//body = "";
-	}
+		_code = http::NoContent;
 	else
 	{
 		std::cerr << "error delete\n";
 		_read_error_page(http::InternalServerError);
 	}
+}
+
+void		Response::_putMethod()
+{
+	std::string		updir;
+	std::ofstream	new_file;
+	bool			existing;
+
+	updir = _uri.full_path.substr(0, _uri.full_path.rfind('/'));
+	existing = false;
+	if (updir == _uri.full_path || updir.empty())
+	{
+		_read_error_page(http::BadRequest);
+		return ;
+	}
+	if (file::get_type(updir) != file::FT_DIR)
+	{
+		_read_error_page(http::NotFound);
+		return ;
+	}
+	if (file::get_type(_uri.full_path) == file::FT_DIR)
+	{
+		_read_error_page(http::Forbidden);
+		return ;
+	}
+	if (file::get_type(_uri.full_path) == file::FT_FILE)
+	{
+		existing = true;
+		if (file::has_write_perm(_uri.full_path) == false)
+		{
+			_read_error_page(http::Forbidden);
+			return ;
+		}
+	}
+	new_file.open(_uri.full_path.c_str());
+	if (chmod(_uri.full_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1)
+	{
+		_read_error_page(http::InternalServerError);
+		return ;
+	}
+	if (new_file.is_open() == false)
+	{
+		_read_error_page(http::InternalServerError);
+		return ;
+	}
+	new_file.write(_req.get_body().c_str(), _req.get_body().length());
+	if (new_file.bad() || new_file.fail())
+	{
+		_read_error_page(http::InternalServerError);
+		return ;
+	}
+	new_file.close();
+	if (existing)
+		_code = http::NoContent;
+	else
+		_code = http::Created;
+	return ;
 }
 
 void	Response::_build_error_page()
@@ -311,9 +330,10 @@ Response::MethodMap		Response::_init_method_map()
 {
 	MethodMap	methods;
 
-	methods["GET"]    = &Response::_getMethod;
-	methods["POST"]   = &Response::_postMethod;
-	methods["DELETE"] = &Response::_deleteMethod;
+	methods["GET"]		= &Response::_getMethod;
+	methods["POST"]		= &Response::_postMethod;
+	methods["DELETE"]	= &Response::_deleteMethod;
+	methods["PUT"]		= &Response::_putMethod;
 	return (methods);
 }
 
