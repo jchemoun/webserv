@@ -6,13 +6,39 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/20 17:43:11 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 11:27:09 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include "color.hpp"
 #include "utils.hpp"
+
+Response::Uri::Uri(const std::string &path):
+	path(path),
+	root(NULL),
+	indexes(NULL),
+	error_pages(NULL)
+{ }
+
+void Response::Uri::resolve(Config::Server const &serv) {
+	root = &serv.root;
+	indexes = &serv.index;
+	error_pages = &serv.error_pages;
+	for (size_t i = 0; i < serv.locations.size(); ++i) {
+		Config::Location const &location = serv.locations.at(i);
+		std::string const &location_path = location.location_path;
+		if (!strncmp(location_path.c_str(), path.c_str(), location_path.size())) {
+			if (!location.root.empty())
+				root = &location.root;
+			if (!location.index.empty())
+				indexes = &location.index;
+			if (!location.error_pages.empty())
+				error_pages = &location.error_pages;
+		}
+	}
+	full_path = file::join(*root, path);
+}
 
 /*
 ** ============================= Public methods ============================= **
@@ -27,7 +53,6 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_request_uri	(req.get_request_uri()),
 	_uri			(req.get_uri()),
 	_query_string	(req.get_query_string()),
-	_full_location	(file::join(req.current_server->root, _uri)),
 	_serv			(*req.current_server),
 	_client_info	(client_info),
 	_req			(req),
@@ -37,10 +62,13 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	if (_req.is_invalid()) {
 		_read_error_page(_code);
 	}
-	else if (_methods.find(req.get_method()) != _methods.end())
-		(this->*_methods.at(req.get_method()))();
-	else
-		_read_error_page(http::MethodNotAllowed);
+	else {
+		_uri.resolve(_serv);
+		if (_methods.find(req.get_method()) != _methods.end())
+			(this->*_methods.at(req.get_method()))();
+		else
+			_read_error_page(http::MethodNotAllowed);
+	}
 	_set_header();
 	_set_full_response();
 }
@@ -64,34 +92,34 @@ void	Response::_create_auto_index_page()
 	DIR							*dir;
 	struct dirent				*ent;
 
-	if (*(_full_location.rbegin()) != '/')
+	if (*(_uri.full_path.rbegin()) != '/')
 	{
-		_uri += '/';
-		_full_location += '/';
+		_uri.path += '/';
+		_uri.resolve(_serv);
 		return (_read_error_page(http::MovedPermanently));
 	}
 	// probably error need check if exist && exec perm
-	if (file::has_read_perm(_full_location) == false)
+	if (file::has_read_perm(_uri.full_path) == false)
 		return (_read_error_page(http::Forbidden));
-	if ((dir = opendir(_full_location.c_str())) == NULL)
+	if ((dir = opendir(_uri.full_path.c_str())) == NULL)
 		return (_read_error_page(http::NotFound));
 	oss <<
 		"<html>\r\n"
-		"<head><title>Index of " << _uri << "</title></head>\r\n"
+		"<head><title>Index of " << _uri.path << "</title></head>\r\n"
 		"<body>\r\n"
-		"<h1>Index of " << _uri << "</h1><hr><pre><a href=\"../\">../</a>\r\n";
+		"<h1>Index of " << _uri.path << "</h1><hr><pre><a href=\"../\">../</a>\r\n";
 	while ((ent = readdir(dir)) != NULL)
 		if (ent->d_name[0] != '.')
 			entries.push_back(ent->d_name);
 	std::sort(entries.begin(), entries.end());
 	for (std::vector<std::string>::const_iterator cit = entries.begin(); cit != entries.end(); cit++)
 	{
-		if (file::get_type(_full_location + *(cit)) == file::FT_DIR)
+		if (file::get_type(_uri.full_path + *(cit)) == file::FT_DIR)
 			oss <<
-				"<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(_full_location + *(cit)) << "\t-\r\n";
+				"<a href=\"" << *(cit) << "/\">" << *(cit) << "/</a>\t" << file::time_last_change(_uri.full_path + *(cit)) << "\t-\r\n";
 		else
 			oss_file <<
-				"<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_full_location + *(cit)) << '\t' << file::size(_full_location + *(cit)) << "\r\n";
+				"<a href=\"" << *(cit) << "\">" << *(cit) << "</a>\t" << file::time_last_change(_uri.full_path + *(cit)) << '\t' << file::size(_uri.full_path + *(cit)) << "\r\n";
 	}
 	oss << oss_file.str() <<
 		"</pre><hr></body>\r\n"
@@ -105,17 +133,17 @@ void	Response::_create_auto_index_page()
 void	Response::_read_file()
 {
 	std::stringstream	buf;
-	file::e_type		ft = file::get_type(_full_location);
+	file::e_type		ft = file::get_type(_uri.full_path);
 
 	if (ft == file::FT_DIR)
 	{
 		for (size_t i = 0; i < _serv.index.size(); ++i)
 		{
 			std::string	const &index_candidate =_serv.index.at(i);
-			if (file::get_type(file::join(_full_location, index_candidate)) == file::FT_FILE) {
+			if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
 				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
 				_uri = index_candidate;
-				_full_location = file::join(_full_location, index_candidate);
+				_uri.resolve(_serv);
 				return (_read_file());
 			}
 		}
@@ -128,14 +156,14 @@ void	Response::_read_file()
 		}
 		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 	}
-	else if (file::get_type(_full_location) == file::FT_FILE)
+	else if (file::get_type(_uri.full_path) == file::FT_FILE)
 	{
-		if (file::has_read_perm(_full_location) == false)
+		if (file::has_read_perm(_uri.full_path) == false)
 			return (_read_error_page(http::Forbidden));
-		file.open(_full_location.c_str(), std::ifstream::in);
+		file.open(_uri.full_path.c_str(), std::ifstream::in);
 		if (file.is_open() == false)
 			return (_read_error_page(http::NotFound));
-		if ((size_file = file::size(_full_location)) + 200 >= BUFFER_SIZE)
+		if ((size_file = file::size(_uri.full_path)) + 200 >= BUFFER_SIZE)
 		{
 			is_large_file = true;
 			_code = http::Ok;
@@ -203,7 +231,7 @@ void		Response::_getMethod()
 }
 
 bool		Response::_is_a_cgi() const {
-	return (_full_location.find("/cgi-bin/") != std::string::npos);
+	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
 }
 
 void		Response::_postMethod()
@@ -213,7 +241,7 @@ void		Response::_postMethod()
 	//cgi;
 
 	updir = file::join(_serv.root, "upload/");
-	if (_full_location.substr(0, updir.length()) == updir)
+	if (_uri.full_path.substr(0, updir.length()) == updir)
 	{
 		if (file::get_type(updir) != file::FT_DIR)
 			if (mkdir(updir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1)
@@ -221,12 +249,12 @@ void		Response::_postMethod()
 				_read_error_page(http::InternalServerError);
 				return ;
 			} //what happen if is file
-		if (file::get_type(_full_location) == file::FT_FILE || file::get_type(_full_location) == file::FT_DIR)
+		if (file::get_type(_uri.full_path) == file::FT_FILE || file::get_type(_uri.full_path) == file::FT_DIR)
 		{
 			_read_error_page(http::Forbidden);
 			return ;
 		}
-		new_file.open(_full_location.c_str());
+		new_file.open(_uri.full_path.c_str());
 		if (new_file.is_open() == false)
 		{
 			_read_error_page(http::InternalServerError);
@@ -247,11 +275,11 @@ void		Response::_postMethod()
 
 void		Response::_deleteMethod()
 {
-	if (file::get_type(_full_location) == file::FT_UNKOWN)
+	if (file::get_type(_uri.full_path) == file::FT_UNKOWN)
 		_read_error_page(http::NotFound);
-	else if (file::has_write_perm(_full_location) == false)
+	else if (file::has_write_perm(_uri.full_path) == false)
 		_read_error_page(http::Forbidden);
-	else if (remove(_full_location.c_str()) != -1)
+	else if (remove(_uri.full_path.c_str()) != -1)
 	{
 		_code = http::NoContent; // or 200 and return something;
 		//body = "";
@@ -299,10 +327,10 @@ void	Response::_set_header_map()
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
-		_header_map["Content-Type"] = _serv.get_mime(_uri);
+		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
 	if (_code == 301)
-		_header_map["location"] = _uri.substr(_serv.root.length()); // todo fill host + location
+		_header_map["location"] = _uri.path.substr(_serv.root.length()); // todo fill host + location
 }
 
 void		Response::_set_header()

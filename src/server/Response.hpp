@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/19 17:42:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 11:34:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,17 @@ class Response
 public:
 	typedef std::map<std::string, void (Response::*)()>	MethodMap;
 	typedef std::map<std::string, std::string>			HeaderMap;
+	struct Uri {
+		std::string						path;
+		std::string						full_path;
+		std::string const				*root;
+		std::vector<std::string> const	*indexes;
+		Config::ErrPageMap const		*error_pages;
+		Uri(const std::string &path);
+		void resolve(Config::Server const &serv);
+	private:
+		Uri();
+	};
 
 private:
 	HeaderMap					_header_map;
@@ -47,9 +58,8 @@ private:
 	http::code					_code;
 	bool						_autoindex;
 	std::string const			_request_uri;
-	std::string					_uri;
+	Uri							_uri;
 	std::string					_query_string;
-	std::string					_full_location;
 	Config::Server const		&_serv;
 	Config::Connection const	&_client_info;
 	std::string					_cgi_status;
