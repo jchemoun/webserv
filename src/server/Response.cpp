@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 11:27:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 12:34:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 #include "color.hpp"
 #include "utils.hpp"
 
-Response::Uri::Uri(const std::string &path):
+Response::Uri::Uri(const std::string &path, Config::Server const &serv):
 	path(path),
-	root(NULL),
-	indexes(NULL),
-	error_pages(NULL)
+	root(&serv.root),
+	indexes(&serv.index),
+	error_pages(&serv.error_pages)
 { }
 
 void Response::Uri::resolve(Config::Server const &serv) {
@@ -51,9 +51,9 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_code			(req.get_status_code()),
 	_autoindex		(req.current_server->autoindex),
 	_request_uri	(req.get_request_uri()),
-	_uri			(req.get_uri()),
 	_query_string	(req.get_query_string()),
 	_serv			(*req.current_server),
+	_uri			(req.get_uri(), _serv),
 	_client_info	(client_info),
 	_req			(req),
 	is_large_file	(false),
@@ -137,12 +137,12 @@ void	Response::_read_file()
 
 	if (ft == file::FT_DIR)
 	{
-		for (size_t i = 0; i < _serv.index.size(); ++i)
+		for (size_t i = 0; i < _uri.indexes->size(); ++i)
 		{
-			std::string	const &index_candidate =_serv.index.at(i);
+			std::string	const &index_candidate =_uri.indexes->at(i);
 			if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
 				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
-				_uri = index_candidate;
+				_uri.path = index_candidate;
 				_uri.resolve(_serv);
 				return (_read_file());
 			}
@@ -187,10 +187,10 @@ void		Response::_read_error_page(http::code error_code)
 	_code = error_code;
 	std::cout << "Current status: " << color::red << _code << color::reset << "\n";
 
-	std::string const	*error_page_ptr = utils::get(_serv.error_pages, _code);
+	std::string const	*error_page_ptr = utils::get(*_uri.error_pages, _code);
 	if (error_page_ptr)
 	{
-		std::string	error_page = file::join(_serv.root, *error_page_ptr);
+		std::string	error_page = file::join(*_uri.root, *error_page_ptr);
 		if ((file::get_type(error_page) == file::FT_FILE) && file::has_read_perm(error_page)) // nginx actually search index if it is a folder
 		{
 			file.open(error_page.c_str(), std::ifstream::in);
@@ -240,7 +240,7 @@ void		Response::_postMethod()
 	std::ofstream	new_file;
 	//cgi;
 
-	updir = file::join(_serv.root, "upload/");
+	updir = file::join(*_uri.root, "upload/");
 	if (_uri.full_path.substr(0, updir.length()) == updir)
 	{
 		if (file::get_type(updir) != file::FT_DIR)
@@ -330,7 +330,7 @@ void	Response::_set_header_map()
 		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
 	if (_code == 301)
-		_header_map["location"] = _uri.path.substr(_serv.root.length()); // todo fill host + location
+		_header_map["location"] = _uri.path.substr(_uri.root->length()); // todo fill host + location
 }
 
 void		Response::_set_header()
