@@ -142,7 +142,7 @@ void	Response::_read_file()
 			std::string	const &index_candidate =_uri.indexes->at(i);
 			if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
 				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
-				_uri.path = index_candidate;
+				_uri.path = file::join(_uri.path, index_candidate);
 				_uri.resolve(_serv);
 				return (_read_file());
 			}
