@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 12:34:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 13:44:48 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_uri			(req.get_uri(), _serv),
 	_client_info	(client_info),
 	_req			(req),
-	is_large_file	(false),
+	is_large_file	(0),
 	size_file		(0)
 {
 	if (_req.is_invalid()) {
@@ -154,7 +154,6 @@ void	Response::_read_file()
 			std::cout << "WTF IS THIS\n";
 			return (_read_error_page(http::Forbidden));
 		}
-		//body = some_error_page; // probably a 403 because autoindex off mean it's forbidden
 	}
 	else if (file::get_type(_uri.full_path) == file::FT_FILE)
 	{
@@ -165,7 +164,7 @@ void	Response::_read_file()
 			return (_read_error_page(http::NotFound));
 		if ((size_file = file::size(_uri.full_path)) + 200 >= BUFFER_SIZE)
 		{
-			is_large_file = true;
+			is_large_file = 1;
 			_code = http::Ok;
 			return ;
 		}
@@ -323,7 +322,7 @@ const Response::MethodMap	Response::_methods = Response::_init_method_map();
 void	Response::_set_header_map()
 {
 	_header_map["Server"]         = "wevserv/0.1 (ubuntu)";
-	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));//utils::to_str(is_large_file ? file::size(location) : body.size());
+	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())

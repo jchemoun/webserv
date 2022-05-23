@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 11:55:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 13:43:17 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@
 # include "Request.hpp"
 # include "utils.hpp"
 # include "file.hpp"
-# include "Webserv.hpp"
+# include "Include.hpp"
 # include "Cgi.hpp"
 # include "http_response_codes.hpp"
 
@@ -71,7 +71,7 @@ public:
 	Response(Request const &req, Config::Connection const &client_info);
 	~Response();
 
-	bool			is_large_file;
+	int			is_large_file;
 	long			size_file;
 	std::ifstream	file;
 
