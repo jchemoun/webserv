@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/19 13:03:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 19:49:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <iostream>
 #include <map>
 #include <cstring>
+#include <algorithm>
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"] = &Parser::_parse_listen;
@@ -79,6 +80,12 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 */
 
 /*
+** @brief sort locations from smallest to biggest
+*/
+bool	compare_locations(Config::Location const &loc1, Config::Location const &loc2) {
+	return (loc1.location_path.size() < loc2.location_path.size());
+}
+/*
 ** ✓ Syntax:	server { ... }
 ** ✓ Default:	—
 ** ✓ Context:	http
@@ -94,6 +101,7 @@ void	Parser::_parse_server() {
 		(this->*_get_directive_parser(_server_parsers))(server);
 	}
 	server.mime_map = &_config.types;
+	std::sort(server.locations.begin(), server.locations.end(), compare_locations);
 	_config.servers.push_back(server);
 	_eat(Token::type_special_char, "}");
 }
