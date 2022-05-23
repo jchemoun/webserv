@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 14:07:07 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/23 17:45:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ public:
 	Response(Request const &req, Config::Connection const &client_info);
 	~Response();
 
-	int			is_large_file;
+	int				is_large_file;
 	long			size_file;
 	std::ifstream	file;
 

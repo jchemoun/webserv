@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 15:25:36 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/23 18:15:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,12 +92,6 @@ void	Response::_create_auto_index_page()
 	DIR							*dir;
 	struct dirent				*ent;
 
-	if (*(_uri.full_path.rbegin()) != '/')
-	{
-		_uri.path += '/';
-		_uri.resolve(_serv);
-		return (_read_error_page(http::MovedPermanently));
-	}
 	// probably error need check if exist && exec perm
 	if (file::has_read_perm(_uri.full_path) == false)
 		return (_read_error_page(http::Forbidden));
@@ -137,6 +131,12 @@ void	Response::_read_file()
 
 	if (ft == file::FT_DIR)
 	{
+		if (*(_uri.full_path.rbegin()) != '/')
+		{
+			_uri.path += '/';
+			_uri.resolve(_serv);
+			return (_read_error_page(http::MovedPermanently));
+		}
 		for (size_t i = 0; i < _uri.indexes->size(); ++i)
 		{
 			std::string	const &index_candidate =_uri.indexes->at(i);
@@ -341,15 +341,15 @@ const Response::MethodMap	Response::_methods = Response::_init_method_map();
 
 void	Response::_set_header_map()
 {
-	_header_map["Server"]         = "wevserv/0.1 (ubuntu)";
+	_header_map["Server"]         = "webserv/0.1";
 	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
 		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
-	if (_code == 301)
-		_header_map["location"] = _uri.path.substr(_uri.root->length()); // todo fill host + location
+	if (_code == http::MovedPermanently)
+		_header_map["Location"] = _uri.path; // better: add scheme and host
 }
 
 void		Response::_set_header()
