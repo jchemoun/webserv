@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/23 20:00:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 17:45:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,7 @@ private:
 	// NOCOMPATIBLE
 	template <class Context>
 	void	_parse_allow_methods(Context &context);
+	void	_parse_cgi(Config::Location &location);
 
 	// Parse types
 	void	_parse_types();

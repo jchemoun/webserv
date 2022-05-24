@@ -44,6 +44,7 @@ struct Config {
 		ErrPageMap					error_pages;
 		bool						autoindex; // make a pair, and init in Location()
 		std::vector<std::string>	allow_methods;
+		std::string					cgi;
 		Location();
 		void	print() const;
 		bool	match(std::string const &path) const;

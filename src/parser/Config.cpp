@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 16:26:09 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 17:44:12 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ void	Config::Location::print() const {
 	std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
 	print_map(error_pages, "    Error page ");
 	std::cout << "    Allow methods: "; print_vector(allow_methods);
+	std::cout << "    Cgi: " << cgi << std::endl;
 	std::cout << "\e[0m";
 }
 

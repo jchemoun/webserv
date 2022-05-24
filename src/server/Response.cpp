@@ -6,46 +6,13 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 16:24:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 18:11:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include "color.hpp"
 #include "utils.hpp"
-
-Response::Uri::Uri(const std::string &path, Config::Server const &serv):
-	path          (path),
-	root          (&serv.root),
-	indexes       (&serv.index),
-	error_pages   (&serv.error_pages),
-	allow_methods (&serv.allow_methods),
-	autoindex     (serv.autoindex)
-{ }
-
-void Response::Uri::resolve(Config::Server const &serv) {
-	root          = &serv.root;
-	indexes       = &serv.index;
-	error_pages   = &serv.error_pages;
-	allow_methods = &serv.allow_methods;
-	autoindex     = serv.autoindex;
-	for (size_t i = 0; i < serv.locations.size(); ++i) {
-		Config::Location const &location = serv.locations.at(i);
-		if (location.match(path)) {
-			if (!location.root.empty())
-				root = &location.root;
-			if (!location.index.empty())
-				indexes = &location.index;
-			if (!location.error_pages.empty())
-				error_pages = &location.error_pages;
-			if (!location.allow_methods.empty())
-				allow_methods = &location.allow_methods;
-			autoindex = location.autoindex;
-			break;
-		}
-	}
-	full_path = file::join(*root, path);
-}
 
 /*
 ** ============================= Public methods ============================= **
@@ -228,12 +195,13 @@ void		Response::_read_error_page(http::code error_code)
 }
 
 bool		Response::_is_a_cgi() const {
-	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
+	// return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
+	return (_uri.cgi != NULL);
 }
 
 void		Response::_run_cgi() {
 	try {
-		Cgi	cgi(_req, _client_info);
+		Cgi	cgi(_req, _uri, _client_info);
 		cgi.run();
 		std::swap(cgi.body, _body);
 		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {

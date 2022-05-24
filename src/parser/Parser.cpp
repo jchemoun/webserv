@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 16:11:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 17:49:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,22 +17,23 @@
 #include <algorithm>
 
 void	Parser::_init_parsers() {
-	_server_parsers["listen"] = &Parser::_parse_listen;
-	_server_parsers["server_name"] = &Parser::_parse_server_name;
-	_server_parsers["index"] = &Parser::_parse_index;
-	_server_parsers["location"] = &Parser::_parse_location;
-	_server_parsers["root"] = &Parser::_parse_root;
-	_server_parsers["error_page"] = &Parser::_parse_error_page;
-	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
-	_server_parsers["default_type"] = &Parser::_parse_default_mime;
+	_server_parsers["listen"]               = &Parser::_parse_listen;
+	_server_parsers["server_name"]          = &Parser::_parse_server_name;
+	_server_parsers["location"]             = &Parser::_parse_location;
+	_server_parsers["root"]                 = &Parser::_parse_root;
+	_server_parsers["index"]                = &Parser::_parse_index;
+	_server_parsers["error_page"]           = &Parser::_parse_error_page;
+	_server_parsers["autoindex"]            = &Parser::_parse_autoindex;
+	_server_parsers["default_type"]         = &Parser::_parse_default_mime;
 	_server_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
-	_server_parsers["allow_methods"] = &Parser::_parse_allow_methods;
+	_server_parsers["allow_methods"]        = &Parser::_parse_allow_methods;
 
-	_location_parsers["root"] = &Parser::_parse_root;
-	_location_parsers["index"] = &Parser::_parse_index;
-	_location_parsers["error_page"] = &Parser::_parse_error_page;
-	_location_parsers["autoindex"] = &Parser::_parse_autoindex;
+	_location_parsers["root"]          = &Parser::_parse_root;
+	_location_parsers["index"]         = &Parser::_parse_index;
+	_location_parsers["error_page"]    = &Parser::_parse_error_page;
+	_location_parsers["autoindex"]     = &Parser::_parse_autoindex;
 	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
+	_location_parsers["cgi"]           = &Parser::_parse_cgi;
 }
 
 Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
@@ -326,6 +327,19 @@ void	Parser::_parse_allow_methods(Context &context) {
 		else
 			throw ParsingError("allow methods: unsupported method");
 	}
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** @brief cgi path_to_cgi;
+** Location blocks only
+*/
+void	Parser::_parse_cgi(Config::Location &location) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("root: missing path");
+	location.cgi = _current_token().get_value();
+	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
 
