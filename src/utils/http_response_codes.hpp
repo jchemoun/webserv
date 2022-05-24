@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/16 14:45:44 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 21:41:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 22:40:46 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ namespace http {
 		NoContent               = 204,
 		// Redirections
 		MovedPermanently        = 301,
+		MovedTemporarily        = 302,
 		PermanentRedirect       = 308,
 		// Client error
 		BadRequest              = 400,
