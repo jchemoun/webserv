@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 18:11:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 22:22:36 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,11 @@ size_t		Response::size()  const { return (_full_response.size());  }
 void		Response::_process_uri() {
 	_uri.resolve(_serv);
 	if (_is_method_allowed()) {
-		if (_is_a_cgi())
+		if (_uri.return_code) {
+			_header_map["Location"] = *_uri.return_url;
+			_read_error_page(*_uri.return_code);
+		}
+		else if (_is_a_cgi())
 			_run_cgi();
 		else
 			(this->*_methods.at(_request_method))();
@@ -316,7 +320,7 @@ void	Response::_set_header_map()
 	if (_header_map.find("Content-Type") == _header_map.end())
 		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
-	if (_code == http::MovedPermanently)
+	if (_code == http::MovedPermanently && !utils::get(_header_map, std::string("Location")))
 		_header_map["Location"] = _uri.path; // better: add scheme and host
 }
 

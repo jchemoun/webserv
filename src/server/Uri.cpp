@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:04:20 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 18:05:28 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 22:30:28 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ Uri::Uri(const std::string &path, Config::Server const &serv):
 	error_pages   (&serv.error_pages),
 	allow_methods (&serv.allow_methods),
 	autoindex     (serv.autoindex),
-	cgi           (NULL)
+	cgi           (NULL),
+	return_code   (NULL)
 { }
 
 void Uri::resolve(Config::Server const &serv) {
@@ -42,6 +43,10 @@ void Uri::resolve(Config::Server const &serv) {
 				allow_methods = &location.allow_methods;
 			if (!location.cgi.empty())
 				cgi = &location.cgi;
+			if (!location.return_url.empty())
+				return_url = &location.return_url;
+			if (location.return_code)
+				return_code = &location.return_code;
 			autoindex = location.autoindex;
 			break;
 		}

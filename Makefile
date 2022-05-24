@@ -185,13 +185,13 @@ test: compile
 		else \
 		make test_one CONF=$(CONF); \
 		exit $?; \
-		fi
-	@for file in conf/nginx_nocompat/*.conf; do \
+		for file in conf/nginx_nocompat/*.conf; do \
 		make --silent test_nocompat CONF=$$file; \
 		if [ -d failed_tests ]; then \
 		exit 1; \
 		fi; \
-		done
+		done; \
+		fi
 
 test_one:
 	@mkdir -p failed_tests

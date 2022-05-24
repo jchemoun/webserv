@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:02:49 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 18:05:54 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 22:08:43 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ struct Uri {
 	std::vector<std::string> const	*allow_methods;
 	bool							autoindex;
 	std::string const				*cgi;
+	http::code const				*return_code;
+	std::string const				*return_url;
 
 	Uri(const std::string &path, Config::Server const &serv);
 	void resolve(Config::Server const &serv);
