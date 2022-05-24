@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 15:25:36 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/24 11:22:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,15 @@ Response::Uri::Uri(const std::string &path, Config::Server const &serv):
 	path(path),
 	root(&serv.root),
 	indexes(&serv.index),
-	error_pages(&serv.error_pages)
+	error_pages(&serv.error_pages),
+	allow_methods(&serv.allow_methods)
 { }
 
 void Response::Uri::resolve(Config::Server const &serv) {
 	root = &serv.root;
 	indexes = &serv.index;
 	error_pages = &serv.error_pages;
+	allow_methods = &serv.allow_methods;
 	for (size_t i = 0; i < serv.locations.size(); ++i) {
 		Config::Location const &location = serv.locations.at(i);
 		std::string const &location_path = location.location_path;
@@ -35,6 +37,8 @@ void Response::Uri::resolve(Config::Server const &serv) {
 				indexes = &location.index;
 			if (!location.error_pages.empty())
 				error_pages = &location.error_pages;
+			if (!location.allow_methods.empty())
+				allow_methods = &location.allow_methods;
 		}
 	}
 	full_path = file::join(*root, path);
@@ -51,6 +55,7 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_code			(req.get_status_code()),
 	_autoindex		(req.current_server->autoindex),
 	_request_uri	(req.get_request_uri()),
+	_request_method	(req.get_method()),
 	_query_string	(req.get_query_string()),
 	_serv			(*req.current_server),
 	_uri			(req.get_uri(), _serv),
@@ -59,16 +64,10 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	is_large_file	(0),
 	size_file		(0)
 {
-	if (_req.is_invalid()) {
+	if (_req.is_invalid())
 		_read_error_page(_code);
-	}
-	else {
-		_uri.resolve(_serv);
-		if (_methods.find(req.get_method()) != _methods.end())
-			(this->*_methods.at(req.get_method()))();
-		else
-			_read_error_page(http::MethodNotAllowed);
-	}
+	else
+		_process_uri();
 	_set_header();
 	_set_full_response();
 }
@@ -81,6 +80,25 @@ size_t		Response::size()  const { return (_full_response.size());  }
 ** ============================ Private Methods ============================= **
 */
 
+void		Response::_process_uri() {
+	_uri.resolve(_serv);
+	if (_is_method_allowed()) {
+		if (_is_a_cgi())
+			_run_cgi();
+		else
+			(this->*_methods.at(_request_method))();
+	}
+	else
+		_read_error_page(http::MethodNotAllowed);
+}
+
+bool		Response::_is_method_allowed() {
+	for (size_t i = 0; i < _uri.allow_methods->size(); ++i)
+		if (_request_method == _uri.allow_methods->at(i))
+			return (true);
+	return (false);
+}
+
 /*
 ** @brief list every folder then file, except hidden ones
 */
@@ -92,12 +110,6 @@ void	Response::_create_auto_index_page()
 	DIR							*dir;
 	struct dirent				*ent;
 
-	if (*(_uri.full_path.rbegin()) != '/')
-	{
-		_uri.path += '/';
-		_uri.resolve(_serv);
-		return (_read_error_page(http::MovedPermanently));
-	}
 	// probably error need check if exist && exec perm
 	if (file::has_read_perm(_uri.full_path) == false)
 		return (_read_error_page(http::Forbidden));
@@ -130,47 +142,58 @@ void	Response::_create_auto_index_page()
 	closedir(dir);
 }
 
-void	Response::_read_file()
+void	Response::_read_uri()
 {
-	std::stringstream	buf;
 	file::e_type		ft = file::get_type(_uri.full_path);
 
 	if (ft == file::FT_DIR)
-	{
-		for (size_t i = 0; i < _uri.indexes->size(); ++i)
-		{
-			std::string	const &index_candidate =_uri.indexes->at(i);
-			if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
-				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
-				_uri.path = file::join(_uri.path, index_candidate);
-				_uri.resolve(_serv);
-				return (_read_file());
-			}
-		}
-		if (_autoindex)
-			return (_create_auto_index_page());
-		else
-			return (_read_error_page(http::Forbidden));
-	}
+		return (_read_directory());
 	else if (file::get_type(_uri.full_path) == file::FT_FILE)
-	{
-		if (file::has_read_perm(_uri.full_path) == false)
-			return (_read_error_page(http::Forbidden));
-		file.open(_uri.full_path.c_str(), std::ifstream::in);
-		if (file.is_open() == false)
-			return (_read_error_page(http::NotFound));
-		if ((size_file = file::size(_uri.full_path)) + 200 >= BUFFER_SIZE)
-		{
-			is_large_file = 1;
-			_code = http::Ok;
-			return ;
-		}
-		buf << file.rdbuf();
-		file.close();
-		_body = buf.str();
-	}
+		return (_read_file());
 	else
 		return (_read_error_page(http::NotFound));
+}
+
+void		Response::_read_directory()
+{
+	if (*(_uri.full_path.rbegin()) != '/')
+	{
+		_uri.path += '/';
+		_uri.resolve(_serv);
+		return (_read_error_page(http::MovedPermanently));
+	}
+	for (size_t i = 0; i < _uri.indexes->size(); ++i)
+	{
+		std::string	const &index_candidate =_uri.indexes->at(i);
+		if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
+			std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
+			_uri.path = file::join(_uri.path, index_candidate);
+			return (_process_uri());
+		}
+	}
+	if (_autoindex)
+		return (_create_auto_index_page());
+	else
+		return (_read_error_page(http::Forbidden));
+}
+
+void		Response::_read_file()
+{
+	std::stringstream	buf;
+	if (file::has_read_perm(_uri.full_path) == false)
+		return (_read_error_page(http::Forbidden));
+	file.open(_uri.full_path.c_str(), std::ifstream::in);
+	if (file.is_open() == false)
+		return (_read_error_page(http::NotFound));
+	if ((size_file = file::size(_uri.full_path)) + 200 >= BUFFER_SIZE)
+	{
+		is_large_file = 1;
+		_code = http::Ok;
+		return ;
+	}
+	buf << file.rdbuf();
+	file.close();
+	_body = buf.str();
 	_code = http::Ok;
 }
 
@@ -202,6 +225,10 @@ void		Response::_read_error_page(http::code error_code)
 	_build_error_page();
 }
 
+bool		Response::_is_a_cgi() const {
+	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
+}
+
 void		Response::_run_cgi() {
 	try {
 		Cgi	cgi(_req, _client_info);
@@ -218,24 +245,9 @@ void		Response::_run_cgi() {
 	}
 }
 
-void		Response::_getMethod()
-{
-	if (_is_a_cgi())
-		_run_cgi();
-	else
-		_read_file();
-}
+void		Response::_getMethod()  { _read_uri(); }
 
-bool		Response::_is_a_cgi() const {
-	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
-}
-
-void		Response::_postMethod()
-{
-	//cgi;
-
-	_read_file();
-}
+void		Response::_postMethod() { _read_uri(); }
 
 void		Response::_deleteMethod()
 {
@@ -260,46 +272,32 @@ void		Response::_putMethod()
 
 	updir = _uri.full_path.substr(0, _uri.full_path.rfind('/'));
 	existing = false;
-	if (updir == _uri.full_path || updir.empty())
-	{
-		_read_error_page(http::BadRequest);
-		return ;
+
+	if (updir == _uri.full_path || updir.empty()) {
+		return _read_error_page(http::BadRequest);
 	}
-	if (file::get_type(updir) != file::FT_DIR)
-	{
-		_read_error_page(http::NotFound);
-		return ;
+	if (file::get_type(updir) != file::FT_DIR) {
+		return _read_error_page(http::NotFound);
 	}
-	if (file::get_type(_uri.full_path) == file::FT_DIR)
-	{
-		_read_error_page(http::Forbidden);
-		return ;
+	if (file::get_type(_uri.full_path) == file::FT_DIR) {
+		return _read_error_page(http::Forbidden);
 	}
-	if (file::get_type(_uri.full_path) == file::FT_FILE)
-	{
+	if (file::get_type(_uri.full_path) == file::FT_FILE) {
 		existing = true;
-		if (file::has_write_perm(_uri.full_path) == false)
-		{
-			_read_error_page(http::Forbidden);
-			return ;
+		if (file::has_write_perm(_uri.full_path) == false) {
+			return _read_error_page(http::Forbidden);
 		}
 	}
 	new_file.open(_uri.full_path.c_str());
-	if (chmod(_uri.full_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1)
-	{
-		_read_error_page(http::InternalServerError);
-		return ;
+	if (chmod(_uri.full_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1) {
+		return _read_error_page(http::InternalServerError);
 	}
-	if (new_file.is_open() == false)
-	{
-		_read_error_page(http::InternalServerError);
-		return ;
+	if (new_file.is_open() == false) {
+		return _read_error_page(http::InternalServerError);
 	}
 	new_file.write(_req.get_body().c_str(), _req.get_body().length());
-	if (new_file.bad() || new_file.fail())
-	{
-		_read_error_page(http::InternalServerError);
-		return ;
+	if (new_file.bad() || new_file.fail()) {
+		return _read_error_page(http::InternalServerError);
 	}
 	new_file.close();
 	if (existing)
@@ -318,7 +316,7 @@ void	Response::_build_error_page()
 		"<head><title>" << _code << ' ' << http::status.at(_code) << "</title></head>\r\n"
 		"<body>\r\n"
 		"<center><h1>" << _code << ' ' << http::status.at(_code) << "</h1></center>\r\n"
-		"<hr><center>" "webserv/0.1" "</center>\r\n"
+		"<hr><center>" SERVER_SOFTWARE "</center>\r\n"
 		"</body>\r\n"
 		"</html>\r\n";
 
@@ -341,15 +339,15 @@ const Response::MethodMap	Response::_methods = Response::_init_method_map();
 
 void	Response::_set_header_map()
 {
-	_header_map["Server"]         = "wevserv/0.1 (ubuntu)";
+	_header_map["Server"]         = SERVER_SOFTWARE;
 	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));
 	_header_map["Connection"]     = "keep-alive";
 
 	if (_header_map.find("Content-Type") == _header_map.end())
 		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
-	if (_code == 301)
-		_header_map["location"] = _uri.path.substr(_uri.root->length()); // todo fill host + location
+	if (_code == http::MovedPermanently)
+		_header_map["Location"] = _uri.path; // better: add scheme and host
 }
 
 void		Response::_set_header()

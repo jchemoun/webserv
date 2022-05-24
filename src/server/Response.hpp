@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 14:07:07 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/24 11:06:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ public:
 		std::string const				*root;
 		std::vector<std::string> const	*indexes;
 		Config::ErrPageMap const		*error_pages;
+		std::vector<std::string> const	*allow_methods;
 		Uri(const std::string &path, Config::Server const &serv);
 		void resolve(Config::Server const &serv);
 	private:
@@ -58,6 +59,7 @@ private:
 	http::code					_code;
 	bool						_autoindex;
 	std::string const			_request_uri;
+	std::string const			_request_method;
 	std::string					_query_string;
 	Config::Server const		&_serv;
 	Uri							_uri;
@@ -71,7 +73,7 @@ public:
 	Response(Request const &req, Config::Connection const &client_info);
 	~Response();
 
-	int			is_large_file;
+	int				is_large_file;
 	long			size_file;
 	std::ifstream	file;
 
@@ -81,8 +83,12 @@ public:
 private:
 	static MethodMap	_init_method_map();
 
+	void		_process_uri();
+	bool		_is_method_allowed();
 	void		_create_auto_index_page();
+	void		_read_uri();
 	void		_read_file();
+	void		_read_directory();
 	void		_read_error_page(http::code	error_code);
 
 	void		_getMethod();

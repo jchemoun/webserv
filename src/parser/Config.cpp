@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/19 13:05:37 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 09:19:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,15 +40,18 @@ static void print_map(const std::map<Key, Value> &m, std::string indent = "") {
 ** ================================ Location ================================ **
 */
 
-Config::Location::Location(): autoindex(false) { // autoindex should be unset
+Config::Location::Location()
+	// : autoindex(false)
+{
 }
 
 void	Config::Location::print() const {
 	std::cout << "\e[34mLocation: " << location_path << std::endl;
 	std::cout << "    Indexes: "; print_vector(index);
 	std::cout << "    Root: " << root << std::endl;
-	std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
+	// std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
 	print_map(error_pages, "    Error page ");
+	std::cout << "    Allow methods: "; print_vector(allow_methods);
 	std::cout << "\e[0m";
 }
 
@@ -96,6 +99,10 @@ void	Config::Server::set_defaults() {
 		listen_vect.push_back(Connection());
 	if (index.empty())
 		index.push_back("index.html");
+	if (allow_methods.empty()) {
+		allow_methods.push_back("GET");
+		allow_methods.push_back("POST");
+	}
 }
 
 void	Config::Server::print() const {
@@ -112,6 +119,7 @@ void	Config::Server::print() const {
 	std::cout << "Default mime-type: " << default_mime << std::endl;
 	std::cout << "Max client body size: " << client_max_body_size << std::endl;
 	print_map(error_pages, "Error page ");
+	std::cout << "Allow methods: "; print_vector(allow_methods);
 }
 
 std::string	Config::Server::get_mime(std::string const &filename) const{

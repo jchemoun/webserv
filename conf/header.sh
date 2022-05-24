@@ -35,7 +35,7 @@ check_header /folder/ /not_found.png /folder
 # curl -i localhost:8080/42_logo.png # curl behaves weirdly with binaries
 
 # filter_output() {
-#     sed 's/nginx[^<]*/webserv\/0.1/g' |
+#     sed 's/nginx[^<]*/webserv\/1.0/g' |
 #     sed 's/\s\+/ /g' |
 #     sed 's/[0-9]\+:[0-9]\+/hour:min/' |
 #     sed 's/ $//' |
