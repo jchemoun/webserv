@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/23 19:49:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 09:18:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,13 @@ void	Parser::_init_parsers() {
 	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
 	_server_parsers["default_type"] = &Parser::_parse_default_mime;
 	_server_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
+	_server_parsers["allow_methods"] = &Parser::_parse_allow_methods;
 
 	_location_parsers["root"] = &Parser::_parse_root;
 	_location_parsers["index"] = &Parser::_parse_index;
 	_location_parsers["error_page"] = &Parser::_parse_error_page;
-	_location_parsers["autoindex"] = &Parser::_parse_autoindex;
+	// _location_parsers["autoindex"] = &Parser::_parse_autoindex;
+	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
 }
 
 Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
@@ -293,6 +295,30 @@ void	Parser::_parse_client_max_body_size(Config::Server	&server) {
 	try { server.client_max_body_size = _stoi(arg, 0, server._overflow_body_size - 1); }
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** =========================== Nginx incompatible =========================== **
+*/
+
+static bool	is_valid_method(std::string const &method) {
+	static char const *allow_methods[] = { "GET", "POST", "DELETE", "PUT" };
+	for (size_t i = 0; i < sizeof(allow_methods) / sizeof(allow_methods[0]); ++i)
+		if (method == allow_methods[i])
+			return (true);
+	return (false);
+}
+template <class Context>
+void	Parser::_parse_allow_methods(Context &context) {
+	if (!_lexer.peek_next().expect(Token::type_word))
+		throw ParsingError("allow_methods: missing value");
+	while (_lexer.next().expect(Token::type_word)) {
+		if (is_valid_method(_current_token().get_value()))
+			context.allow_methods.push_back(_current_token().get_value());
+		else
+			throw ParsingError("allow methods: unsupported method");
+	}
 	_eat(Token::type_special_char, ";");
 }
 

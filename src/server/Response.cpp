@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 18:15:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 09:30:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,15 @@ Response::Uri::Uri(const std::string &path, Config::Server const &serv):
 	path(path),
 	root(&serv.root),
 	indexes(&serv.index),
-	error_pages(&serv.error_pages)
+	error_pages(&serv.error_pages),
+	allow_methods(&serv.allow_methods)
 { }
 
 void Response::Uri::resolve(Config::Server const &serv) {
 	root = &serv.root;
 	indexes = &serv.index;
 	error_pages = &serv.error_pages;
+	allow_methods = &serv.allow_methods;
 	for (size_t i = 0; i < serv.locations.size(); ++i) {
 		Config::Location const &location = serv.locations.at(i);
 		std::string const &location_path = location.location_path;
@@ -35,6 +37,8 @@ void Response::Uri::resolve(Config::Server const &serv) {
 				indexes = &location.index;
 			if (!location.error_pages.empty())
 				error_pages = &location.error_pages;
+			if (!location.allow_methods.empty())
+				allow_methods = &location.allow_methods;
 		}
 	}
 	full_path = file::join(*root, path);

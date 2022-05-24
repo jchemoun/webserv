@@ -44,6 +44,7 @@ public:
 		std::string const				*root;
 		std::vector<std::string> const	*indexes;
 		Config::ErrPageMap const		*error_pages;
+		std::vector<std::string> const	*allow_methods;
 		Uri(const std::string &path, Config::Server const &serv);
 		void resolve(Config::Server const &serv);
 	private:

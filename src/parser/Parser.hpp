@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/19 13:03:53 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/23 20:00:53 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,9 @@ private:
 	template <class Context>
 	void	_parse_autoindex(Context &context);                          // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
 	void	_parse_client_max_body_size(Config::Server	&server);        // http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
+	// NOCOMPATIBLE
+	template <class Context>
+	void	_parse_allow_methods(Context &context);
 
 	// Parse types
 	void	_parse_types();
