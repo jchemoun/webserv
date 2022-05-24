@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/24 18:09:55 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 19:01:52 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,6 +72,7 @@ void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const 
 	Config::Server const	&serv = *req.current_server;
 	// std::string const 		&req_uri  = req.get_uri();
 
+	// How pathinfo should really be set:
 	// bool		has_path_info = (uri.find(".cgi/") != std::string::npos);
 	// std::string	script_name   = (has_path_info ? uri.substr(0, uri.find(".cgi/") + 4) : uri);
 	std::string const	&script_name = *uri.cgi;
@@ -90,7 +91,7 @@ void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const 
 	// 	_env["PATH_INFO"]           = uri.substr(script_name.size());           // path in the request after the cgi's name
 	// 	_env["PATH_TRANSLATED"]     = file::join(serv.root, _env["PATH_INFO"]); // corresponding full path as supposed by server, if PATH_INFO is present
 	// }
-	_env["PATH_INFO"]               = uri.path;                              // Not really this but this is what 42 tester expects...
+	_env["PATH_INFO"]               = file::join("/", script_name);             // Not really this but this is what 42 tester expects...
 	_env["SCRIPT_NAME"]             = script_name;                              // relative path of the program (like /cgi-bin/script.cgi)
 	_env["SCRIPT_FILENAME"]         = file::join(serv.root, script_name);       // Chemin d'accès complet au script CGI (FULL PATH)
 	_env["QUERY_STRING"]            = req.get_query_string();                   // things after '?' in url
