@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 15:28:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 16:11:45 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,12 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 ** @brief sort locations from smallest to biggest
 */
 static bool	compare_locations(Config::Location const &loc1, Config::Location const &loc2) {
-	return (loc1.location_path.size() < loc2.location_path.size());
+	if (loc1.type == Config::Location::type_match)
+		return (true);
+	else if (loc2.type == Config::Location::type_match)
+			return (false);
+	else
+		return (loc1.location_path.size() > loc2.location_path.size());
 }
 /*
 ** ✓ Syntax:	server { ... }
@@ -212,6 +217,8 @@ void	Parser::_parse_location(Config::Server &server) {
 		throw ParsingError("location: missing path");
 	Config::Location	location;
 	location.location_path = _current_token().get_value();
+	if (strchr(location.location_path.c_str(), '*'))
+		location.type = Config::Location::type_match;
 	_lexer.next();
 	_eat(Token::type_special_char, "{");
 	while (!_current_token().expect(Token::type_special_char, "}")) {

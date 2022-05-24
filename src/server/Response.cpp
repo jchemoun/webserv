@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 15:26:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 16:24:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,7 @@ void Response::Uri::resolve(Config::Server const &serv) {
 	autoindex     = serv.autoindex;
 	for (size_t i = 0; i < serv.locations.size(); ++i) {
 		Config::Location const &location = serv.locations.at(i);
-		std::string const &location_path = location.location_path;
-		if (!strncmp(location_path.c_str(), path.c_str(), location_path.size())) {
+		if (location.match(path)) {
 			if (!location.root.empty())
 				root = &location.root;
 			if (!location.index.empty())
@@ -42,6 +41,7 @@ void Response::Uri::resolve(Config::Server const &serv) {
 			if (!location.allow_methods.empty())
 				allow_methods = &location.allow_methods;
 			autoindex = location.autoindex;
+			break;
 		}
 	}
 	full_path = file::join(*root, path);

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 15:13:11 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 16:05:47 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,18 @@ struct Config {
 	typedef	std::vector<Connection>	ListenVect;
 
 	struct	Location {
-		Location();
+		enum path_type { type_prefix, type_match };
+
 		std::string					location_path;
+		path_type					type;
 		std::string					root;
 		std::vector<std::string>	index;
 		ErrPageMap					error_pages;
 		bool						autoindex; // make a pair, and init in Location()
 		std::vector<std::string>	allow_methods;
+		Location();
 		void	print() const;
+		bool	match(std::string const &path) const;
 	};
 
 	struct	Server {
