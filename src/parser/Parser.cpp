@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 17:49:51 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 21:45:45 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <map>
 #include <cstring>
 #include <algorithm>
+#include "../utils/utils.hpp"
 
 void	Parser::_init_parsers() {
 	_server_parsers["listen"]               = &Parser::_parse_listen;
@@ -34,6 +35,7 @@ void	Parser::_init_parsers() {
 	_location_parsers["autoindex"]     = &Parser::_parse_autoindex;
 	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
 	_location_parsers["cgi"]           = &Parser::_parse_cgi;
+	_location_parsers["return"]        = &Parser::_parse_return;
 }
 
 Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
@@ -304,6 +306,34 @@ void	Parser::_parse_client_max_body_size(Config::Server	&server) {
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
+}
+
+/*
+** Syntax:
+** ⨯ return code [text];
+** ✓ return code URL;
+** ⨯ return URL;
+** ✓ Default:	—
+** Context:	[server,] location, [if]
+*/
+void	Parser::_parse_return(Config::Location &location) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("return: missing code");
+	if (_lexer.peek_next().get_type() != Token::type_word)
+		throw ParsingError("return: missing url");
+	try {
+		location.return_code = static_cast<http::code>(
+				_stoi(_current_token().get_value().c_str(), 0, 527));
+	}
+	catch (std::exception &e) { throw ParsingError(std::string("return: code: ") + e.what());}
+	if (!utils::get(http::status, location.return_code))
+		throw ParsingError(std::string("return: unsupported code: ") + utils::to_str(location.return_code));
+	_lexer.next();
+	location.return_url = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+
 }
 
 /*

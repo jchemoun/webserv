@@ -10,7 +10,7 @@ CXXFLAGS += -fsanitize=address
 #  ================================ Sources =================================  #
 
 HEADERS = Token.hpp Lexer.hpp Parser.hpp Config.hpp
-SRC = Token.cpp Lexer.cpp Parser.cpp Config.cpp ../utils/file.cpp
+SRC = Token.cpp Lexer.cpp Parser.cpp Config.cpp ../utils/file.cpp ../utils/utils.cpp ../utils/http_response_codes.cpp
 
 #  ================================= Rules ==================================  #
 

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 17:44:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 21:41:50 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,8 @@ static void print_map(const std::map<Key, Value> &m, std::string indent = "") {
 
 Config::Location::Location():
 	type(type_prefix),
-	autoindex(false)
+	autoindex(false),
+	return_code(static_cast<http::code>(0))
 { }
 
 static bool    match(const char *s1, const char *s2) {
@@ -76,6 +77,10 @@ void	Config::Location::print() const {
 	print_map(error_pages, "    Error page ");
 	std::cout << "    Allow methods: "; print_vector(allow_methods);
 	std::cout << "    Cgi: " << cgi << std::endl;
+	if (return_code)
+		std::cout << "    Return code: " << return_code << std::endl;
+	if (!return_url.empty())
+		std::cout << "    Return url: " << return_url << std::endl;
 	std::cout << "\e[0m";
 }
 
