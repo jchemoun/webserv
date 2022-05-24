@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 17:45:27 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 10:26:23 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,9 @@ private:
 	static MethodMap	_init_method_map();
 
 	void		_create_auto_index_page();
+	void		_read_uri();
 	void		_read_file();
+	void		_read_directory();
 	void		_read_error_page(http::code	error_code);
 
 	void		_getMethod();

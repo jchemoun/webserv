@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 09:52:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 10:31:08 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,53 +128,59 @@ void	Response::_create_auto_index_page()
 	closedir(dir);
 }
 
-void	Response::_read_file()
+void	Response::_read_uri()
 {
-	std::stringstream	buf;
 	file::e_type		ft = file::get_type(_uri.full_path);
 
 	if (ft == file::FT_DIR)
-	{
-		if (*(_uri.full_path.rbegin()) != '/')
-		{
-			_uri.path += '/';
-			_uri.resolve(_serv);
-			return (_read_error_page(http::MovedPermanently));
-		}
-		for (size_t i = 0; i < _uri.indexes->size(); ++i)
-		{
-			std::string	const &index_candidate =_uri.indexes->at(i);
-			if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
-				std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
-				_uri.path = file::join(_uri.path, index_candidate);
-				_uri.resolve(_serv);
-				return (_read_file());
-			}
-		}
-		if (_autoindex)
-			return (_create_auto_index_page());
-		else
-			return (_read_error_page(http::Forbidden));
-	}
+		return (_read_directory());
 	else if (file::get_type(_uri.full_path) == file::FT_FILE)
-	{
-		if (file::has_read_perm(_uri.full_path) == false)
-			return (_read_error_page(http::Forbidden));
-		file.open(_uri.full_path.c_str(), std::ifstream::in);
-		if (file.is_open() == false)
-			return (_read_error_page(http::NotFound));
-		if ((size_file = file::size(_uri.full_path)) + 200 >= BUFFER_SIZE)
-		{
-			is_large_file = 1;
-			_code = http::Ok;
-			return ;
-		}
-		buf << file.rdbuf();
-		file.close();
-		_body = buf.str();
-	}
+		return (_read_file());
 	else
 		return (_read_error_page(http::NotFound));
+}
+
+void		Response::_read_directory()
+{
+	if (*(_uri.full_path.rbegin()) != '/')
+	{
+		_uri.path += '/';
+		_uri.resolve(_serv);
+		return (_read_error_page(http::MovedPermanently));
+	}
+	for (size_t i = 0; i < _uri.indexes->size(); ++i)
+	{
+		std::string	const &index_candidate =_uri.indexes->at(i);
+		if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
+			std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
+			_uri.path = file::join(_uri.path, index_candidate);
+			_uri.resolve(_serv);
+			return (_read_uri());
+		}
+	}
+	if (_autoindex)
+		return (_create_auto_index_page());
+	else
+		return (_read_error_page(http::Forbidden));
+}
+
+void		Response::_read_file()
+{
+	std::stringstream	buf;
+	if (file::has_read_perm(_uri.full_path) == false)
+		return (_read_error_page(http::Forbidden));
+	file.open(_uri.full_path.c_str(), std::ifstream::in);
+	if (file.is_open() == false)
+		return (_read_error_page(http::NotFound));
+	if ((size_file = file::size(_uri.full_path)) + 200 >= BUFFER_SIZE)
+	{
+		is_large_file = 1;
+		_code = http::Ok;
+		return ;
+	}
+	buf << file.rdbuf();
+	file.close();
+	_body = buf.str();
 	_code = http::Ok;
 }
 
@@ -206,6 +212,10 @@ void		Response::_read_error_page(http::code error_code)
 	_build_error_page();
 }
 
+bool		Response::_is_a_cgi() const {
+	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
+}
+
 void		Response::_run_cgi() {
 	try {
 		Cgi	cgi(_req, _client_info);
@@ -227,17 +237,10 @@ void		Response::_getMethod()
 	if (_is_a_cgi())
 		_run_cgi();
 	else
-		_read_file();
+		_read_uri();
 }
 
-bool		Response::_is_a_cgi() const {
-	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
-}
-
-void		Response::_postMethod()
-{
-	_getMethod();
-}
+void		Response::_postMethod() { _getMethod(); }
 
 void		Response::_deleteMethod()
 {
