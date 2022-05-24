@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 11:22:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 15:26:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,18 +15,20 @@
 #include "utils.hpp"
 
 Response::Uri::Uri(const std::string &path, Config::Server const &serv):
-	path(path),
-	root(&serv.root),
-	indexes(&serv.index),
-	error_pages(&serv.error_pages),
-	allow_methods(&serv.allow_methods)
+	path          (path),
+	root          (&serv.root),
+	indexes       (&serv.index),
+	error_pages   (&serv.error_pages),
+	allow_methods (&serv.allow_methods),
+	autoindex     (serv.autoindex)
 { }
 
 void Response::Uri::resolve(Config::Server const &serv) {
-	root = &serv.root;
-	indexes = &serv.index;
-	error_pages = &serv.error_pages;
+	root          = &serv.root;
+	indexes       = &serv.index;
+	error_pages   = &serv.error_pages;
 	allow_methods = &serv.allow_methods;
+	autoindex     = serv.autoindex;
 	for (size_t i = 0; i < serv.locations.size(); ++i) {
 		Config::Location const &location = serv.locations.at(i);
 		std::string const &location_path = location.location_path;
@@ -39,6 +41,7 @@ void Response::Uri::resolve(Config::Server const &serv) {
 				error_pages = &location.error_pages;
 			if (!location.allow_methods.empty())
 				allow_methods = &location.allow_methods;
+			autoindex = location.autoindex;
 		}
 	}
 	full_path = file::join(*root, path);
@@ -53,7 +56,6 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_body			(),
 	_full_response	(),
 	_code			(req.get_status_code()),
-	_autoindex		(req.current_server->autoindex),
 	_request_uri	(req.get_request_uri()),
 	_request_method	(req.get_method()),
 	_query_string	(req.get_query_string()),
@@ -171,7 +173,7 @@ void		Response::_read_directory()
 			return (_process_uri());
 		}
 	}
-	if (_autoindex)
+	if (_uri.autoindex)
 		return (_create_auto_index_page());
 	else
 		return (_read_error_page(http::Forbidden));

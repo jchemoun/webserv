@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/23 20:05:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 15:13:11 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ struct Config {
 		std::string					root;
 		std::vector<std::string>	index;
 		ErrPageMap					error_pages;
-		// bool						autoindex; // make a pair, and init in Location()
+		bool						autoindex; // make a pair, and init in Location()
 		std::vector<std::string>	allow_methods;
 		void	print() const;
 	};

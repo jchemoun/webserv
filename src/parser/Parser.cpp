@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 09:18:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 15:28:25 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	Parser::_init_parsers() {
 	_location_parsers["root"] = &Parser::_parse_root;
 	_location_parsers["index"] = &Parser::_parse_index;
 	_location_parsers["error_page"] = &Parser::_parse_error_page;
-	// _location_parsers["autoindex"] = &Parser::_parse_autoindex;
+	_location_parsers["autoindex"] = &Parser::_parse_autoindex;
 	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
 }
 
@@ -84,7 +84,7 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 /*
 ** @brief sort locations from smallest to biggest
 */
-bool	compare_locations(Config::Location const &loc1, Config::Location const &loc2) {
+static bool	compare_locations(Config::Location const &loc1, Config::Location const &loc2) {
 	return (loc1.location_path.size() < loc2.location_path.size());
 }
 /*

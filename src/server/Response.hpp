@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 11:06:39 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 15:12:29 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ public:
 		std::vector<std::string> const	*indexes;
 		Config::ErrPageMap const		*error_pages;
 		std::vector<std::string> const	*allow_methods;
+		bool							autoindex;
 		Uri(const std::string &path, Config::Server const &serv);
 		void resolve(Config::Server const &serv);
 	private:
@@ -57,7 +58,6 @@ private:
 	std::string					_body;
 	std::string					_full_response;
 	http::code					_code;
-	bool						_autoindex;
 	std::string const			_request_uri;
 	std::string const			_request_method;
 	std::string					_query_string;
