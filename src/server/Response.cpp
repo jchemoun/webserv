@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 10:57:51 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 11:22:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	if (_req.is_invalid())
 		_read_error_page(_code);
 	else
-		_process_request();
+		_process_uri();
 	_set_header();
 	_set_full_response();
 }
@@ -80,10 +80,14 @@ size_t		Response::size()  const { return (_full_response.size());  }
 ** ============================ Private Methods ============================= **
 */
 
-void		Response::_process_request() {
+void		Response::_process_uri() {
 	_uri.resolve(_serv);
-	if (_is_method_allowed())
-		(this->*_methods.at(_request_method))();
+	if (_is_method_allowed()) {
+		if (_is_a_cgi())
+			_run_cgi();
+		else
+			(this->*_methods.at(_request_method))();
+	}
 	else
 		_read_error_page(http::MethodNotAllowed);
 }
@@ -164,8 +168,7 @@ void		Response::_read_directory()
 		if (file::get_type(file::join(_uri.full_path, index_candidate)) == file::FT_FILE) {
 			std::cout << color::bold << "Index found: " << color::magenta << index_candidate << color::reset << '\n';
 			_uri.path = file::join(_uri.path, index_candidate);
-			_uri.resolve(_serv);
-			return (_read_uri());
+			return (_process_uri());
 		}
 	}
 	if (_autoindex)
@@ -242,15 +245,9 @@ void		Response::_run_cgi() {
 	}
 }
 
-void		Response::_getMethod()
-{
-	if (_is_a_cgi())
-		_run_cgi();
-	else
-		_read_uri();
-}
+void		Response::_getMethod()  { _read_uri(); }
 
-void		Response::_postMethod() { _getMethod(); }
+void		Response::_postMethod() { _read_uri(); }
 
 void		Response::_deleteMethod()
 {
@@ -275,46 +272,32 @@ void		Response::_putMethod()
 
 	updir = _uri.full_path.substr(0, _uri.full_path.rfind('/'));
 	existing = false;
-	if (updir == _uri.full_path || updir.empty())
-	{
-		_read_error_page(http::BadRequest);
-		return ;
+
+	if (updir == _uri.full_path || updir.empty()) {
+		return _read_error_page(http::BadRequest);
 	}
-	if (file::get_type(updir) != file::FT_DIR)
-	{
-		_read_error_page(http::NotFound);
-		return ;
+	if (file::get_type(updir) != file::FT_DIR) {
+		return _read_error_page(http::NotFound);
 	}
-	if (file::get_type(_uri.full_path) == file::FT_DIR)
-	{
-		_read_error_page(http::Forbidden);
-		return ;
+	if (file::get_type(_uri.full_path) == file::FT_DIR) {
+		return _read_error_page(http::Forbidden);
 	}
-	if (file::get_type(_uri.full_path) == file::FT_FILE)
-	{
+	if (file::get_type(_uri.full_path) == file::FT_FILE) {
 		existing = true;
-		if (file::has_write_perm(_uri.full_path) == false)
-		{
-			_read_error_page(http::Forbidden);
-			return ;
+		if (file::has_write_perm(_uri.full_path) == false) {
+			return _read_error_page(http::Forbidden);
 		}
 	}
 	new_file.open(_uri.full_path.c_str());
-	if (chmod(_uri.full_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1)
-	{
-		_read_error_page(http::InternalServerError);
-		return ;
+	if (chmod(_uri.full_path.c_str(), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) == -1) {
+		return _read_error_page(http::InternalServerError);
 	}
-	if (new_file.is_open() == false)
-	{
-		_read_error_page(http::InternalServerError);
-		return ;
+	if (new_file.is_open() == false) {
+		return _read_error_page(http::InternalServerError);
 	}
 	new_file.write(_req.get_body().c_str(), _req.get_body().length());
-	if (new_file.bad() || new_file.fail())
-	{
-		_read_error_page(http::InternalServerError);
-		return ;
+	if (new_file.bad() || new_file.fail()) {
+		return _read_error_page(http::InternalServerError);
 	}
 	new_file.close();
 	if (existing)
