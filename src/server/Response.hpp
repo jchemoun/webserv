@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:03 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 10:26:23 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 10:54:48 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ private:
 	http::code					_code;
 	bool						_autoindex;
 	std::string const			_request_uri;
+	std::string const			_request_method;
 	std::string					_query_string;
 	Config::Server const		&_serv;
 	Uri							_uri;
@@ -82,6 +83,8 @@ public:
 private:
 	static MethodMap	_init_method_map();
 
+	void		_process_request();
+	bool		_is_method_allowed();
 	void		_create_auto_index_page();
 	void		_read_uri();
 	void		_read_file();

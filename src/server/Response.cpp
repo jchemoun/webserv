@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 10:31:08 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 10:57:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_code			(req.get_status_code()),
 	_autoindex		(req.current_server->autoindex),
 	_request_uri	(req.get_request_uri()),
+	_request_method	(req.get_method()),
 	_query_string	(req.get_query_string()),
 	_serv			(*req.current_server),
 	_uri			(req.get_uri(), _serv),
@@ -63,16 +64,10 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	is_large_file	(0),
 	size_file		(0)
 {
-	if (_req.is_invalid()) {
+	if (_req.is_invalid())
 		_read_error_page(_code);
-	}
-	else {
-		_uri.resolve(_serv);
-		if (_methods.find(req.get_method()) != _methods.end())
-			(this->*_methods.at(req.get_method()))();
-		else
-			_read_error_page(http::MethodNotAllowed);
-	}
+	else
+		_process_request();
 	_set_header();
 	_set_full_response();
 }
@@ -84,6 +79,21 @@ size_t		Response::size()  const { return (_full_response.size());  }
 /*
 ** ============================ Private Methods ============================= **
 */
+
+void		Response::_process_request() {
+	_uri.resolve(_serv);
+	if (_is_method_allowed())
+		(this->*_methods.at(_request_method))();
+	else
+		_read_error_page(http::MethodNotAllowed);
+}
+
+bool		Response::_is_method_allowed() {
+	for (size_t i = 0; i < _uri.allow_methods->size(); ++i)
+		if (_request_method == _uri.allow_methods->at(i))
+			return (true);
+	return (false);
+}
 
 /*
 ** @brief list every folder then file, except hidden ones
