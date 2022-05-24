@@ -1,5 +1,5 @@
 curl localhost
-curl localhost/missing_page.html | sed 's/nginx[^<]*/webserv\/0.1/g'
+curl localhost/missing_page.html | sed 's/nginx[^<]*/webserv\/1.0/g'
 
 # ================================= Big send ================================= #
 

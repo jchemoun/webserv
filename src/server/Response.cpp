@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 09:30:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 09:52:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,9 +236,7 @@ bool		Response::_is_a_cgi() const {
 
 void		Response::_postMethod()
 {
-	//cgi;
-
-	_read_file();
+	_getMethod();
 }
 
 void		Response::_deleteMethod()
@@ -322,7 +320,7 @@ void	Response::_build_error_page()
 		"<head><title>" << _code << ' ' << http::status.at(_code) << "</title></head>\r\n"
 		"<body>\r\n"
 		"<center><h1>" << _code << ' ' << http::status.at(_code) << "</h1></center>\r\n"
-		"<hr><center>" "webserv/0.1" "</center>\r\n"
+		"<hr><center>" SERVER_SOFTWARE "</center>\r\n"
 		"</body>\r\n"
 		"</html>\r\n";
 
@@ -345,7 +343,7 @@ const Response::MethodMap	Response::_methods = Response::_init_method_map();
 
 void	Response::_set_header_map()
 {
-	_header_map["Server"]         = "webserv/0.1";
+	_header_map["Server"]         = SERVER_SOFTWARE;
 	_header_map["Content-Length"] = (is_large_file ? utils::to_str(size_file) : utils::to_str(_body.size()));
 	_header_map["Connection"]     = "keep-alive";
 

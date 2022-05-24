@@ -8,7 +8,7 @@ cat \
   <(curl localhost:8080/folder/subfolder) \
   <(curl localhost:8080/hello_world.html) \
   <(curl localhost:8080/not_found) \
-  | sed 's/nginx[^<]*/webserv\/0.1/g' | sed 's/\s\+/ /g' | sed 's/[0-9]\+:[0-9]\+/hour:min/' | sed 's/ $//'
+  | sed 's/nginx[^<]*/webserv\/1.0/g' | sed 's/\s\+/ /g' | sed 's/[0-9]\+:[0-9]\+/hour:min/' | sed 's/ $//'
 
 # =================== Single client with multiple requests =================== #
 
@@ -20,7 +20,7 @@ multi_get() {
       echo GET $uri HTTP/1.1 ; sleep $delay ; echo Host: localhost:8080 ; sleep $delay ; echo ; sleep 0.1 ;
     done;
   } | telnet localhost 8080 |
-    sed 's/nginx[^<]*/webserv\/0.1/g' |
+    sed 's/nginx[^<]*/webserv\/1.0/g' |
     sed 's/\s\+/ /g' |
     sed 's/[0-9]\+:[0-9]\+/hour:min/' |
     sed 's/ $//' |

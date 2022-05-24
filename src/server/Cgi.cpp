@@ -6,12 +6,11 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/20 16:05:12 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 09:43:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Cgi.hpp"
-#include "http_response_codes.hpp"
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
@@ -23,6 +22,7 @@
 #include "errno.h"
 #include "utils.hpp"
 #include <algorithm> // std::transform
+#include "Include.hpp"
 
 const size_t	Cgi::_buffer_size = 4242;
 
@@ -76,7 +76,7 @@ void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
 	std::string	script_name   = (has_path_info ? uri.substr(0, uri.find(".cgi/") + 4) : uri);
 
 	// Server specific
-	_env["SERVER_SOFTWARE"]   = "Webserv";
+	_env["SERVER_SOFTWARE"]   = SERVER_SOFTWARE;
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["SERVER_NAME"]       = req.current_server_name;              // host name of the server
 	_env["DOCUMENT_ROOT"]     = serv.root;

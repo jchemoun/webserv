@@ -5,7 +5,7 @@ curl localhost:8080/
 # existing folder/ with autoindex
 curl localhost:8080/folder/ | sed 's/\s\+/ /g' | sed 's/[0-9]\+:[0-9]\+/hour:min/' | sed 's/ $//'
 # empty subfolder/
-curl localhost:8080/folder/subfolder/| sed 's/nginx[^<]*/webserv\/0.1/g'
+curl localhost:8080/folder/subfolder/| sed 's/nginx[^<]*/webserv\/1.0/g'
 # TODO: existing folder with autoindex (return 301)
 # curl localhost:8080/folder | sed 's/\s\+/ /g' | sed 's/[0-9]\+:[0-9]\+/hour:min/' | sed 's/ $//'
 
@@ -40,7 +40,7 @@ EOF
 echo
 # ---
 printf "\e[32mShould return bad request:\e[0m\n"
-curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | sed 's/nginx[^<]*/webserv\/0.1/g' | grep -v : 
+curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | sed 's/nginx[^<]*/webserv\/1.0/g' | grep -v : 
 GET / HTTP/1.1
 Host: localhost:8080
 User-Agent: Monkey D. Luffy
@@ -66,7 +66,7 @@ EOF
 # there are 12 characters because the heredoc adds a final \n
 echo
 printf "\e[32mShould return HTTP Version not supported (error 505):\e[0m\n"
-curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | sed 's/nginx[^<]*/webserv\/0.1/g' | grep -v : 
+curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF | sed 's/nginx[^<]*/webserv\/1.0/g' | grep -v : 
 GET / HTTP/3.0
 Host: localhost:8080
 User-Agent: Monkey D. Luffy
