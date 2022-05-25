@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/25 10:16:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 13:41:11 by user42           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,7 +325,13 @@ void	Response::_set_header_map()
 		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
 	if (_code == http::MovedPermanently && !utils::get(_header_map, std::string("Location")))
-		_header_map["Location"] = _uri.path; // better: add scheme and host
+	{
+		if (_req.get_header().find("Host") != _req.get_header().end())
+			_header_map["Location"] = "http://" + _req.get_header().at("Host") + _uri.path; // better: add scheme and host
+		else
+			_header_map["Location"] = _uri.path;
+	}
+
 }
 
 void		Response::_set_header()
