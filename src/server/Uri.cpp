@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:04:20 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 10:26:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 18:48:11 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,12 @@ Uri::Uri(const std::string &path, Config::Server const &serv):
 	rewrite_prefix(NULL),
 	rewrite_count(0)
 { }
+
+static void replace(std::string& s, std::string const& toReplace, std::string const& replaceWith) {
+    std::size_t pos = s.find(toReplace);
+    if (pos == std::string::npos) return;
+    s.replace(pos, toReplace.length(), replaceWith);
+}
 
 void Uri::resolve(Config::Server const &serv) {
 	for (size_t i = 0; i < serv.locations.size(); ++i) {
@@ -54,11 +60,17 @@ void Uri::resolve(Config::Server const &serv) {
 				rewrite_prefix = &location.rewrite_prefix; // dispensable
 				if (!strncmp(path.c_str(), rewrite_prefix->first.c_str(), rewrite_prefix->first.size())) {
 					path = rewrite_prefix->second + path.substr(rewrite_prefix->first.size());
+					replace(path, "//", "/");
 					++rewrite_count;
 				}
 			}
 			autoindex = location.autoindex;
-			break;
+			if (location.type == Config::Location::type_match)
+				while (i + 1 < serv.locations.size()
+						&& serv.locations.at(i + 1).type == Config::Location::type_match)
+					++i;
+			else
+				break;
 		}
 	}
 	full_path = file::join(*root, path);
