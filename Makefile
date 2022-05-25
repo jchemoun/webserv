@@ -119,7 +119,7 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE_FILES)
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
 make_cgi:
-	@make -C src-cgi-bin
+	@make --silent -C src-cgi-bin
 
 clean:
 	@rm -rf $(OBJ_PATH)
@@ -182,15 +182,15 @@ test: compile
 		exit 1; \
 		fi; \
 		done; \
-		else \
-		make test_one CONF=$(CONF); \
-		exit $?; \
 		for file in conf/nginx_nocompat/*.conf; do \
 		make --silent test_nocompat CONF=$$file; \
 		if [ -d failed_tests ]; then \
 		exit 1; \
 		fi; \
 		done; \
+		else \
+		make test_one CONF=$(CONF); \
+		exit $?; \
 		fi
 
 test_one:
