@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 09:19:02 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:35:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <arpa/inet.h> // INADDR_ANY
 #include <netinet/in.h> // inet_ntop
 #include <limits>
+#include <cstring> // strncmp
 #include "../utils/file.hpp"
 
 /*
@@ -40,18 +41,51 @@ static void print_map(const std::map<Key, Value> &m, std::string indent = "") {
 ** ================================ Location ================================ **
 */
 
-Config::Location::Location()
-	// : autoindex(false)
-{
+Config::Location::Location():
+	type(type_prefix),
+	autoindex(false),
+	return_code(static_cast<http::code>(0)),
+	client_max_body_size(Config::_overflow_body_size)
+{ }
+
+static bool    match(const char *s1, const char *s2) {
+    // if (!s1 || !s2) // never true in our case
+    //     return (false);
+    if (!*s1 && !*s2)
+        return (true);
+    if (*s1 && *s2 != '*' && *s1 == *s2)
+        return (match(s1 + 1, s2 + 1));
+    if (*s1 == '*' && *s2 == '\\' && s2[1] == '*')
+        return (match(s1 + 1, s2 + 2));
+    if (*s1 && *s2 == '*')
+        return (match(s1, s2 + 1) || match(s1 + 1, s2));
+    if (!*s1 && *s2 == '*')
+        return (match(s1, s2 + 1));
+    return (false);
+}
+bool	Config::Location::match(std::string const &uri) const {
+	if (type == type_match)
+		return (::match(uri.c_str(), location_path.c_str()));
+	else // prefix
+		return (!strncmp(location_path.c_str(), uri.c_str(), location_path.size()));
 }
 
 void	Config::Location::print() const {
 	std::cout << "\e[34mLocation: " << location_path << std::endl;
 	std::cout << "    Indexes: "; print_vector(index);
 	std::cout << "    Root: " << root << std::endl;
-	// std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
+	std::cout << "    Autoindex: " << std::boolalpha << autoindex << std::endl;
 	print_map(error_pages, "    Error page ");
 	std::cout << "    Allow methods: "; print_vector(allow_methods);
+	std::cout << "    Cgi: " << cgi << std::endl;
+	if (return_code)
+		std::cout << "    Return code: " << return_code << std::endl;
+	if (!return_url.empty())
+		std::cout << "    Return url: " << return_url << std::endl;
+	if (client_max_body_size != Config::_overflow_body_size)
+		std::cout << "    Max client body size: " << client_max_body_size << std::endl;
+	if (!rewrite_prefix.first.empty())
+		std::cout << "    Rewrite prefix: \"" << rewrite_prefix.first << "\" to: \"" << rewrite_prefix.second << '"' << std::endl;
 	std::cout << "\e[0m";
 }
 
@@ -83,7 +117,7 @@ Config::Connection	&Config::Connection::operator=(const sockaddr_in &sockaddress
 ** ================================= Server ================================= **
 */
 
-const Config::Server::body_size Config::Server::_overflow_body_size = std::numeric_limits<int>::max();
+const Config::body_size Config::_overflow_body_size = std::numeric_limits<int>::max();
 
 Config::Server::Server():
 	listen_vect(),

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/16 14:54:16 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/17 11:49:21 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 22:41:05 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ static http::StatusMap		_init_status_header()
 	status[http::NoContent]               = "No Content";
 	// Redirections
 	status[http::MovedPermanently]        = "Moved Permanently";
+	status[http::MovedTemporarily]        = "Moved Temporarily";
 	status[http::PermanentRedirect]       = "Permanent Redirect";
 	// Client error
 	status[http::BadRequest]              = "Bad Request";

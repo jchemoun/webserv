@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/24 09:43:18 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 19:01:52 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ const size_t	Cgi::_buffer_size = 4242;
 ** https://fr.wikipedia.org/wiki/Variables_d'environnement_CGI
 */
 
-Cgi::Cgi(Request const &req, Config::Connection const &client_info):
+Cgi::Cgi(Request const &req, Uri const &uri, Config::Connection const &client_info):
 	_env_tab(NULL),
 	_req_body(req.get_body())
 {
@@ -42,7 +42,7 @@ Cgi::Cgi(Request const &req, Config::Connection const &client_info):
 	_pipe_from_cgi[1] = -1;
 	_pipe_to_cgi[0] = -1;
 	_pipe_to_cgi[1] = -1;
-	_set_env(req, client_info);
+	_set_env(req, uri, client_info);
 	_env_tab = _map_to_tab(_env);
 }
 
@@ -68,12 +68,14 @@ void	Cgi::run()
 ** =========================== Private functions ============================ **
 */
 
-void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
+void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const &client_info) {
 	Config::Server const	&serv = *req.current_server;
-	std::string const 		&uri  = req.get_uri();
+	// std::string const 		&req_uri  = req.get_uri();
 
-	bool		has_path_info = (uri.find(".cgi/") != std::string::npos);
-	std::string	script_name   = (has_path_info ? uri.substr(0, uri.find(".cgi/") + 4) : uri);
+	// How pathinfo should really be set:
+	// bool		has_path_info = (uri.find(".cgi/") != std::string::npos);
+	// std::string	script_name   = (has_path_info ? uri.substr(0, uri.find(".cgi/") + 4) : uri);
+	std::string const	&script_name = *uri.cgi;
 
 	// Server specific
 	_env["SERVER_SOFTWARE"]   = SERVER_SOFTWARE;
@@ -89,7 +91,7 @@ void	Cgi::_set_env(Request const &req, Config::Connection const &client_info) {
 	// 	_env["PATH_INFO"]           = uri.substr(script_name.size());           // path in the request after the cgi's name
 	// 	_env["PATH_TRANSLATED"]     = file::join(serv.root, _env["PATH_INFO"]); // corresponding full path as supposed by server, if PATH_INFO is present
 	// }
-	_env["PATH_INFO"]               = script_name;                              // Not really this but this is what 42 tester expects...
+	_env["PATH_INFO"]               = file::join("/", script_name);             // Not really this but this is what 42 tester expects...
 	_env["SCRIPT_NAME"]             = script_name;                              // relative path of the program (like /cgi-bin/script.cgi)
 	_env["SCRIPT_FILENAME"]         = file::join(serv.root, script_name);       // Chemin d'accès complet au script CGI (FULL PATH)
 	_env["QUERY_STRING"]            = req.get_query_string();                   // things after '?' in url

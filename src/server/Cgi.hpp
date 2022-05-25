@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:05:43 by user42            #+#    #+#             */
-/*   Updated: 2022/05/20 15:17:06 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/24 18:07:50 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 
 # include "Request.hpp"
 # include "Config.hpp"
+# include "Uri.hpp"
 
 class Cgi
 {
@@ -40,14 +41,14 @@ public:
 	Header			header;
 	std::string		body;
 
-	Cgi(Request const &req, Config::Connection const &client_info);
+	Cgi(Request const &req, Uri const &uri, Config::Connection const &client_info);
 	~Cgi();
 
 	void		run();
 
 private:
 	Cgi();
-	void		_set_env(Request const &req, Config::Connection const &client_info);
+	void		_set_env(Request const &req, Uri const &uri, Config::Connection const &client_info);
 	void		_execute();
 	void		_child_execute();
 	void		_parent_wait_and_read_pipe(int child_pid);

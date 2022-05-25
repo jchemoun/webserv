@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 09:18:26 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:35:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,24 +15,29 @@
 #include <map>
 #include <cstring>
 #include <algorithm>
+#include "../utils/utils.hpp"
 
 void	Parser::_init_parsers() {
-	_server_parsers["listen"] = &Parser::_parse_listen;
-	_server_parsers["server_name"] = &Parser::_parse_server_name;
-	_server_parsers["index"] = &Parser::_parse_index;
-	_server_parsers["location"] = &Parser::_parse_location;
-	_server_parsers["root"] = &Parser::_parse_root;
-	_server_parsers["error_page"] = &Parser::_parse_error_page;
-	_server_parsers["autoindex"] = &Parser::_parse_autoindex;
-	_server_parsers["default_type"] = &Parser::_parse_default_mime;
+	_server_parsers["listen"]               = &Parser::_parse_listen;
+	_server_parsers["server_name"]          = &Parser::_parse_server_name;
+	_server_parsers["location"]             = &Parser::_parse_location;
+	_server_parsers["root"]                 = &Parser::_parse_root;
+	_server_parsers["index"]                = &Parser::_parse_index;
+	_server_parsers["error_page"]           = &Parser::_parse_error_page;
+	_server_parsers["autoindex"]            = &Parser::_parse_autoindex;
+	_server_parsers["default_type"]         = &Parser::_parse_default_mime;
 	_server_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
-	_server_parsers["allow_methods"] = &Parser::_parse_allow_methods;
+	_server_parsers["allow_methods"]        = &Parser::_parse_allow_methods;
 
-	_location_parsers["root"] = &Parser::_parse_root;
-	_location_parsers["index"] = &Parser::_parse_index;
-	_location_parsers["error_page"] = &Parser::_parse_error_page;
-	// _location_parsers["autoindex"] = &Parser::_parse_autoindex;
-	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
+	_location_parsers["root"]                 = &Parser::_parse_root;
+	_location_parsers["index"]                = &Parser::_parse_index;
+	_location_parsers["error_page"]           = &Parser::_parse_error_page;
+	_location_parsers["autoindex"]            = &Parser::_parse_autoindex;
+	_location_parsers["allow_methods"]        = &Parser::_parse_allow_methods;
+	_location_parsers["cgi"]                  = &Parser::_parse_cgi;
+	_location_parsers["return"]               = &Parser::_parse_return;
+	_location_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
+	_location_parsers["rewrite_prefix"]       = &Parser::_parse_rewrite_prefix;
 }
 
 Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
@@ -84,8 +89,13 @@ void	Parser::_eat(Token::token_type type, Token::token_value value) {
 /*
 ** @brief sort locations from smallest to biggest
 */
-bool	compare_locations(Config::Location const &loc1, Config::Location const &loc2) {
-	return (loc1.location_path.size() < loc2.location_path.size());
+static bool	compare_locations(Config::Location const &loc1, Config::Location const &loc2) {
+	if (loc1.type == Config::Location::type_match)
+		return (true);
+	else if (loc2.type == Config::Location::type_match)
+			return (false);
+	else
+		return (loc1.location_path.size() > loc2.location_path.size());
 }
 /*
 ** ✓ Syntax:	server { ... }
@@ -212,6 +222,8 @@ void	Parser::_parse_location(Config::Server &server) {
 		throw ParsingError("location: missing path");
 	Config::Location	location;
 	location.location_path = _current_token().get_value();
+	if (strchr(location.location_path.c_str(), '*'))
+		location.type = Config::Location::type_match;
 	_lexer.next();
 	_eat(Token::type_special_char, "{");
 	while (!_current_token().expect(Token::type_special_char, "}")) {
@@ -288,14 +300,43 @@ void	Parser::_parse_autoindex(Context &context) {
 	_eat(Token::type_special_char, ";");
 }
 
-void	Parser::_parse_client_max_body_size(Config::Server	&server) {
+template <class Context>
+void	Parser::_parse_client_max_body_size(Context	&context) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("client_max_body_size: missing argument");
 	const char *arg = _current_token().get_value().c_str();
-	try { server.client_max_body_size = _stoi(arg, 0, server._overflow_body_size - 1); }
+	try { context.client_max_body_size = _stoi(arg, 0, Config::_overflow_body_size - 1); }
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
+}
+
+/*
+** Syntax:
+** ⨯ return code [text];
+** ✓ return code URL;
+** ⨯ return URL;
+** ✓ Default:	—
+** Context:	[server,] location, [if]
+*/
+void	Parser::_parse_return(Config::Location &location) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("return: missing code");
+	if (_lexer.peek_next().get_type() != Token::type_word)
+		throw ParsingError("return: missing url");
+	try {
+		location.return_code = static_cast<http::code>(
+				_stoi(_current_token().get_value().c_str(), 0, 527));
+	}
+	catch (std::exception &e) { throw ParsingError(std::string("return: code: ") + e.what());}
+	if (!utils::get(http::status, location.return_code))
+		throw ParsingError(std::string("return: unsupported code: ") + utils::to_str(location.return_code));
+	_lexer.next();
+	location.return_url = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+
 }
 
 /*
@@ -319,6 +360,32 @@ void	Parser::_parse_allow_methods(Context &context) {
 		else
 			throw ParsingError("allow methods: unsupported method");
 	}
+	_eat(Token::type_special_char, ";");
+}
+
+/*
+** @brief cgi path_to_cgi;
+** Location blocks only
+*/
+void	Parser::_parse_cgi(Config::Location &location) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("root: missing path");
+	location.cgi = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+void	Parser::_parse_rewrite_prefix(Config::Location &location) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("rewrite_prefix: missing prefix");
+	if (_lexer.peek_next().get_type() != Token::type_word)
+		throw ParsingError("rewrite_prefix: missing substitute");
+	location.rewrite_prefix.first = _current_token().get_value();
+	_lexer.next();
+	location.rewrite_prefix.second = _current_token().get_value();
+	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
 

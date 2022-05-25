@@ -55,7 +55,7 @@ endif
 
 # Source Names
 SRC_NAME = main.cpp \
-					 $(addprefix server/, Webserv.cpp Client.cpp Request.cpp Response.cpp Cgi.cpp) \
+					 $(addprefix server/, Webserv.cpp Client.cpp Request.cpp Response.cpp Uri.cpp Cgi.cpp) \
 					 $(addprefix parser/, Config.cpp Lexer.cpp Parser.cpp Token.cpp) \
 					 $(addprefix utils/, utils.cpp file.cpp http_response_codes.cpp) \
 
@@ -119,7 +119,7 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp $(INCLUDE_FILES)
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
 make_cgi:
-	@make -C src-cgi-bin
+	@make --silent -C src-cgi-bin
 
 clean:
 	@rm -rf $(OBJ_PATH)
@@ -182,16 +182,16 @@ test: compile
 		exit 1; \
 		fi; \
 		done; \
-		else \
-		make test_one CONF=$(CONF); \
-		exit $?; \
-		fi
-	@for file in conf/nginx_nocompat/*.conf; do \
+		for file in conf/nginx_nocompat/*.conf; do \
 		make --silent test_nocompat CONF=$$file; \
 		if [ -d failed_tests ]; then \
 		exit 1; \
 		fi; \
-		done
+		done; \
+		else \
+		make test_one CONF=$(CONF); \
+		exit $?; \
+		fi
 
 test_one:
 	@mkdir -p failed_tests

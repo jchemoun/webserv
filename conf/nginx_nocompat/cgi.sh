@@ -1,6 +1,5 @@
 set -xeo pipefail
-# curl localhost:8080
-# curl error
+
 # Check body
 curl localhost:8080/cgi-bin/env_cpp.cgi | grep '<tr><td>GATEWAY_INTERFACE</td><td>CGI/1.1</td></tr>'
 curl localhost:8080/cgi-bin/env_cpp.cgi/hello?world | grep '<tr><td>QUERY_STRING</td><td>world</td></tr>'
@@ -17,7 +16,7 @@ curl -i -X GET http://localhost:8080/cgi-bin/weird_status.sh.cgi -d "hello" | gr
 # Check errors
 curl -i localhost:8080/cgi-bin/fail.sh.cgi | grep 'HTTP/1.1 500' # cgi script exists and is executable but fails
 curl -i localhost:8080/cgi-bin/fail.sh.cgi | grep '<title>500' # idem but body check
-curl -i localhost:8080/cgi-bin/fdsagsafdgf.cgi | grep 'HTTP/1.1 404' # cgi script exists and is executable but fails
+# curl -i localhost:8080/cgi-bin/fdsagsafdgf.cgi | grep 'HTTP/1.1 404' # cgi script does not exist
 curl -i localhost:8080/cgi-bin/not_executable_file.cgi | grep 'HTTP/1.1 403' # cgi script exists and is executable but fails
 
 # 42 tester

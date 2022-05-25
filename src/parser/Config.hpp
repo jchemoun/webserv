@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/23 20:05:29 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:37:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@ struct Config {
 
 	typedef std::map<std::string, std::string>	MimeMap;
 	typedef std::map<http::code, std::string>	ErrPageMap;
+	typedef size_t								body_size;
+
+	static body_size const	_overflow_body_size;
 
 	struct 			Connection {
 		in_port_t	port;
@@ -35,19 +38,26 @@ struct Config {
 	typedef	std::vector<Connection>	ListenVect;
 
 	struct	Location {
+		enum path_type { type_prefix, type_match };
+
+		std::string							location_path;
+		path_type							type;
+		std::string							root;
+		std::vector<std::string>			index;
+		ErrPageMap							error_pages;
+		bool								autoindex; // no unset value, false by default
+		std::vector<std::string>			allow_methods;
+		std::string							cgi;
+		http::code							return_code;
+		std::string							return_url;
+		body_size							client_max_body_size;
+		std::pair<std::string, std::string>	rewrite_prefix;
 		Location();
-		std::string					location_path;
-		std::string					root;
-		std::vector<std::string>	index;
-		ErrPageMap					error_pages;
-		// bool						autoindex; // make a pair, and init in Location()
-		std::vector<std::string>	allow_methods;
 		void	print() const;
+		bool	match(std::string const &path) const;
 	};
 
 	struct	Server {
-		typedef size_t				body_size;
-
 		Server();
 
 		std::vector<std::string>	server_names;
@@ -60,7 +70,6 @@ struct Config {
 		std::vector<std::string>	allow_methods;
 		std::string					default_mime;
 		body_size					client_max_body_size;
-		static body_size const		_overflow_body_size;
 		const MimeMap				*mime_map;
 
 		void		print() const;

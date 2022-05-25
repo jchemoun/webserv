@@ -6,43 +6,13 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 11:22:05 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 10:16:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
 #include "color.hpp"
 #include "utils.hpp"
-
-Response::Uri::Uri(const std::string &path, Config::Server const &serv):
-	path(path),
-	root(&serv.root),
-	indexes(&serv.index),
-	error_pages(&serv.error_pages),
-	allow_methods(&serv.allow_methods)
-{ }
-
-void Response::Uri::resolve(Config::Server const &serv) {
-	root = &serv.root;
-	indexes = &serv.index;
-	error_pages = &serv.error_pages;
-	allow_methods = &serv.allow_methods;
-	for (size_t i = 0; i < serv.locations.size(); ++i) {
-		Config::Location const &location = serv.locations.at(i);
-		std::string const &location_path = location.location_path;
-		if (!strncmp(location_path.c_str(), path.c_str(), location_path.size())) {
-			if (!location.root.empty())
-				root = &location.root;
-			if (!location.index.empty())
-				indexes = &location.index;
-			if (!location.error_pages.empty())
-				error_pages = &location.error_pages;
-			if (!location.allow_methods.empty())
-				allow_methods = &location.allow_methods;
-		}
-	}
-	full_path = file::join(*root, path);
-}
 
 /*
 ** ============================= Public methods ============================= **
@@ -53,7 +23,6 @@ Response::Response(Request const &req, Config::Connection const &client_info):
 	_body			(),
 	_full_response	(),
 	_code			(req.get_status_code()),
-	_autoindex		(req.current_server->autoindex),
 	_request_uri	(req.get_request_uri()),
 	_request_method	(req.get_method()),
 	_query_string	(req.get_query_string()),
@@ -82,8 +51,16 @@ size_t		Response::size()  const { return (_full_response.size());  }
 
 void		Response::_process_uri() {
 	_uri.resolve(_serv);
-	if (_is_method_allowed()) {
-		if (_is_a_cgi())
+	if (_uri.rewrite_count > Uri::max_rewrite_count)
+		_read_error_page(http::InternalServerError);
+	else if (_uri.client_max_body_size && _req.get_body().size() > *_uri.client_max_body_size)
+		_read_error_page(http::PayloadTooLarge);
+	else if (_is_method_allowed()) {
+		if (_uri.return_code) {
+			_header_map["Location"] = *_uri.return_url;
+			_read_error_page(*_uri.return_code);
+		}
+		else if (_is_a_cgi())
 			_run_cgi();
 		else
 			(this->*_methods.at(_request_method))();
@@ -171,7 +148,7 @@ void		Response::_read_directory()
 			return (_process_uri());
 		}
 	}
-	if (_autoindex)
+	if (_uri.autoindex)
 		return (_create_auto_index_page());
 	else
 		return (_read_error_page(http::Forbidden));
@@ -226,12 +203,13 @@ void		Response::_read_error_page(http::code error_code)
 }
 
 bool		Response::_is_a_cgi() const {
-	return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
+	// return (_uri.full_path.find("/cgi-bin/") != std::string::npos);
+	return (_uri.cgi != NULL);
 }
 
 void		Response::_run_cgi() {
 	try {
-		Cgi	cgi(_req, _client_info);
+		Cgi	cgi(_req, _uri, _client_info);
 		cgi.run();
 		std::swap(cgi.body, _body);
 		for (Cgi::Header::const_iterator cit = cgi.header.begin(); cit != cgi.header.end(); ++cit) {
@@ -346,7 +324,7 @@ void	Response::_set_header_map()
 	if (_header_map.find("Content-Type") == _header_map.end())
 		_header_map["Content-Type"] = _serv.get_mime(_uri.path);
 
-	if (_code == http::MovedPermanently)
+	if (_code == http::MovedPermanently && !utils::get(_header_map, std::string("Location")))
 		_header_map["Location"] = _uri.path; // better: add scheme and host
 }
 
