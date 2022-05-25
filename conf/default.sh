@@ -19,7 +19,7 @@ rm tmp.jpg
 
 # ============================= Chunked encoding ============================= #
 
-curl -X GET -H "Transfer-Encoding: chunked" -d "hello" localhost:8080
+curl -X GET -H "Transfer-Encoding: chunked" -d "hello" localhost
 # POST / HTTP/1.1
 # Host: localhost:8080
 # User-Agent: curl/7.81.0
@@ -33,4 +33,4 @@ curl -X GET -H "Transfer-Encoding: chunked" -d "hello" localhost:8080
 # 
 # ✋
 
-# curl -H "Transfer-Encoding: chunked" -d @README.md localhost:8080
+curl -X GET -H "Transfer-Encoding: chunked" -d @README.md localhost

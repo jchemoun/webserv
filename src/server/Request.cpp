@@ -14,6 +14,8 @@
 #include "Parser.hpp"
 #include <cstring>
 #include <color.hpp>
+#include <sstream>
+#include "http_response_codes.hpp"
 #include "utils.hpp"
 
 /*
@@ -259,13 +261,16 @@ void	Request::_parse_chunks() {
 		if (!_chunk_size) {
 			_eat_word(_str_chunk_size, "\r\n");
 			try {
-				//TODO: read hexa
-				_chunk_size = Parser::_stoi(_str_chunk_size, 0, Config::_overflow_body_size - 1);
+				std::stringstream sstream; sstream << std::hex << _str_chunk_size;
+				sstream >> _chunk_size;
+				// _chunk_size = Parser::_stoi(_str_chunk_size, 0, Config::_overflow_body_size - 1);
 			}
 			catch (std::exception	const &except){
 				throw (http::BadRequest);
 			}
 			_eat_eol();
+			if (_body.size() + _chunk_size > current_server->client_max_body_size)
+				throw http::PayloadTooLarge;
 		}
 		if (_chunk_size == 0) {
 			_complete_body = true;
