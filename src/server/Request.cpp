@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 19:04:11 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 08:00:47 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -257,7 +257,7 @@ void	Request::_parse_body() {
 
 void	Request::_parse_content_length(std::string const &value) {
 	try {
-		_content_length = Parser::_stoi(value, 0, Config::Server::_overflow_body_size - 1);
+		_content_length = Parser::_stoi(value, 0, Config::_overflow_body_size - 1);
 	}
 	catch (std::exception	const &except){
 		throw (http::BadRequest); // std::runtime_error(std::string("Content-Length: ") + except.what());

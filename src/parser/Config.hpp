@@ -22,6 +22,9 @@ struct Config {
 
 	typedef std::map<std::string, std::string>	MimeMap;
 	typedef std::map<http::code, std::string>	ErrPageMap;
+	typedef size_t								body_size;
+
+	static body_size const	_overflow_body_size;
 
 	struct 			Connection {
 		in_port_t	port;
@@ -47,14 +50,13 @@ struct Config {
 		std::string					cgi;
 		http::code					return_code;
 		std::string					return_url;
+		body_size					client_max_body_size;
 		Location();
 		void	print() const;
 		bool	match(std::string const &path) const;
 	};
 
 	struct	Server {
-		typedef size_t				body_size;
-
 		Server();
 
 		std::vector<std::string>	server_names;
@@ -67,7 +69,6 @@ struct Config {
 		std::vector<std::string>	allow_methods;
 		std::string					default_mime;
 		body_size					client_max_body_size;
-		static body_size const		_overflow_body_size;
 		const MimeMap				*mime_map;
 
 		void		print() const;

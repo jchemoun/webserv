@@ -27,6 +27,7 @@ struct Uri {
 	std::string const				*cgi;
 	http::code const				*return_code;
 	std::string const				*return_url;
+	Config::body_size const			*client_max_body_size;
 
 	Uri(const std::string &path, Config::Server const &serv);
 	void resolve(Config::Server const &serv);

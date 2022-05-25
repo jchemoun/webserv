@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 21:14:52 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 08:12:07 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,8 @@ private:
 	void	_parse_error_page(Context &context);                         // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
 	template <class Context>
 	void	_parse_autoindex(Context &context);                          // http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page
-	void	_parse_client_max_body_size(Config::Server	&server);        // http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
+	template <class Context>
+	void	_parse_client_max_body_size(Context	&context);               // http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
 	void	_parse_return(Config::Location &location);                   // http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#return
 	// NOCOMPATIBLE
 	template <class Context>

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 21:41:50 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 08:30:13 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,8 @@ static void print_map(const std::map<Key, Value> &m, std::string indent = "") {
 Config::Location::Location():
 	type(type_prefix),
 	autoindex(false),
-	return_code(static_cast<http::code>(0))
+	return_code(static_cast<http::code>(0)),
+	client_max_body_size(Config::_overflow_body_size)
 { }
 
 static bool    match(const char *s1, const char *s2) {
@@ -81,6 +82,8 @@ void	Config::Location::print() const {
 		std::cout << "    Return code: " << return_code << std::endl;
 	if (!return_url.empty())
 		std::cout << "    Return url: " << return_url << std::endl;
+	if (client_max_body_size != Config::_overflow_body_size)
+		std::cout << "    Max client body size: " << client_max_body_size << std::endl;
 	std::cout << "\e[0m";
 }
 
@@ -112,7 +115,7 @@ Config::Connection	&Config::Connection::operator=(const sockaddr_in &sockaddress
 ** ================================= Server ================================= **
 */
 
-const Config::Server::body_size Config::Server::_overflow_body_size = std::numeric_limits<int>::max();
+const Config::body_size Config::_overflow_body_size = std::numeric_limits<int>::max();
 
 Config::Server::Server():
 	listen_vect(),

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:04:20 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 22:30:28 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 08:33:03 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@ Uri::Uri(const std::string &path, Config::Server const &serv):
 	allow_methods (&serv.allow_methods),
 	autoindex     (serv.autoindex),
 	cgi           (NULL),
-	return_code   (NULL)
+	return_code   (NULL),
+	client_max_body_size(NULL)
 { }
 
 void Uri::resolve(Config::Server const &serv) {
@@ -47,6 +48,8 @@ void Uri::resolve(Config::Server const &serv) {
 				return_url = &location.return_url;
 			if (location.return_code)
 				return_code = &location.return_code;
+			if (location.client_max_body_size != Config::_overflow_body_size)
+				client_max_body_size = &location.client_max_body_size;
 			autoindex = location.autoindex;
 			break;
 		}

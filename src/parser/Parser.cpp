@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 21:45:45 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 08:12:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ void	Parser::_init_parsers() {
 	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
 	_location_parsers["cgi"]           = &Parser::_parse_cgi;
 	_location_parsers["return"]        = &Parser::_parse_return;
+	_location_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
 }
 
 Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
@@ -298,11 +299,12 @@ void	Parser::_parse_autoindex(Context &context) {
 	_eat(Token::type_special_char, ";");
 }
 
-void	Parser::_parse_client_max_body_size(Config::Server	&server) {
+template <class Context>
+void	Parser::_parse_client_max_body_size(Context	&context) {
 	if (!_lexer.next().expect(Token::type_word))
 		throw ParsingError("client_max_body_size: missing argument");
 	const char *arg = _current_token().get_value().c_str();
-	try { server.client_max_body_size = _stoi(arg, 0, server._overflow_body_size - 1); }
+	try { context.client_max_body_size = _stoi(arg, 0, Config::_overflow_body_size - 1); }
 	catch (const std::exception &err) { throw ParsingError(std::string("listen: port: ") + err.what()); }
 	_lexer.next();
 	_eat(Token::type_special_char, ";");

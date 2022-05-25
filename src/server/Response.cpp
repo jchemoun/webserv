@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/30 14:02:37 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/24 22:22:36 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 08:43:18 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,9 @@ size_t		Response::size()  const { return (_full_response.size());  }
 
 void		Response::_process_uri() {
 	_uri.resolve(_serv);
-	if (_is_method_allowed()) {
+	if (_uri.client_max_body_size && _req.get_body().size() > *_uri.client_max_body_size)
+		_read_error_page(http::PayloadTooLarge);
+	else if (_is_method_allowed()) {
 		if (_uri.return_code) {
 			_header_map["Location"] = *_uri.return_url;
 			_read_error_page(*_uri.return_code);
