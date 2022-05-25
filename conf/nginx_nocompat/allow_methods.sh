@@ -20,3 +20,7 @@ curl -X POST localhost:8080/42_logo.png -o /tmp/image.png; \
   diff <(sha256sum </tmp/image.png) <(sha256sum <html/42_logo.png);
 rm /tmp/image.png
 curl -X PUT localhost:8080/put_not_allowed.png -d"data" | grep "Not Allowed"
+
+# rewrite prefix
+curl localhost:8080/remove/this/prefix/site1/ | grep site1
+curl localhost:8080/rewrite/to/site2/ | grep site2

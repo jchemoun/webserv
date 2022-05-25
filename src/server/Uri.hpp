@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:02:49 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 09:26:33 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 10:13:56 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,9 @@ struct Uri {
 	std::string const							*return_url;
 	Config::body_size const						*client_max_body_size;
 	std::pair<std::string, std::string> const	*rewrite_prefix;
+
+	static const size_t	max_rewrite_count;
+	size_t				rewrite_count;
 
 	Uri(const std::string &path, Config::Server const &serv);
 	void resolve(Config::Server const &serv);
