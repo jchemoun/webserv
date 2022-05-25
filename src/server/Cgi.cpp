@@ -91,9 +91,11 @@ void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const 
 	// 	_env["PATH_INFO"]           = uri.substr(script_name.size());           // path in the request after the cgi's name
 	// 	_env["PATH_TRANSLATED"]     = file::join(serv.root, _env["PATH_INFO"]); // corresponding full path as supposed by server, if PATH_INFO is present
 	// }
-	_env["PATH_INFO"]               = file::join("/", script_name);             // Not really this but this is what 42 tester expects...
+	// _env["PATH_INFO"]               = file::join("/", script_name);             // Not really this but this is what 42 tester expects...
+	_env["PATH_INFO"]               = req.get_request_uri();             // https://42born2code.slack.com/archives/CN9RHKQHW/p1640626525359600?thread_ts=1602431280.194000&cid=CN9RHKQHW
 	_env["SCRIPT_NAME"]             = script_name;                              // relative path of the program (like /cgi-bin/script.cgi)
-	_env["SCRIPT_FILENAME"]         = file::join(serv.root, script_name);       // Chemin d'accès complet au script CGI (FULL PATH)
+	_env["SCRIPT_FILENAME"]         = script_name;       // Chemin d'accès complet au script CGI (FULL PATH)
+	// _env["SCRIPT_FILENAME"]         = file::join(serv.root, script_name);       // Chemin d'accès complet au script CGI (FULL PATH)
 	_env["QUERY_STRING"]            = req.get_query_string();                   // things after '?' in url
 	/*_env["REMOTE_HOST"]           = "";*/                                     // host name of the client, unset if server did not perform such lookup.
 	_env["REMOTE_ADDR"]             = client_info.str_addr;                     // ip, client side
