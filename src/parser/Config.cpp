@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 18:01:33 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 08:30:13 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:35:51 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,8 @@ void	Config::Location::print() const {
 		std::cout << "    Return url: " << return_url << std::endl;
 	if (client_max_body_size != Config::_overflow_body_size)
 		std::cout << "    Max client body size: " << client_max_body_size << std::endl;
+	if (!rewrite_prefix.first.empty())
+		std::cout << "    Rewrite prefix: \"" << rewrite_prefix.first << "\" to: \"" << rewrite_prefix.second << '"' << std::endl;
 	std::cout << "\e[0m";
 }
 

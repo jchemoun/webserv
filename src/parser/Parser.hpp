@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:15:39 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 08:12:07 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:27:21 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ private:
 	template <class Context>
 	void	_parse_allow_methods(Context &context);
 	void	_parse_cgi(Config::Location &location);
+	void	_parse_rewrite_prefix(Config::Location &location);
 
 	// Parse types
 	void	_parse_types();

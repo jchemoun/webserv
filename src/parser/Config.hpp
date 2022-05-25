@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/24 17:59:25 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/24 21:27:16 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:37:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,17 +40,18 @@ struct Config {
 	struct	Location {
 		enum path_type { type_prefix, type_match };
 
-		std::string					location_path;
-		path_type					type;
-		std::string					root;
-		std::vector<std::string>	index;
-		ErrPageMap					error_pages;
-		bool						autoindex; // make a pair, and init in Location()
-		std::vector<std::string>	allow_methods;
-		std::string					cgi;
-		http::code					return_code;
-		std::string					return_url;
-		body_size					client_max_body_size;
+		std::string							location_path;
+		path_type							type;
+		std::string							root;
+		std::vector<std::string>			index;
+		ErrPageMap							error_pages;
+		bool								autoindex; // no unset value, false by default
+		std::vector<std::string>			allow_methods;
+		std::string							cgi;
+		http::code							return_code;
+		std::string							return_url;
+		body_size							client_max_body_size;
+		std::pair<std::string, std::string>	rewrite_prefix;
 		Location();
 		void	print() const;
 		bool	match(std::string const &path) const;

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:04:20 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 08:33:03 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:26:04 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,8 @@ void Uri::resolve(Config::Server const &serv) {
 				return_code = &location.return_code;
 			if (location.client_max_body_size != Config::_overflow_body_size)
 				client_max_body_size = &location.client_max_body_size;
+			if (!location.rewrite_prefix.first.empty())
+				rewrite_prefix = &location.rewrite_prefix;
 			autoindex = location.autoindex;
 			break;
 		}

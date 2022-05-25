@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 20:29:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 08:12:20 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 09:35:02 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,15 @@ void	Parser::_init_parsers() {
 	_server_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
 	_server_parsers["allow_methods"]        = &Parser::_parse_allow_methods;
 
-	_location_parsers["root"]          = &Parser::_parse_root;
-	_location_parsers["index"]         = &Parser::_parse_index;
-	_location_parsers["error_page"]    = &Parser::_parse_error_page;
-	_location_parsers["autoindex"]     = &Parser::_parse_autoindex;
-	_location_parsers["allow_methods"] = &Parser::_parse_allow_methods;
-	_location_parsers["cgi"]           = &Parser::_parse_cgi;
-	_location_parsers["return"]        = &Parser::_parse_return;
+	_location_parsers["root"]                 = &Parser::_parse_root;
+	_location_parsers["index"]                = &Parser::_parse_index;
+	_location_parsers["error_page"]           = &Parser::_parse_error_page;
+	_location_parsers["autoindex"]            = &Parser::_parse_autoindex;
+	_location_parsers["allow_methods"]        = &Parser::_parse_allow_methods;
+	_location_parsers["cgi"]                  = &Parser::_parse_cgi;
+	_location_parsers["return"]               = &Parser::_parse_return;
 	_location_parsers["client_max_body_size"] = &Parser::_parse_client_max_body_size;
+	_location_parsers["rewrite_prefix"]       = &Parser::_parse_rewrite_prefix;
 }
 
 Parser::Parser(std::string filename, std::string mimefile): _lexer(filename) {
@@ -371,6 +372,19 @@ void	Parser::_parse_cgi(Config::Location &location) {
 	if (_current_token().get_type() != Token::type_word)
 		throw ParsingError("root: missing path");
 	location.cgi = _current_token().get_value();
+	_lexer.next();
+	_eat(Token::type_special_char, ";");
+}
+
+void	Parser::_parse_rewrite_prefix(Config::Location &location) {
+	_lexer.next();
+	if (_current_token().get_type() != Token::type_word)
+		throw ParsingError("rewrite_prefix: missing prefix");
+	if (_lexer.peek_next().get_type() != Token::type_word)
+		throw ParsingError("rewrite_prefix: missing substitute");
+	location.rewrite_prefix.first = _current_token().get_value();
+	_lexer.next();
+	location.rewrite_prefix.second = _current_token().get_value();
 	_lexer.next();
 	_eat(Token::type_special_char, ";");
 }
