@@ -12,6 +12,7 @@
 
 #include "Request.hpp"
 #include "Parser.hpp"
+#include <cstddef>
 #include <cstring>
 #include <color.hpp>
 #include <sstream>
@@ -257,7 +258,11 @@ void	Request::_append_to_body(size_t &size) {
 
 void	Request::_parse_chunks() {
 	std::string	_str_chunk_size;
-	while (_raw_str.find("\n", _index) != std::string::npos) {
+	size_t		eol_pos;
+	while (
+		(eol_pos = _raw_str.find("\n", _index)) != std::string::npos
+		&& _raw_str.find("\n", eol_pos + 1) != std::string::npos
+		) {
 		if (!_chunk_size) {
 			_eat_word(_str_chunk_size, "\r\n");
 			try {
