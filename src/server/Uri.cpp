@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/24 18:04:20 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/25 18:48:11 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 20:54:46 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,11 +65,11 @@ void Uri::resolve(Config::Server const &serv) {
 				}
 			}
 			autoindex = location.autoindex;
-			if (location.type == Config::Location::type_match)
-				while (i + 1 < serv.locations.size()
-						&& serv.locations.at(i + 1).type == Config::Location::type_match)
-					++i;
-			else
+			// if (location.type == Config::Location::type_match)
+			// 	while (i + 1 < serv.locations.size()
+			// 			&& serv.locations.at(i + 1).type == Config::Location::type_match)
+			// 		++i;
+			// else
 				break;
 		}
 	}
