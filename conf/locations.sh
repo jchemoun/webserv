@@ -14,8 +14,6 @@ curl localhost:8080/redir | sed 's/nginx[^<]*/webserv\/1.0/g'
 curl -L localhost:8080/redir
 
 # Max body size
-#
-#
 curl -X GET localhost:8080 -d "123" # OK
 curl -X GET localhost:8080 -d "1234" | sed 's/nginx[^<]*/webserv\/1.0/g'  # 413
 curl -X GET localhost:8080/first/ -d "1" # OK site1

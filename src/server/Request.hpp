@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:16:09 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/18 19:10:28 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 16:10:39 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,8 @@ private:
 	bool			_complete_body;
 	size_t			_index;
 	std::string		_tmp_key;
+	bool			_chunk_encoding;
+	size_t			_chunk_size;
 
 public:
 	Request();
@@ -85,6 +87,7 @@ private:
 	void	_parse_protocol();
 	void	_parse_header();
 	void	_parse_body();
+	void	_parse_chunks();
 	void	_parse_content_length(std::string const &value);
 	void	_check_headers();
 	// Parsing utils
@@ -97,6 +100,7 @@ private:
 	void	_eat_value();
 	bool	_skip_empty_line();
 	void	_skip_empty_lines();
+	void	_append_to_body(size_t &size);
 };
 
 #endif

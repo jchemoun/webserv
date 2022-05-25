@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/25 08:00:47 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/25 16:28:41 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@ Request::Request():
 	_complete_header(false),
 	_complete_body(false),
 	_index(0),
+	_chunk_encoding(false),
+	_chunk_size(0),
 	current_server(NULL)
 { }
 
@@ -58,13 +60,15 @@ bool	Request::is_invalid()  const { return (_status_code >= 400); }
 
 void	Request::reset() {
 	_status_code = http::Ok;
+	_content_length = 0;
 	_complete_request_line = false;
 	_complete_header = false;
 	_complete_body = false;
+	_index = 0;
+	_chunk_encoding = false;
+	_chunk_size = 0;
 	_raw_str.clear();
 	_body.clear();
-	_index = 0;
-	_content_length = 0;
 }
 
 /*
@@ -236,23 +240,58 @@ void	Request::_eat_value() {
 	_eat_eol();
 	if (_tmp_key == "Content-Length")
 		_parse_content_length(value);
+	if (_tmp_key == "Transfer-Encoding" && value == "chunked")
+		_chunk_encoding = true;
 	_header[_tmp_key] = value;
 	std::cout << color::magenta << value << color::reset << "\n";
 }
 
-void	Request::_parse_body() {
-	std::string body_part = _raw_str.substr(_index, _content_length);
+void	Request::_append_to_body(size_t &size) {
+	std::string body_part = _raw_str.substr(_index, size);
 	_index += body_part.size();
-	_content_length -= body_part.size();
+	size -= body_part.size();
 	_body += body_part;
-	if (_content_length == 0) {
-		if (_raw_str[_index])
-			throw (http::BadRequest); //std::runtime_error("body size exceeds expected content length");
-		else {
+}
+
+void	Request::_parse_chunks() {
+	std::string	_str_chunk_size;
+	while (_raw_str.find("\n", _index) != std::string::npos) {
+		if (!_chunk_size) {
+			_eat_word(_str_chunk_size, "\r\n");
+			try {
+				//TODO: read hexa
+				_chunk_size = Parser::_stoi(_str_chunk_size, 0, Config::_overflow_body_size - 1);
+			}
+			catch (std::exception	const &except){
+				throw (http::BadRequest);
+			}
+			_eat_eol();
+		}
+		if (_chunk_size == 0) {
 			_complete_body = true;
-			std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
+			_eat_eol();
+			break;
+		}
+		else {
+			_append_to_body(_chunk_size);
+			_eat_eol();
 		}
 	}
+}
+
+void	Request::_parse_body() {
+	if (_chunk_encoding) {
+		_parse_chunks();
+	}
+	else {
+		_append_to_body(_content_length);
+		if (_content_length == 0)
+			_complete_body = true;
+	}
+	if (_complete_body && _raw_str[_index])
+		throw (http::BadRequest); //std::runtime_error("body size exceeds expected content length");
+	if (_complete_body)
+		std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
 }
 
 void	Request::_parse_content_length(std::string const &value) {
