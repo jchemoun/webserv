@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/05/15 12:06:23 by user42            #+#    #+#             */
-/*   Updated: 2022/05/24 19:01:52 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/26 10:14:54 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,6 @@ void	Cgi::run()
 
 void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const &client_info) {
 	Config::Server const	&serv = *req.current_server;
-	// std::string const 		&req_uri  = req.get_uri();
 
 	// How pathinfo should really be set:
 	// bool		has_path_info = (uri.find(".cgi/") != std::string::npos);
@@ -80,7 +79,7 @@ void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const 
 	// Server specific
 	_env["SERVER_SOFTWARE"]   = SERVER_SOFTWARE;
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["SERVER_NAME"]       = req.current_server_name;              // host name of the server
+	_env["SERVER_NAME"]       = req.current_server_name;                        // host name of the server
 	_env["DOCUMENT_ROOT"]     = serv.root;
 
 	// Request specific
@@ -91,24 +90,17 @@ void	Cgi::_set_env(Request const &req, Uri const &uri, Config::Connection const 
 	// 	_env["PATH_INFO"]           = uri.substr(script_name.size());           // path in the request after the cgi's name
 	// 	_env["PATH_TRANSLATED"]     = file::join(serv.root, _env["PATH_INFO"]); // corresponding full path as supposed by server, if PATH_INFO is present
 	// }
-	// _env["PATH_INFO"]               = file::join("/", script_name);             // Not really this but this is what 42 tester expects...
-	_env["PATH_INFO"]               = req.get_request_uri();             // https://42born2code.slack.com/archives/CN9RHKQHW/p1640626525359600?thread_ts=1602431280.194000&cid=CN9RHKQHW
+	_env["PATH_INFO"]               = req.get_request_uri();                    // https://42born2code.slack.com/archives/CN9RHKQHW/p1640626525359600?thread_ts=1602431280.194000&cid=CN9RHKQHW
 	_env["SCRIPT_NAME"]             = script_name;                              // relative path of the program (like /cgi-bin/script.cgi)
-	_env["SCRIPT_FILENAME"]         = script_name;       // Chemin d'accès complet au script CGI (FULL PATH)
+	_env["SCRIPT_FILENAME"]         = script_name;                              // Chemin d'accès complet au script CGI (FULL PATH)
 	// _env["SCRIPT_FILENAME"]         = file::join(serv.root, script_name);       // Chemin d'accès complet au script CGI (FULL PATH)
 	_env["QUERY_STRING"]            = req.get_query_string();                   // things after '?' in url
-	/*_env["REMOTE_HOST"]           = "";*/                                     // host name of the client, unset if server did not perform such lookup.
 	_env["REMOTE_ADDR"]             = client_info.str_addr;                     // ip, client side
-	/*_env["AUTH_TYPE"]             = "";*/                                     // identification type, if applicable
-	/*_env["REMOTE_USER"]           = "";*/                                     // used for certain AUTH_TYPEs.
-	/*_env["REMOTE_IDENT"]          = "";*/                                     // used for certain AUTH_TYPEs.
 	_env["CONTENT_TYPE"]            = serv.get_mime(req.get_uri());             // mime type of body
-	// _env["CONTENT_LENGTH"]          = req.get_body().size();                    // body_size
 
 	_env["REMOTE_PORT"]             = utils::to_str(client_info.port);          // port, client side
 	_env["SERVER_ADDR"]             = req.listen_info->str_addr;
 	_env["REQUEST_URI"]             = req.get_request_uri();
-	// _env["REDIRECT_STATUS"]   = "200";
 
 	// Client specific
 	// Toutes les variables qui sont envoyées par le client sont aussi passées au script CGI,
@@ -157,8 +149,6 @@ void	Cgi::_child_execute()
 
 	std::cerr << color::red << "execve FAIL:" << std::strerror(errno) << color::reset << std::endl;
 	exit(EXIT_FAILURE);
-
-	// TODO: quit properly?
 }
 
 void	Cgi::_parent_wait_and_read_pipe(int child_pid)
@@ -179,7 +169,6 @@ void	Cgi::_parent_wait_and_read_pipe(int child_pid)
 	if (WIFEXITED(wait_status) && WEXITSTATUS(wait_status) != EXIT_SUCCESS) {
 		throw http::InternalServerError;
 	}
-	// TODO: loop if !WIFEXITED
 	while ((len = read(_pipe_from_cgi[0], &buf, _buffer_size - 1)) > 0) {
 		buf[len] = '\0';
 		_output += buf;

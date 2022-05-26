@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 13:17:02 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/23 14:06:30 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/26 10:17:20 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void	Webserv::get_config(int ac, const char **av) {
 
 bool	Webserv::handle_event_error(int event_fd)
 {
-	std::cout << "epoll event error (EPOLLERR or EPOLLHUP)\n"; // TODO: better error handling
+	std::cout << "epoll event error (EPOLLERR or EPOLLHUP)\n";
 	if (is_serv(event_fd))
 	{
 		throw std::runtime_error("Epoll error.");
