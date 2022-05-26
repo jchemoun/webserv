@@ -8,9 +8,9 @@ SHELL              = /bin/zsh
 WALL               = yes
 WEXTRA             = yes
 WERROR             = yes
-FSANITIZE          = yes
-DEBUG              = yes
-WSH                = yes
+FSANITIZE          = no
+DEBUG              = no
+WSH                = no
 O2                 = no
 PTHREAD            = no
 CC                 :=  c++ -std=c++98
@@ -102,7 +102,7 @@ _IGREY              =   $'\033[47m
 
 #  ================================= Rules ==================================  #
 
-all: $(NAME) make_cgi
+all: $(NAME)
 
 $(NAME): $(OBJ)
 	@echo "\n$(NAME) : $(GEN)"
@@ -174,7 +174,7 @@ attach:
 nginx:
 	$(DOCKER_RUN_INTERACTIVE) nginx $(CONF)
 
-test: compile
+test: compile make_cgi
 	@if [ -z "$(CONF)" ]; then \
 		for file in conf/*.conf; do \
 		make --silent test_one CONF=$$file; \

@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/29 13:17:12 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/25 16:28:41 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/26 10:16:26 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,6 @@ void	Request::parse_request(ServerMap &serverMap, DefaultServerMap &def_server_m
 
 void	Request::parse_cgi(std::string &output) {
 	std::swap(_raw_str, output);
-	// _raw_str = output;
 	std::cout << "Parse cgi: \n" << _raw_str;
 	try {
 		_parse_header();
@@ -268,7 +267,6 @@ void	Request::_parse_chunks() {
 			try {
 				std::stringstream sstream; sstream << std::hex << _str_chunk_size;
 				sstream >> _chunk_size;
-				// _chunk_size = Parser::_stoi(_str_chunk_size, 0, Config::_overflow_body_size - 1);
 			}
 			catch (std::exception	const &except){
 				throw (http::BadRequest);
@@ -299,7 +297,7 @@ void	Request::_parse_body() {
 			_complete_body = true;
 	}
 	if (_complete_body && _raw_str[_index])
-		throw (http::BadRequest); //std::runtime_error("body size exceeds expected content length");
+		throw (http::BadRequest);
 	if (_complete_body)
 		std::cout << color::bold << "\nParsed body:\n" << color::reset << color::blue << _body << color::reset << "✋\n";
 }
@@ -309,7 +307,7 @@ void	Request::_parse_content_length(std::string const &value) {
 		_content_length = Parser::_stoi(value, 0, Config::_overflow_body_size - 1);
 	}
 	catch (std::exception	const &except){
-		throw (http::BadRequest); // std::runtime_error(std::string("Content-Length: ") + except.what());
+		throw (http::BadRequest);
 	}
 }
 /*
@@ -323,7 +321,7 @@ void	Request::_parse_content_length(std::string const &value) {
 void	Request::_eat(const char *s) {
 	size_t	size = std::strlen(s);
 	if (_raw_str.substr(_index, size) != s)
-		throw (http::BadRequest); // std::runtime_error("syntax error");
+		throw (http::BadRequest);
 	_index += size;
 }
 
@@ -333,7 +331,7 @@ void	Request::_eat_word(std::string &s, const char *delimiter, bool allow_empty)
 	while ((c = _raw_str[_index + count]) && !strchr(delimiter, c))
 		++count;
 	if (count == 0 && !allow_empty)
-		throw (http::BadRequest); // std::runtime_error("syntax error");;
+		throw (http::BadRequest);
 	s = _raw_str.substr(_index, count);
 	_index += s.size();
 }

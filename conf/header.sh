@@ -23,23 +23,3 @@ check_header / /42_logo.png /index.html '/?query=trololo' '/42_logo.png?a=b'
 supported_headers="^HTTP|Content-Type|Connection"
 printf "\n\e[34mAutoindex and error page: Content-Length may differ\e[0m\n"
 check_header /folder/ /not_found.png /folder
-
-# ============================= Close connection ============================= #
-
-#TODO:
-# check_header '?query=trololo' /index.html
-# GET ?query=trololo is a bad request, / is missing, should close connection
-
-# ==================================== # ===================================== #
-
-# curl -i localhost:8080/42_logo.png # curl behaves weirdly with binaries
-
-# filter_output() {
-#     sed 's/nginx[^<]*/webserv\/1.0/g' |
-#     sed 's/\s\+/ /g' |
-#     sed 's/[0-9]\+:[0-9]\+/hour:min/' |
-#     sed 's/ $//' |
-#     sed '/^\S\+:.*$/d' |               # remove headers
-#     sed '/^[0-9a-f]*$/d' | sed '/^$/d' # remove chuck encoding lines (https://fr.wikipedia.org/wiki/Chunked_transfer_encoding)
-# }
-# curl -i localhost:8080 | filter_output | grep -E "^(\S*: )|HTTP" | sort

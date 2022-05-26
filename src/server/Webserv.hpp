@@ -6,7 +6,7 @@
 /*   By: user42 <user42@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/04 11:30:46 by jchemoun          #+#    #+#             */
-/*   Updated: 2022/05/21 13:41:10 by user42           ###   ########.fr       */
+/*   Updated: 2022/05/26 10:18:27 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,14 +27,12 @@
 # include <vector>
 # include <map>
 
-// # include "Config.hpp"
+# include "Config.hpp"
 # include "Parser.hpp"
 # include "Client.hpp"
 # include "Response.hpp"
 # include "Include.hpp"
 
-// define temporaire ? valeur un peu random
- // was 4096
 
 class Webserv
 {

@@ -6,7 +6,7 @@
 /*   By: mjacq <mjacq@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/04/22 18:01:10 by mjacq             #+#    #+#             */
-/*   Updated: 2022/05/10 17:08:25 by mjacq            ###   ########.fr       */
+/*   Updated: 2022/05/26 10:19:32 by mjacq            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void	Lexer::_clear() {
 }
 
 void	Lexer::_open(std::string &filename) {
-	_istream.open(filename.c_str()); // Calls setstate(failbit) on failure.
+	_istream.open(filename.c_str());
 	if (!_istream)
 		throw std::runtime_error("Fails to open file.");
 }

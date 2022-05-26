@@ -74,34 +74,3 @@ Accept: */*
 
 EOF
 echo
-# ---
-# printf "\e[32mShould return Bad request (Content-Length too short):\e[0m\n"
-# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF
-# GET / HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Content-Length: 10
-# Accept: */*
-#
-# summer_body
-# EOF
-# echo
-# # ---
-# printf "\e[32mShould return OK (Content-Length too long):\e[0m\n"
-# curl --max-time 0.5 telnet://localhost:8080 2>/dev/null <<EOF
-# GET /folder/ HTTP/1.1
-# Host: localhost:8080
-# User-Agent: Monkey D. Luffy
-# Content-Length: 4242
-# Accept: */*
-#
-# summer_body
-# EOF
-# ---
-# TODO: 404 if missing mandatory headers
-# printf "\e[32mShould return 404 before timeout:\e[0m "
-# curl --max-time 0.5 telnet://localhost:8080 <<EOF
-# GET / HTTP/1.1
-#
-# EOF
-# TODO: try space line instead of empty line
